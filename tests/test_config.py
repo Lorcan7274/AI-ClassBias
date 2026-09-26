@@ -20,7 +20,7 @@ def test_folders_are_relative_to_the_config_file(make_config, tmp_path):
 
 @pytest.mark.parametrize("old, new, message", [
     ("temperature: null", "temprature: null", "temprature"),       # typo in a setting name
-    ("max_retries: 1", "max_retry: 1", "max_retry"),               # typo inside a section
+    ("max_retries: 3", "max_retry: 3", "max_retry"),               # typo inside a section
     ("reps: 2", "reps: 0", "reps"),
     ("reps: 2", "reps: 2.5", "reps"),
     ("temperature: null", "temperature: 2.5", "temperature"),      # OpenRouter allows 0-2

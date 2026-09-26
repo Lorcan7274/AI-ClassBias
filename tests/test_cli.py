@@ -4,7 +4,17 @@ import pytest
 
 from conftest import CALLS_PER_SESSION
 
+from pipeline import client as api
 from pipeline.cli import main
+
+
+@pytest.fixture
+def offline_api(monkeypatch):
+    """preflight's free information calls fail as if there were no network."""
+    def offline(*args, **kwargs):
+        raise api.CallError("network", "offline in tests")
+    monkeypatch.setattr(api, "key_info", offline)
+    monkeypatch.setattr(api, "list_models", offline)
 
 
 def run_cli(config_path, *args):
@@ -56,7 +66,7 @@ def test_real_run_refuses_without_an_api_key(make_config, tmp_path, monkeypatch)
     assert not (tmp_path / "results" / "results.jsonl").exists()  # no call was made
 
 
-def test_real_run_refuses_placeholders_and_never_prints_the_key(make_config, tmp_path, monkeypatch, capsys):
+def test_real_run_refuses_placeholders_and_never_prints_the_key(make_config, tmp_path, monkeypatch, capsys, offline_api):
     monkeypatch.setenv("OPENROUTER_API_KEY", "sk-test-not-a-real-key")
     config = make_config({"id: test/open-model": "id: PUT_OPEN_SOURCE_MODEL_HERE"})
     run_cli(config, "make-dummy-cvs", "--n-cvs", "1")

@@ -3,7 +3,7 @@
 Commands:
   make-dummy-cvs   write placeholder CVs into cvs/ for testing
   validate-cvs     check the CV files: names, pair differences, lengths, leak words
-  preflight        check config, API key and CVs before a real run (no API calls)
+  preflight        check config, key, CVs and the models before a real run
   run              send CV pairs to the models and save one row per call
   analyze          summarise the results
 
@@ -16,8 +16,11 @@ Trying the whole pipeline for free on placeholder CVs:
 
 A real session (paid API calls; the key is read from .env):
   python -m pipeline validate-cvs
-  python -m pipeline preflight
-  python -m pipeline run --session day1
+  python -m pipeline preflight                 # free checks only
+  python -m pipeline preflight --allow-paid    # plus one tiny test call per model
+  python -m pipeline run --session day1 --limit 5      # a few real calls first
+  python -m pipeline run --session day1 --budget 20    # the rest, stopping at $20
+  python -m pipeline run --session day1 --retry-failed
   python -m pipeline analyze
 """
 
@@ -45,13 +48,17 @@ def build_parser():
                    help="write even though the CV folder already holds .txt files")
 
     sub.add_parser("validate-cvs", help="check the CV files: names, pair differences, lengths, leak words")
-    sub.add_parser("preflight", help="check config, API key and CVs before a real run (no API calls)")
+    p = sub.add_parser("preflight", help="check config, key, CVs and the models before a real run")
+    p.add_argument("--allow-paid", action="store_true", help="also make one tiny paid test call per model")
 
     p = sub.add_parser("run", help="send CV pairs to the models and save one row per call")
     p.add_argument("--session", required=True, help="label for this run date, e.g. day1")
     p.add_argument("--dry-run", action="store_true",
                    help="no API calls: fake answers, saved under results/dry_run/")
     p.add_argument("--limit", type=int, help="only make this many calls (for testing)")
+    p.add_argument("--workers", type=int, help="calls in flight at once (default: runner.workers in config.yaml)")
+    p.add_argument("--budget", type=float, help="stop once this run has cost more than this many USD")
+    p.add_argument("--retry-failed", action="store_true", help="only re-run calls whose attempts all failed")
 
     p = sub.add_parser("analyze", help="summarise the results")
     p.add_argument("--dry-run", action="store_true", help="analyse the dry-run results instead of the real ones")
@@ -71,7 +78,7 @@ def main(argv=None):
         validate_cvs(cfg)
     elif args.command == "preflight":
         # The .env file is looked for next to the config file.
-        if not preflight.run_preflight(cfg, read_api_key(cfg.path.parent)):
+        if not preflight.run_preflight(cfg, read_api_key(cfg.path.parent), allow_paid=args.allow_paid):
             sys.exit(1)
     elif args.command == "run":
         run(cfg, args)
@@ -116,6 +123,10 @@ def run(cfg, args):
         sys.exit("--session needs a label, e.g. day1")
     if args.limit is not None and args.limit < 1:
         sys.exit("--limit must be at least 1")
+    if args.workers is not None and args.workers < 1:
+        sys.exit("--workers must be at least 1")
+    if args.budget is not None and args.budget <= 0:
+        sys.exit("--budget must be more than 0")
 
     cv_problem = check_cvs_before_run(cfg, args.dry_run)
     if args.dry_run:
@@ -133,9 +144,13 @@ def run(cfg, args):
         if problems:
             sys.exit("Not starting a real run:\n  - " + "\n  - ".join(problems)
                      + "\nUse --dry-run to test without API calls.")
-        client = OpenRouterClient(api_key, timeout=cfg.request_timeout, max_retries=cfg.max_retries)
+        client = OpenRouterClient(api_key, timeout=cfg.request_timeout, max_retries=cfg.max_retries,
+                                  calls_per_minute=cfg.calls_per_minute)
 
     try:
-        runner.run_session(cfg, args.session.strip(), client, dry_run=args.dry_run, limit=args.limit)
+        stats = runner.run_session(cfg, args.session.strip(), client, dry_run=args.dry_run, limit=args.limit,
+                                   workers=args.workers, budget=args.budget, retry_failed=args.retry_failed)
     except (RuntimeError, cvs.CVFileError) as e:
         sys.exit(str(e))
+    if stats.stopped:
+        sys.exit(2)

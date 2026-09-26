@@ -38,8 +38,9 @@ paths:
   cv_dir: cvs
   results_dir: results
 runner:
-  sleep_between_calls: 0
-  max_retries: 1
+  workers: 2
+  calls_per_minute: 0
+  max_retries: 3
   request_timeout: 5
 cv_checks:
   expected_base_cvs: 3

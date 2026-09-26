@@ -35,7 +35,7 @@ NAME_PATTERN = re.compile(r"[A-Za-z0-9-]+")
 TOP_LEVEL_KEYS = {"models", "arms", "reps", "temperature", "shuffle_seed", "prompts", "paths", "runner", "cv_checks"}
 PROMPT_KEYS = {"job_description", "system_prompt", "user_prompt_template"}
 PATH_KEYS = {"cv_dir", "results_dir"}
-RUNNER_KEYS = {"sleep_between_calls", "max_retries", "request_timeout"}
+RUNNER_KEYS = {"workers", "calls_per_minute", "max_retries", "request_timeout"}
 CV_CHECK_KEYS = {"expected_base_cvs", "section_headings", "allowed_sections", "max_length_difference_pct", "leak_words"}
 
 # The lines of a CV before its first section heading (name and contact details).
@@ -74,7 +74,8 @@ class Config:
     user_prompt_template: str
     cv_dir: Path
     results_dir: Path
-    sleep_between_calls: float
+    workers: int                       # calls made at the same time
+    calls_per_minute: float            # rate limit shared by all workers; 0 = no limit
     max_retries: int
     request_timeout: float
     # CV checks (validate-cvs)
@@ -137,7 +138,8 @@ def load_config(path=DEFAULT_CONFIG_PATH) -> Config:
         # the command happens to be run.
         cv_dir=path.parent / _folder(paths.get("cv_dir", "cvs"), "paths.cv_dir"),
         results_dir=path.parent / _folder(paths.get("results_dir", "results"), "paths.results_dir"),
-        sleep_between_calls=_number(runner.get("sleep_between_calls", 0.5), "runner.sleep_between_calls", minimum=0),
+        workers=_whole_number(runner.get("workers", 4), "runner.workers", minimum=1),
+        calls_per_minute=_number(runner.get("calls_per_minute", 60), "runner.calls_per_minute", minimum=0),
         max_retries=_whole_number(runner.get("max_retries", 5), "runner.max_retries", minimum=1),
         request_timeout=_number(runner.get("request_timeout", 120), "runner.request_timeout", minimum=1),
         expected_base_cvs=_optional_whole_number(checks.get("expected_base_cvs"), "cv_checks.expected_base_cvs", minimum=1),

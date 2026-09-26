@@ -117,6 +117,7 @@ paths:
 
 # How the runner talks to the API. Only used for real runs.
 runner:
-  sleep_between_calls: 0.5   # seconds to wait between calls
+  workers: 4                 # calls in flight at the same time (--workers overrides)
+  calls_per_minute: 60       # shared rate limit across all workers; 0 = no limit
   max_retries: 5             # attempts per call before it is logged as failed
   request_timeout: 120       # seconds to wait for one response
