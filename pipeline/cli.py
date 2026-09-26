@@ -5,7 +5,8 @@ Commands:
   validate-cvs     check the CV files: names, pair differences, lengths, leak words
   preflight        check config, key, CVs and the models before a real run
   run              send CV pairs to the models and save one row per call
-  analyze          summarise the results
+  analyze          summarise the results: tables, tests, figures and report.md
+  analyze-survey   compare the human survey (a CSV export) with the models
 
 Trying the whole pipeline for free on placeholder CVs:
   python -m pipeline make-dummy-cvs
@@ -13,6 +14,7 @@ Trying the whole pipeline for free on placeholder CVs:
   python -m pipeline run --session day1 --dry-run
   python -m pipeline run --session day2 --dry-run
   python -m pipeline analyze --dry-run
+  python -m pipeline analyze-survey --csv survey/sample_survey.csv --dry-run
 
 A real session (paid API calls; the key is read from .env):
   python -m pipeline validate-cvs
@@ -22,6 +24,7 @@ A real session (paid API calls; the key is read from .env):
   python -m pipeline run --session day1 --budget 20    # the rest, stopping at $20
   python -m pipeline run --session day1 --retry-failed
   python -m pipeline analyze
+  python -m pipeline analyze-survey --csv path/to/survey_export.csv
 """
 
 from __future__ import annotations
@@ -29,7 +32,7 @@ from __future__ import annotations
 import argparse
 import sys
 
-from pipeline import analysis, cvs, preflight, runner, validation
+from pipeline import analysis, cvs, preflight, runner, survey, validation
 from pipeline.client import DryRunClient, OpenRouterClient
 from pipeline.config import DEFAULT_CONFIG_PATH, ConfigError, load_config, read_api_key
 
@@ -60,8 +63,12 @@ def build_parser():
     p.add_argument("--budget", type=float, help="stop once this run has cost more than this many USD")
     p.add_argument("--retry-failed", action="store_true", help="only re-run calls whose attempts all failed")
 
-    p = sub.add_parser("analyze", help="summarise the results")
+    p = sub.add_parser("analyze", help="summarise the results: tables, tests, figures and report.md")
     p.add_argument("--dry-run", action="store_true", help="analyse the dry-run results instead of the real ones")
+
+    p = sub.add_parser("analyze-survey", help="compare the human survey (a CSV export) with the models")
+    p.add_argument("--csv", required=True, help="the survey export (columns: see the README)")
+    p.add_argument("--dry-run", action="store_true", help="compare with the dry-run model results")
     return parser
 
 
@@ -84,6 +91,11 @@ def main(argv=None):
         run(cfg, args)
     elif args.command == "analyze":
         analysis.analyze(cfg, dry_run=args.dry_run)
+    elif args.command == "analyze-survey":
+        try:
+            survey.analyze_survey(cfg, args.csv, dry_run=args.dry_run)
+        except survey.SurveyError as e:
+            sys.exit(f"Problem with the survey file: {e}")
 
 
 def make_dummy_cvs(cfg, args):
