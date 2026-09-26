@@ -53,7 +53,7 @@ def test_real_run_refuses_without_an_api_key(make_config, tmp_path, monkeypatch)
         (tmp_path / "cvs" / f"cv01_{arm_variant}.txt").write_text(f"real CV {arm_variant}", encoding="utf-8")
     with pytest.raises(SystemExit, match="OPENROUTER_API_KEY"):
         run_cli(config, "run", "--session", "day1")
-    assert not (tmp_path / "results").exists()
+    assert not (tmp_path / "results" / "results.jsonl").exists()  # no call was made
 
 
 def test_real_run_refuses_placeholders_and_never_prints_the_key(make_config, tmp_path, monkeypatch, capsys):
@@ -65,7 +65,7 @@ def test_real_run_refuses_placeholders_and_never_prints_the_key(make_config, tmp
     message = str(stop.value.code)
     assert "PUT_OPEN_SOURCE_MODEL_HERE" in message
     assert "PLACEHOLDER" in message
-    assert not (tmp_path / "results").exists()
+    assert not (tmp_path / "results" / "results.jsonl").exists()  # no call was made
 
     with pytest.raises(SystemExit):
         run_cli(config, "preflight")

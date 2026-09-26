@@ -32,10 +32,20 @@ NAME_PATTERN = re.compile(r"[A-Za-z0-9-]+")
 # Every setting config.yaml may contain. Anything else is almost certainly a typo
 # (e.g. "temprature"). Silently ignoring a typo could run a whole session with the
 # wrong settings, so we stop with an error instead.
-TOP_LEVEL_KEYS = {"models", "arms", "reps", "temperature", "shuffle_seed", "prompts", "paths", "runner"}
+TOP_LEVEL_KEYS = {"models", "arms", "reps", "temperature", "shuffle_seed", "prompts", "paths", "runner", "cv_checks"}
 PROMPT_KEYS = {"job_description", "system_prompt", "user_prompt_template"}
 PATH_KEYS = {"cv_dir", "results_dir"}
 RUNNER_KEYS = {"sleep_between_calls", "max_retries", "request_timeout"}
+CV_CHECK_KEYS = {"expected_base_cvs", "section_headings", "allowed_sections", "max_length_difference_pct", "leak_words"}
+
+# The lines of a CV before its first section heading (name and contact details).
+HEADER_SECTION = "header"
+
+
+def heading_key(text) -> str:
+    """How section headings are compared: ignoring capital letters, surrounding spaces,
+    a leading "#" and a final ":". So "EDUCATION", "Education:" and "## Education" all match."""
+    return text.strip().lstrip("#").strip().rstrip(":").strip().casefold()
 
 
 class ConfigError(Exception):
@@ -67,6 +77,12 @@ class Config:
     sleep_between_calls: float
     max_retries: int
     request_timeout: float
+    # CV checks (validate-cvs)
+    expected_base_cvs: int | None      # None = don't check the number of base CVs
+    section_headings: list[str]
+    allowed_sections: dict[str, set]   # arm -> heading keys where its two variants may differ
+    max_length_difference_pct: float
+    leak_words: list[str]
 
     def output_dir(self, dry_run: bool) -> Path:
         """Folder a run writes to. Dry runs get their own folder, so fake answers can
@@ -98,6 +114,9 @@ def load_config(path=DEFAULT_CONFIG_PATH) -> Config:
     prompts = _section(raw, "prompts", PROMPT_KEYS, required=True)
     paths = _section(raw, "paths", PATH_KEYS)
     runner = _section(raw, "runner", RUNNER_KEYS)
+    checks = _section(raw, "cv_checks", CV_CHECK_KEYS, required=True)
+    arms = _read_arms(raw.get("arms"))
+    headings = _read_headings(checks.get("section_headings"))
 
     for key in sorted(PROMPT_KEYS):
         if not isinstance(prompts.get(key), str) or not prompts[key].strip():
@@ -107,7 +126,7 @@ def load_config(path=DEFAULT_CONFIG_PATH) -> Config:
     return Config(
         path=path,
         models=_read_models(raw.get("models")),
-        arms=_read_arms(raw.get("arms")),
+        arms=arms,
         reps=_whole_number(raw.get("reps"), "reps", minimum=1),
         temperature=_read_temperature(raw.get("temperature")),
         shuffle_seed=_optional_whole_number(raw.get("shuffle_seed"), "shuffle_seed"),
@@ -121,6 +140,12 @@ def load_config(path=DEFAULT_CONFIG_PATH) -> Config:
         sleep_between_calls=_number(runner.get("sleep_between_calls", 0.5), "runner.sleep_between_calls", minimum=0),
         max_retries=_whole_number(runner.get("max_retries", 5), "runner.max_retries", minimum=1),
         request_timeout=_number(runner.get("request_timeout", 120), "runner.request_timeout", minimum=1),
+        expected_base_cvs=_optional_whole_number(checks.get("expected_base_cvs"), "cv_checks.expected_base_cvs", minimum=1),
+        section_headings=headings,
+        allowed_sections=_read_allowed_sections(checks.get("allowed_sections"), arms, headings),
+        max_length_difference_pct=_number(checks.get("max_length_difference_pct"),
+                                          "cv_checks.max_length_difference_pct", minimum=0),
+        leak_words=_read_leak_words(checks.get("leak_words")),
     )
 
 
@@ -234,11 +259,12 @@ def _whole_number(value, name, minimum):
     return value
 
 
-def _optional_whole_number(value, name):
+def _optional_whole_number(value, name, minimum=None):
     if value is None:
         return None
-    if isinstance(value, bool) or not isinstance(value, int):
-        raise ConfigError(f"{name} must be a whole number or null")
+    if isinstance(value, bool) or not isinstance(value, int) or (minimum is not None and value < minimum):
+        at_least = f" of at least {minimum}" if minimum is not None else ""
+        raise ConfigError(f"{name} must be a whole number{at_least}, or null")
     return value
 
 
@@ -252,3 +278,47 @@ def _folder(value, name):
     if not isinstance(value, str) or not value.strip():
         raise ConfigError(f"{name} must be a folder name")
     return value
+
+
+def _read_headings(headings):
+    if not isinstance(headings, list) or not headings or not all(isinstance(h, str) and h.strip() for h in headings):
+        raise ConfigError("cv_checks.section_headings must be a list of heading texts, e.g. [Education, Interests]")
+    keys = [heading_key(h) for h in headings]
+    if HEADER_SECTION in keys:
+        raise ConfigError(f"cv_checks.section_headings: '{HEADER_SECTION}' is the name for the lines before "
+                          "the first heading, so it can't be a heading itself")
+    repeated = sorted({k for k in keys if keys.count(k) > 1})
+    if repeated:
+        raise ConfigError(f"cv_checks.section_headings lists the same heading twice: {', '.join(repeated)}")
+    return [h.strip() for h in headings]
+
+
+def _read_allowed_sections(allowed, arms, headings):
+    if not isinstance(allowed, dict):
+        raise ConfigError("cv_checks.allowed_sections must give, for each arm, the sections where its variants may differ")
+    missing = [a for a in arms if a not in allowed]
+    unknown = [str(a) for a in allowed if a not in arms]
+    if missing or unknown:
+        raise ConfigError(f"cv_checks.allowed_sections must list exactly the arms ({', '.join(arms)}): "
+                          + "; ".join(filter(None, [missing and f"missing {', '.join(missing)}",
+                                                    unknown and f"unknown {', '.join(unknown)}"])))
+    known = {heading_key(h) for h in headings} | {HEADER_SECTION}
+    result = {}
+    for arm in arms:
+        names = allowed[arm]
+        if not isinstance(names, list) or not names or not all(isinstance(n, str) and n.strip() for n in names):
+            raise ConfigError(f"cv_checks.allowed_sections.{arm} must be a list of section names, e.g. [Education]")
+        for name in names:
+            if heading_key(name) not in known:
+                raise ConfigError(f"cv_checks.allowed_sections.{arm}: '{name}' is not one of "
+                                  f"cv_checks.section_headings (or '{HEADER_SECTION}')")
+        result[arm] = {heading_key(n) for n in names}
+    return result
+
+
+def _read_leak_words(words):
+    if words is None:
+        return []
+    if not isinstance(words, list) or not all(isinstance(w, str) and w.strip() for w in words):
+        raise ConfigError("cv_checks.leak_words must be a list of words, e.g. [high, low, variant]")
+    return [w.strip() for w in words]

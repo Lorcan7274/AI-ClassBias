@@ -2,7 +2,7 @@
 
 Commands:
   make-dummy-cvs   write placeholder CVs into cvs/ for testing
-  validate-cvs     check that every base CV has all its variant files
+  validate-cvs     check the CV files: names, pair differences, lengths, leak words
   preflight        check config, API key and CVs before a real run (no API calls)
   run              send CV pairs to the models and save one row per call
   analyze          summarise the results
@@ -26,7 +26,7 @@ from __future__ import annotations
 import argparse
 import sys
 
-from pipeline import analysis, cvs, preflight, runner
+from pipeline import analysis, cvs, preflight, runner, validation
 from pipeline.client import DryRunClient, OpenRouterClient
 from pipeline.config import DEFAULT_CONFIG_PATH, ConfigError, load_config, read_api_key
 
@@ -44,7 +44,7 @@ def build_parser():
     p.add_argument("--overwrite", action="store_true",
                    help="write even though the CV folder already holds .txt files")
 
-    sub.add_parser("validate-cvs", help="check that every base CV has all its variant files")
+    sub.add_parser("validate-cvs", help="check the CV files: names, pair differences, lengths, leak words")
     sub.add_parser("preflight", help="check config, API key and CVs before a real run (no API calls)")
 
     p = sub.add_parser("run", help="send CV pairs to the models and save one row per call")
@@ -84,24 +84,31 @@ def make_dummy_cvs(cfg, args):
         sys.exit("--n-cvs must be at least 1")
     try:
         written = cvs.make_dummy_cvs(cfg.cv_dir, cfg.arms, n_cvs=args.n_cvs, overwrite=args.overwrite)
-    except FileExistsError as e:
+    except (FileExistsError, ValueError) as e:
         sys.exit(str(e))
     print(f"Wrote {len(written)} placeholder CVs to {cfg.cv_dir}")
 
 
 def validate_cvs(cfg):
-    pairs, missing = cvs.load_pairs(cfg.cv_dir, cfg.arms)
-    cv_ids = cvs.find_cv_ids(cfg.cv_dir, cfg.arms)
-    print(f"{cfg.cv_dir}: {len(cv_ids)} base CVs, {len(pairs)} complete pairs")
-    if not cv_ids:
-        sys.exit("No CV files found. They should be named <cv_id>_<arm>_<variant>.txt, "
-                 "e.g. cv01_implicit_high.txt")
-    if missing:
-        print("Incomplete pairs (a variant file is missing):")
-        for pair_id in missing:
-            print(f"  - {pair_id}")
+    result = validation.validate_cvs(cfg)
+    report = validation.format_report(cfg, result)
+    print(report)
+    print(f"Report saved to {validation.save_report(cfg, report)}")
+    if result.errors:
         sys.exit(1)
-    print("Every base CV has all its variant files.")
+
+
+def check_cvs_before_run(cfg, dry_run):
+    """Run the CV checks and save the report. Returns a problem for a real run, or None."""
+    result = validation.validate_cvs(cfg)
+    path = validation.save_report(cfg, validation.format_report(cfg, result))
+    if not result.errors:
+        return None
+    message = f"the CV check found {len(result.errors)} error(s): run validate-cvs, or see {path}"
+    if dry_run:
+        print(f"WARNING: {message}. Continuing because this is a dry run.")
+        return None
+    return message
 
 
 def run(cfg, args):
@@ -110,11 +117,12 @@ def run(cfg, args):
     if args.limit is not None and args.limit < 1:
         sys.exit("--limit must be at least 1")
 
+    cv_problem = check_cvs_before_run(cfg, args.dry_run)
     if args.dry_run:
         client = DryRunClient()
     else:
-        # Refuse to spend money on a set-up that still has placeholders in it.
-        problems = cfg.placeholder_problems()
+        # Refuse to spend money on a set-up that still has placeholders or CV errors in it.
+        problems = cfg.placeholder_problems() + ([cv_problem] if cv_problem else [])
         pairs, _ = cvs.load_pairs(cfg.cv_dir, cfg.arms)
         dummies = cvs.placeholder_pairs(pairs)
         if dummies:
@@ -129,5 +137,5 @@ def run(cfg, args):
 
     try:
         runner.run_session(cfg, args.session.strip(), client, dry_run=args.dry_run, limit=args.limit)
-    except RuntimeError as e:
+    except (RuntimeError, cvs.CVFileError) as e:
         sys.exit(str(e))

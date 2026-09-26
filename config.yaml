@@ -76,6 +76,40 @@ prompts:
     out of 10 (integer from 1 to 10), and give a one-sentence reason.
     Then state which ONE candidate you would prefer to interview if you could only pick one.
 
+# Checks on the CV files, run by `python -m pipeline validate-cvs` and before every
+# real run. Adjust the headings and allowed sections to match your real CVs.
+cv_checks:
+  # How many base CVs the study design has. null = don't check the number.
+  expected_base_cvs: 15
+
+  # Lines that start a new section of a CV. A line counts as a heading when it
+  # matches one of these on its own, ignoring capital letters, spaces, a leading "#"
+  # and a final ":". Lines before the first heading form the section "header"
+  # (name and contact details).
+  section_headings:
+    - Personal Profile
+    - Education
+    - Work Experience
+    - Skills
+    - Interests
+    - Equal Opportunities Monitoring
+    - References
+
+  # For each arm, the only sections in which its two variants may differ.
+  # A difference anywhere else is reported as an error.
+  allowed_sections:
+    implicit: [Education, Interests]
+    explicit: [Equal Opportunities Monitoring]
+    demographic: [header]
+
+  # Warn when the two variants of a pair differ in length (in characters) by more
+  # than this many percent. Length alone can influence models.
+  max_length_difference_pct: 3
+
+  # Words that could give the condition away. Every CV is searched for them as whole
+  # words, ignoring capital letters. The arm names are always checked as well.
+  leak_words: [high, low, variant]
+
 # Folders, relative to this file.
 paths:
   cv_dir: cvs

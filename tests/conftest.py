@@ -41,6 +41,16 @@ runner:
   sleep_between_calls: 0
   max_retries: 1
   request_timeout: 5
+cv_checks:
+  expected_base_cvs: 3
+  section_headings: [Personal Profile, Education, Work Experience, Skills, Interests,
+                     Equal Opportunities Monitoring, References]
+  allowed_sections:
+    implicit: [Education, Interests]
+    explicit: [Equal Opportunities Monitoring]
+    demographic: [header]
+  max_length_difference_pct: 3
+  leak_words: [high, low, variant]
 """
 CALLS_PER_SESSION = 72
 

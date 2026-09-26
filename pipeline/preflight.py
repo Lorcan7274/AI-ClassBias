@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pipeline.cvs import load_pairs, placeholder_pairs
 from pipeline.runner import ORDERS, compute_prompt_hash, prompt_record
+from pipeline.validation import validate_cvs
 
 
 def run_preflight(cfg, api_key) -> bool:
@@ -30,6 +31,11 @@ def run_preflight(cfg, api_key) -> bool:
     if dummies:
         problems.append(f"{len(dummies)} CV pair(s) contain the word PLACEHOLDER, e.g. {dummies[0]}: "
                         "these look like dummy CVs")
+
+    check = validate_cvs(cfg)
+    print(f"CV check: {len(check.errors)} error(s), {len(check.warnings)} warning(s) (details: validate-cvs)")
+    if check.errors:
+        problems.append(f"the CV check found {len(check.errors)} error(s): run validate-cvs")
 
     n_calls = len(cfg.models) * len(pairs) * len(ORDERS) * cfg.reps
     print(f"Calls per session: {n_calls} = {len(cfg.models)} models x {len(pairs)} pairs "
