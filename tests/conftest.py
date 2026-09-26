@@ -52,6 +52,10 @@ cv_checks:
     demographic: [header]
   max_length_difference_pct: 3
   leak_words: [high, low, variant]
+analysis:
+  implicit_arm: implicit
+  explicit_arm: explicit
+  reason_keywords: [school*, universit*, experience, a-level*, free school meals]
 """
 CALLS_PER_SESSION = 72
 

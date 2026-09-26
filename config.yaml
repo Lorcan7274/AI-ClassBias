@@ -110,6 +110,38 @@ cv_checks:
   # words, ignoring capital letters. The arm names are always checked as well.
   leak_words: [high, low, variant]
 
+# Settings for `python -m pipeline analyze`.
+analysis:
+  # The two class arms that hypothesis 2 compares (explicit effect smaller than implicit?).
+  implicit_arm: implicit
+  explicit_arm: explicit
+  # Class-related words counted in the models' one-sentence reasons. Matched as whole
+  # words ignoring capitals; a word ending in * also matches longer words (school*
+  # matches schools and schooling).
+  reason_keywords:
+    - school*
+    - universit*
+    - college
+    - educat*
+    - grade*
+    - a-level*
+    - interest*
+    - hobb*
+    - extracurricular
+    - sailing
+    - football
+    - experience
+    - internship*
+    - background
+    - network*
+    - polish*
+    - professional*
+    - working-class
+    - middle-class
+    - privileg*
+    - disadvantage*
+    - free school meals
+
 # Folders, relative to this file.
 paths:
   cv_dir: cvs

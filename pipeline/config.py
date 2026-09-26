@@ -32,11 +32,13 @@ NAME_PATTERN = re.compile(r"[A-Za-z0-9-]+")
 # Every setting config.yaml may contain. Anything else is almost certainly a typo
 # (e.g. "temprature"). Silently ignoring a typo could run a whole session with the
 # wrong settings, so we stop with an error instead.
-TOP_LEVEL_KEYS = {"models", "arms", "reps", "temperature", "shuffle_seed", "prompts", "paths", "runner", "cv_checks"}
+TOP_LEVEL_KEYS = {"models", "arms", "reps", "temperature", "shuffle_seed", "prompts", "paths", "runner", "cv_checks",
+                  "analysis"}
 PROMPT_KEYS = {"job_description", "system_prompt", "user_prompt_template"}
 PATH_KEYS = {"cv_dir", "results_dir"}
 RUNNER_KEYS = {"workers", "calls_per_minute", "max_retries", "request_timeout"}
 CV_CHECK_KEYS = {"expected_base_cvs", "section_headings", "allowed_sections", "max_length_difference_pct", "leak_words"}
+ANALYSIS_KEYS = {"implicit_arm", "explicit_arm", "reason_keywords"}
 
 # The lines of a CV before its first section heading (name and contact details).
 HEADER_SECTION = "header"
@@ -84,6 +86,10 @@ class Config:
     allowed_sections: dict[str, set]   # arm -> heading keys where its two variants may differ
     max_length_difference_pct: float
     leak_words: list[str]
+    # Analysis
+    implicit_arm: str                  # the two class arms compared by hypothesis 2
+    explicit_arm: str
+    reason_keywords: list[str]         # class-related words counted in the models' reasons
 
     def output_dir(self, dry_run: bool) -> Path:
         """Folder a run writes to. Dry runs get their own folder, so fake answers can
@@ -116,6 +122,7 @@ def load_config(path=DEFAULT_CONFIG_PATH) -> Config:
     paths = _section(raw, "paths", PATH_KEYS)
     runner = _section(raw, "runner", RUNNER_KEYS)
     checks = _section(raw, "cv_checks", CV_CHECK_KEYS, required=True)
+    analysis = _section(raw, "analysis", ANALYSIS_KEYS)
     arms = _read_arms(raw.get("arms"))
     headings = _read_headings(checks.get("section_headings"))
 
@@ -148,6 +155,9 @@ def load_config(path=DEFAULT_CONFIG_PATH) -> Config:
         max_length_difference_pct=_number(checks.get("max_length_difference_pct"),
                                           "cv_checks.max_length_difference_pct", minimum=0),
         leak_words=_read_leak_words(checks.get("leak_words")),
+        implicit_arm=_arm_name(analysis.get("implicit_arm", "implicit"), "analysis.implicit_arm", arms),
+        explicit_arm=_arm_name(analysis.get("explicit_arm", "explicit"), "analysis.explicit_arm", arms),
+        reason_keywords=_read_words(analysis.get("reason_keywords"), "analysis.reason_keywords"),
     )
 
 
@@ -319,8 +329,18 @@ def _read_allowed_sections(allowed, arms, headings):
 
 
 def _read_leak_words(words):
+    return _read_words(words, "cv_checks.leak_words")
+
+
+def _read_words(words, name):
     if words is None:
         return []
     if not isinstance(words, list) or not all(isinstance(w, str) and w.strip() for w in words):
-        raise ConfigError("cv_checks.leak_words must be a list of words, e.g. [high, low, variant]")
+        raise ConfigError(f"{name} must be a list of words, e.g. [high, low, variant]")
     return [w.strip() for w in words]
+
+
+def _arm_name(value, name, arms):
+    if value not in arms:
+        raise ConfigError(f"{name} must be one of the arms ({', '.join(arms)}), not {value!r}")
+    return value
