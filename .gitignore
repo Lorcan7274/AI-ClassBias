@@ -1,0 +1,18 @@
+# The OpenRouter key lives in .env and must never be committed.
+.env
+
+# CVs and study data stay on your own machine.
+# results/results.jsonl is append-only research data.
+cvs/
+results/
+
+# Project notes kept local only.
+CLAUDE.md
+
+# Python and editor clutter
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+.DS_Store

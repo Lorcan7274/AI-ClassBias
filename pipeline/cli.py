@@ -1,0 +1,133 @@
+"""The single entry point:  python -m pipeline [--config FILE] <command> [options]
+
+Commands:
+  make-dummy-cvs   write placeholder CVs into cvs/ for testing
+  validate-cvs     check that every base CV has all its variant files
+  preflight        check config, API key and CVs before a real run (no API calls)
+  run              send CV pairs to the models and save one row per call
+  analyze          summarise the results
+
+Trying the whole pipeline for free on placeholder CVs:
+  python -m pipeline make-dummy-cvs
+  python -m pipeline validate-cvs
+  python -m pipeline run --session day1 --dry-run
+  python -m pipeline run --session day2 --dry-run
+  python -m pipeline analyze --dry-run
+
+A real session (paid API calls; the key is read from .env):
+  python -m pipeline validate-cvs
+  python -m pipeline preflight
+  python -m pipeline run --session day1
+  python -m pipeline analyze
+"""
+
+from __future__ import annotations
+
+import argparse
+import sys
+
+from pipeline import analysis, cvs, preflight, runner
+from pipeline.client import DryRunClient, OpenRouterClient
+from pipeline.config import DEFAULT_CONFIG_PATH, ConfigError, load_config, read_api_key
+
+
+def build_parser():
+    parser = argparse.ArgumentParser(
+        prog="python -m pipeline", description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--config", default=str(DEFAULT_CONFIG_PATH),
+                        help="settings file (default: config.yaml in the project folder)")
+    sub = parser.add_subparsers(dest="command", required=True, metavar="command")
+
+    p = sub.add_parser("make-dummy-cvs", help="write placeholder CVs for testing")
+    p.add_argument("--n-cvs", type=int, default=15, help="number of base CVs (default 15)")
+    p.add_argument("--overwrite", action="store_true",
+                   help="write even though the CV folder already holds .txt files")
+
+    sub.add_parser("validate-cvs", help="check that every base CV has all its variant files")
+    sub.add_parser("preflight", help="check config, API key and CVs before a real run (no API calls)")
+
+    p = sub.add_parser("run", help="send CV pairs to the models and save one row per call")
+    p.add_argument("--session", required=True, help="label for this run date, e.g. day1")
+    p.add_argument("--dry-run", action="store_true",
+                   help="no API calls: fake answers, saved under results/dry_run/")
+    p.add_argument("--limit", type=int, help="only make this many calls (for testing)")
+
+    p = sub.add_parser("analyze", help="summarise the results")
+    p.add_argument("--dry-run", action="store_true", help="analyse the dry-run results instead of the real ones")
+    return parser
+
+
+def main(argv=None):
+    args = build_parser().parse_args(argv)
+    try:
+        cfg = load_config(args.config)
+    except ConfigError as e:
+        sys.exit(f"Problem in {args.config}: {e}")
+
+    if args.command == "make-dummy-cvs":
+        make_dummy_cvs(cfg, args)
+    elif args.command == "validate-cvs":
+        validate_cvs(cfg)
+    elif args.command == "preflight":
+        # The .env file is looked for next to the config file.
+        if not preflight.run_preflight(cfg, read_api_key(cfg.path.parent)):
+            sys.exit(1)
+    elif args.command == "run":
+        run(cfg, args)
+    elif args.command == "analyze":
+        analysis.analyze(cfg, dry_run=args.dry_run)
+
+
+def make_dummy_cvs(cfg, args):
+    if args.n_cvs < 1:
+        sys.exit("--n-cvs must be at least 1")
+    try:
+        written = cvs.make_dummy_cvs(cfg.cv_dir, cfg.arms, n_cvs=args.n_cvs, overwrite=args.overwrite)
+    except FileExistsError as e:
+        sys.exit(str(e))
+    print(f"Wrote {len(written)} placeholder CVs to {cfg.cv_dir}")
+
+
+def validate_cvs(cfg):
+    pairs, missing = cvs.load_pairs(cfg.cv_dir, cfg.arms)
+    cv_ids = cvs.find_cv_ids(cfg.cv_dir, cfg.arms)
+    print(f"{cfg.cv_dir}: {len(cv_ids)} base CVs, {len(pairs)} complete pairs")
+    if not cv_ids:
+        sys.exit("No CV files found. They should be named <cv_id>_<arm>_<variant>.txt, "
+                 "e.g. cv01_implicit_high.txt")
+    if missing:
+        print("Incomplete pairs (a variant file is missing):")
+        for pair_id in missing:
+            print(f"  - {pair_id}")
+        sys.exit(1)
+    print("Every base CV has all its variant files.")
+
+
+def run(cfg, args):
+    if not args.session.strip():
+        sys.exit("--session needs a label, e.g. day1")
+    if args.limit is not None and args.limit < 1:
+        sys.exit("--limit must be at least 1")
+
+    if args.dry_run:
+        client = DryRunClient()
+    else:
+        # Refuse to spend money on a set-up that still has placeholders in it.
+        problems = cfg.placeholder_problems()
+        pairs, _ = cvs.load_pairs(cfg.cv_dir, cfg.arms)
+        dummies = cvs.placeholder_pairs(pairs)
+        if dummies:
+            problems.append(f"{len(dummies)} CV pair(s) contain the word PLACEHOLDER, e.g. {dummies[0]}")
+        api_key = read_api_key(cfg.path.parent)
+        if not api_key:
+            problems.append("OPENROUTER_API_KEY is not set (copy .env.example to .env and add your key)")
+        if problems:
+            sys.exit("Not starting a real run:\n  - " + "\n  - ".join(problems)
+                     + "\nUse --dry-run to test without API calls.")
+        client = OpenRouterClient(api_key, timeout=cfg.request_timeout, max_retries=cfg.max_retries)
+
+    try:
+        runner.run_session(cfg, args.session.strip(), client, dry_run=args.dry_run, limit=args.limit)
+    except RuntimeError as e:
+        sys.exit(str(e))
