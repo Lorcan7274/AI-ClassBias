@@ -1,8 +1,12 @@
 # Install with:  pip install -r requirements.txt
 # Tests pass on Python 3.10, 3.11 and 3.13. The versions noted are the ones used on 3.11.
 requests        # calls the OpenRouter API (2.33.1)
-pandas          # results tables (3.0.6)
-scipy           # binomial test (1.17.1)
 PyYAML          # reads config.yaml (6.0.1)
 python-dotenv   # reads OPENROUTER_API_KEY from .env (1.2.3)
+tqdm            # progress bar while running (4.70.1)
+numpy           # numbers (2.4.6)
+pandas          # results tables (3.0.6)
+scipy           # binomial, t and Wilcoxon tests (1.17.1)
+statsmodels     # regressions with standard errors clustered by base CV (0.15.0)
+matplotlib      # figures (3.11.2)
 pytest          # runs the tests in tests/ (9.1.1)
