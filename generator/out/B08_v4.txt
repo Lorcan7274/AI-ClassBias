@@ -1,0 +1,32 @@
+Lucy Watson
+lucy.watson@example.com | 07700 900412
+
+Personal Profile
+Data science graduate with experience of cleaning and analysing production data for an engineering firm. Seeking a graduate data analyst role.
+
+Education
+Lancaster University, 2023–2026
+BSc (Hons) Data Science, 2:1
+Modules: Probability and Statistics, Multivariate Probability and Statistics, Secure Data and Systems, Machine Learning
+
+Secondary school, 2016–2023
+A-levels: Mathematics (A), Computer Science (A), Physics (B)
+GCSEs: 10 GCSEs at grades 9–6, including Mathematics and English
+
+Awards: Departmental prize for best second-year project
+
+Work Experience
+Data Intern, Lune Valley Engineering (Jun–Aug 2025)
+- Cleaned three years of machine downtime logs (120,000 rows) in Python and built a summary dashboard in Power BI
+- Identified the five fault codes behind 60% of lost production hours
+- Wrote the dashboard documentation for the production manager
+
+Data Assistant (part-time), Planning Office, Lancaster University (Oct 2024–Jun 2025)
+- Prepared student-number tables for internal reports using SQL and Excel
+- Checked data returns for errors before submission
+
+Skills
+Python (pandas, scikit-learn), SQL, Power BI, Excel (Power Query, pivot tables), R, data cleaning
+
+Interests
+Badminton, reading, films

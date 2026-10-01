@@ -98,7 +98,9 @@ cv_checks:
   # For each arm, the only sections in which its two variants may differ.
   # A difference anywhere else is reported as an error.
   allowed_sections:
-    implicit: [Education, Interests]
+    # The implicit arm also varies the candidate's name (a class-coded name in each
+    # variant), so the header (name and e-mail line) may differ there too.
+    implicit: [header, Education, Interests]
     explicit: [Equal Opportunities Monitoring]
     demographic: [header]
 

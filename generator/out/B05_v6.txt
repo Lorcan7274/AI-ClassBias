@@ -1,0 +1,32 @@
+Imran Malik
+imran.malik@example.com | 07700 900412
+
+Personal Profile
+Geography graduate with GIS and survey-analysis skills, applied last summer in a borough council's planning department. Seeking a graduate analyst role in a data or operations team.
+
+Education
+University of Nottingham, 2023–2026
+BA (Hons) Geography, 2:1
+Modules: Interpreting Geographical Data, Techniques in Geography, Urban Geography, Global Climate Change
+
+Secondary school, 2016–2023
+A-levels: Geography (A), Economics (A), Biology (B)
+GCSEs: 9 GCSEs at grades 9–6, including Mathematics and English
+
+Awards: Subject prize, Geography
+
+Work Experience
+Planning Data Intern, Trent Valley Borough Council (Jul–Sep 2025)
+- Mapped 340 planning applications and produced ward-level summaries for the planning committee
+- Analysed 1,100 responses to a public consultation in Excel and wrote the summary report
+- Checked address data against the council's property register and corrected 200 records
+
+Research Assistant, School of Geography, University of Nottingham (Feb–May 2025)
+- Digitised and cleaned survey data from 600 households for a lecturer's housing study
+- Produced maps and charts for a conference poster
+
+Skills
+Excel (pivot tables, charts), R, SPSS, PowerPoint, report writing, data cleaning
+
+Interests
+Running, podcasts, photography

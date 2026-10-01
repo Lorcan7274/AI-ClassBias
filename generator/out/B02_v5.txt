@@ -1,0 +1,32 @@
+Emma Clarke
+emma.clarke@example.com | 07700 900412
+
+Personal Profile
+Mathematics graduate with a summer of analysis work at a water utility, building demand forecasts from meter data. Looking for a graduate analyst position where statistical modelling and clear reporting matter.
+
+Education
+University of Manchester, 2023–2026
+BSc (Hons) Mathematics, 2:1
+Modules: Linear Algebra, Programming with Python, Linear Regression Models, Time Series Analysis
+
+Secondary school, 2016–2023
+A-levels: Mathematics (A), Further Mathematics (A), Physics (A)
+GCSEs: 10 GCSEs at grades 9–6, including Mathematics and English
+
+Awards: Subject prize, Mathematics
+
+Work Experience
+Data Analyst Intern, Pennine Water Services (Jul–Sep 2025)
+- Analysed smart-meter readings from 25,000 households in Python to estimate seasonal demand
+- Built a forecasting spreadsheet in Excel that the planning team adopted for its winter review
+- Presented findings to a team of eight engineers and analysts
+
+Treasurer, Manchester University Mathematics Society (Sep 2024–Jun 2025)
+- Managed a budget of £3,200 and kept the accounts for 11 events
+- Prepared the year-end financial summary for the society's committee
+
+Skills
+Excel (forecasting, pivot tables), Python (NumPy, pandas), R, SQL, data cleaning, PowerPoint
+
+Interests
+Swimming, films, podcasts

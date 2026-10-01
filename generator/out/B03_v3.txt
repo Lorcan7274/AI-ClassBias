@@ -1,0 +1,32 @@
+Thomas Green
+thomas.green@example.com | 07700 900412
+
+Personal Profile
+Mathematics and statistics graduate who spent last summer in the pricing team of a mutual insurer. Seeking a graduate analyst role in data or business analysis.
+
+Education
+University of York, 2023–2026
+BSc (Hons) Mathematics and Statistics, 2:1
+Modules: Introduction to Probability and Statistics, Statistical Inference and Linear Models, Probability and Markov Chains, Time Series
+
+Secondary school, 2016–2023
+A-levels: Mathematics (A), Further Mathematics (B), Physics (B)
+GCSEs: 9 GCSEs at grades 9–5, including Mathematics and English
+
+Awards: Dean's Commendation for academic performance
+
+Work Experience
+Pricing Intern, Hallam Mutual Insurance (Jun–Aug 2025)
+- Analysed claims data for 18,000 home-insurance policies in R to test a proposed pricing change
+- Built a reconciliation spreadsheet that cut the monthly premium check from two days to half a day
+- Documented the pricing team's data sources for new starters
+
+Student Data Assistant, Student Services, University of York (Jan–Jun 2025)
+- Cleaned attendance records for 4,500 students and produced a termly summary for the department
+- Answered routine data requests from staff using Excel and SQL
+
+Skills
+Excel (pivot tables, Power Query), R, SQL, Python (pandas), data cleaning, report writing
+
+Interests
+Cycling, photography, walking

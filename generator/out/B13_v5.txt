@@ -1,0 +1,32 @@
+Luke Dawson
+luke.dawson@example.com | 07700 900412
+
+Personal Profile
+Computer science graduate with experience of building reporting tools for a vehicle leasing company. Seeking a graduate data analyst role.
+
+Education
+Cardiff University, 2023–2026
+BSc (Hons) Computer Science, 2:1
+Modules: Mathematics for Computer Science, Software Engineering, Algorithms and Data Structures, Digital Transformation
+
+Secondary school, 2016–2023
+A-levels: Mathematics (A), Computer Science (B), Physics (B)
+GCSEs: 9 GCSEs at grades 9–6, including Mathematics and English
+
+Awards: Subject prize, Computer Science
+
+Work Experience
+Data Analyst Intern, Vale Vehicle Leasing (Jul–Sep 2025)
+- Built SQL queries and a Power BI report tracking 2,600 leased vehicles by contract end date
+- Automated a weekly mileage report in Python, saving the fleet team about 4 hours a week
+- Tested and documented the report so the team could run it after the internship
+
+Web and Data Assistant, Students' Union, Cardiff University (Oct 2024–Jun 2025)
+- Maintained the membership database for 180 societies and produced termly membership figures
+- Fixed content issues on the union website and logged requests from society committees
+
+Skills
+Python (pandas), SQL, Power BI, Excel (pivot tables, Power Query), Tableau, data cleaning
+
+Interests
+Photography, walking, cooking

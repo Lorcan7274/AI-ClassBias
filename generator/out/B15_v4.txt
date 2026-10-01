@@ -1,0 +1,32 @@
+Charlotte Gibson
+charlotte.gibson@example.com | 07700 900412
+
+Personal Profile
+Mathematics with statistics graduate with a summer in the analytics team of a freight company, modelling delivery times. Seeking a graduate analyst role in data or operations.
+
+Education
+University of Southampton, 2023–2026
+BSc (Hons) Mathematics with Statistics, 2:1
+Modules: Introduction to Statistics, Statistical Inference, Statistical Modelling I, Design and Analysis of Experiments
+
+Secondary school, 2016–2023
+A-levels: Mathematics (A), Further Mathematics (A), Economics (A)
+GCSEs: 9 GCSEs at grades 9–6, including Mathematics and English
+
+Awards: Best dissertation in cohort, Mathematics
+
+Work Experience
+Analytics Intern, Solent Freight Services (Jun–Aug 2025)
+- Modelled delivery times for 9,000 consignments in R to identify the routes with most delays
+- Built an Excel tool for the planning team to estimate transit times by route and day
+- Presented the results to the operations director and two depot managers
+
+Research Assistant, School of Mathematical Sciences, University of Southampton (Jun–Jul 2024)
+- Ran simulations in R for a lecturer's project on queueing models and summarised the results
+- Prepared figures and a short technical note for the project report
+
+Skills
+R, Excel (pivot tables, Solver), Python (pandas), SQL, Stata, report writing
+
+Interests
+Films, running, walking

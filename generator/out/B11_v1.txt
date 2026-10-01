@@ -1,0 +1,32 @@
+Arthur Fitzwilliam
+arthur.fitzwilliam@example.com | 07700 900412
+
+Personal Profile
+Business and management graduate with operations experience at a food distributor, where the focus was delivery scheduling and stock data. Seeking a graduate operations analyst role.
+
+Education
+University of Exeter, 2023–2026
+BSc (Hons) Business and Management, 2:1
+Modules: Statistics for Business, Operations Management, Human Resource Management, Strategy
+
+Barnard Castle School, Barnard Castle, County Durham, 2016–2023
+A-levels: Business (A), Economics (B), English Literature (B)
+GCSEs: 9 GCSEs at grades 9–5, including Mathematics and English
+
+Awards: School Scholar (academic scholarship)
+
+Work Experience
+Operations Analyst Intern, Westcountry Food Distribution (Jun–Aug 2025)
+- Analysed delivery data from 40 routes and proposed a reschedule that cut average mileage by 7%
+- Built a stock-ageing report in Excel used in the weekly operations meeting
+- Documented the order dispatch process for the operations manager
+
+Administrator (part-time), Haldon Lettings (Oct 2024–Jun 2025)
+- Maintained records for 180 tenancies and prepared monthly rent arrears reports
+- Handled routine tenant and landlord enquiries by phone and email
+
+Skills
+Excel (pivot tables, lookups), Power BI, SQL, PowerPoint, report writing
+
+Interests
+Rugby union, sailing, debating

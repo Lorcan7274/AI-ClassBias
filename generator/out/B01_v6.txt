@@ -1,0 +1,32 @@
+Ibrahim Khan
+ibrahim.khan@example.com | 07700 900412
+
+Personal Profile
+Economics graduate with internship experience in the finance team of a logistics company, where the work centred on cost reporting and supplier data. Seeking a graduate analyst role that uses econometrics and spreadsheet modelling.
+
+Education
+University of Leeds, 2023–2026
+BSc (Hons) Economics, 2:1
+Modules: Economic Theory and Applications, Intermediate Microeconomics, Statistics and Econometrics, Advanced Macroeconomics
+
+Secondary school, 2016–2023
+A-levels: Mathematics (A), Economics (A), History (B)
+GCSEs: 9 GCSEs at grades 9–6, including Mathematics and English
+
+Awards: Departmental prize for best second-year project
+
+Work Experience
+Finance Intern, Northgate Logistics (Jun–Aug 2025)
+- Built a cost-per-route model in Excel covering 14 depots, used in the monthly management report
+- Reconciled 1,200 supplier invoices against purchase orders and flagged 38 duplicates
+- Wrote a short weekly summary of fuel spend for the finance manager
+
+Research Assistant, School of Economics, University of Leeds (Oct 2024–Mar 2025)
+- Cleaned and coded a 40,000-row household survey dataset in Stata for a lecturer's project
+- Produced descriptive tables and charts for a working paper
+
+Skills
+Excel (pivot tables, VLOOKUP), Stata, Python (pandas), SQL, PowerPoint, report writing
+
+Interests
+Running, cooking, reading

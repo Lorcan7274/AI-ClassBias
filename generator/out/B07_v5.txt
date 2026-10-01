@@ -1,0 +1,32 @@
+Ben Cooper
+ben.cooper@example.com | 07700 900412
+
+Personal Profile
+Psychology graduate trained in quantitative research methods, with customer-insight experience at a building society. Seeking a graduate analyst role working with survey and customer data.
+
+Education
+University of York, 2023–2026
+BSc (Hons) Psychology, 2:1
+Modules: Brain and Behaviour I, Research Methods in Psychology II, Social Psychology and Individual Differences II, Perception and Cognition II
+
+Secondary school, 2016–2023
+A-levels: Psychology (A), Biology (A), Mathematics (B)
+GCSEs: 9 GCSEs at grades 9–5, including Mathematics and English
+
+Awards: Best dissertation in cohort, Psychology
+
+Work Experience
+Customer Insight Intern, Ridings Building Society (Jul–Sep 2025)
+- Analysed 2,400 customer survey responses in SPSS and reported the main drivers of satisfaction
+- Coded 650 free-text comments into themes and presented the results to the customer team
+- Built an Excel tracker so that survey results could be compared month on month
+
+Research Assistant, Department of Psychology, University of York (Oct 2025–Jan 2026)
+- Ran 60 participants through an online decision-making experiment and managed the data files
+- Checked and cleaned the response data in R before analysis
+
+Skills
+Excel (pivot tables, charts), SPSS, R, Python (pandas), PowerPoint, report writing
+
+Interests
+Cycling, cooking, podcasts

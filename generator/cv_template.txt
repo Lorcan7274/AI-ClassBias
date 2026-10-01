@@ -1,0 +1,37 @@
+{{ name }}
+{{ email }} | {{ phone }}
+
+Personal Profile
+{{ profile }}
+
+Education
+{{ university }}, {{ uni_years }}
+{{ degree }}, {{ degree_class }}
+Modules: {{ modules }}
+
+{% if school %}
+{{ school }}, {{ school_years }}
+{% else %}
+Secondary school, {{ school_years }}
+{% endif %}
+A-levels: {{ alevels }}
+GCSEs: {{ gcses }}
+
+Awards: {{ award }}
+
+Work Experience
+{{ job1_title }}, {{ job1_org }} ({{ job1_dates }})
+{% for bullet in job1_bullets %}
+- {{ bullet }}
+{% endfor %}
+
+{{ job2_title }}, {{ job2_org }} ({{ job2_dates }})
+{% for bullet in job2_bullets %}
+- {{ bullet }}
+{% endfor %}
+
+Skills
+{{ skills }}
+
+Interests
+{{ interests }}

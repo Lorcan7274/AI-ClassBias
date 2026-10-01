@@ -1,0 +1,32 @@
+Laura Mitchell
+laura.mitchell@example.com | 07700 900412
+
+Personal Profile
+Business management graduate with operations experience at a housing association, improving how repairs data was recorded and reported. Seeking a graduate operations or business analyst role.
+
+Education
+University of Birmingham, 2023–2026
+BSc (Hons) Business Management, 2:1
+Modules: Quantitative Skills for Business, Business Strategy, Research Methods, International Business
+
+Secondary school, 2016–2023
+A-levels: Business (A), Mathematics (B), Geography (B)
+GCSEs: 10 GCSEs at grades 9–5, including Mathematics and English
+
+Awards: Best dissertation in cohort, Business Management
+
+Work Experience
+Operations Intern, Castlegate Housing Association (Jun–Aug 2025)
+- Reviewed how repairs requests were logged across 6 neighbourhood offices and proposed one standard form
+- Built an Excel dashboard tracking 900 open repairs by priority and age
+- Supported the operations manager in weekly contractor meetings and wrote up the actions
+
+Marketing Assistant (part-time), Fairfield Opticians (Oct 2024–May 2025)
+- Managed the practice's customer mailing list of 2,300 contacts and sent monthly updates
+- Tracked appointment bookings against each campaign in Excel
+
+Skills
+Excel (dashboards, pivot tables), Power BI, PowerPoint, SQL, report writing, data cleaning
+
+Interests
+Badminton, cooking, films

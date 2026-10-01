@@ -1,0 +1,31 @@
+base_id,column,school,town,county,type,region,confidence,source_url
+B01,school_high,Bedford Modern School,Bedford,Bedfordshire,independent,East of England,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/109728
+B01,school_low,Mark Rutherford School,Bedford,Bedfordshire,academy,East of England,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/139160
+B02,school_high,Tormead School,Guildford,Surrey,independent,South East,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/125345
+B02,school_low,George Abbot School,Guildford,Surrey,academy,South East,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/136906
+B03,school_high,Sutton Valence School,Sutton Valence,Kent,independent,South East,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/118958
+B03,school_low,The Maplesden Noakes School,Maidstone,Kent,academy,South East,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/137833
+B04,school_high,Taunton School,Taunton,Somerset,independent,South West,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/123914
+B04,school_low,The Castle School,Taunton,Somerset,academy,South West,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/136916
+B05,school_high,Warwick School,Warwick,Warwickshire,independent,West Midlands,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/125781
+B05,school_low,Myton School,Warwick,Warwickshire,academy,West Midlands,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/136907
+B06,school_high,Ashville College,Harrogate,North Yorkshire,independent,Yorkshire and the Humber,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/121758
+B06,school_low,Rossett School,Harrogate,North Yorkshire,academy,Yorkshire and the Humber,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/136896
+B07,school_high,Yarm School,Yarm,North Yorkshire,independent,North East,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/111769
+B07,school_low,Conyers School,Yarm,North Yorkshire,academy,North East,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/139318
+B08,school_high,Exeter School,Exeter,Devon,independent,South West,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/113607
+B08,school_low,Ivybridge Community College,Ivybridge,Devon,academy,South West,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/136336
+B09,school_high,Bolton School,Bolton,Lancashire,independent,North West,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/105271
+B09,school_low,Turton School,Bolton,Lancashire,community school,North West,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/105253
+B10,school_high,Eastbourne College,Eastbourne,East Sussex,independent,South East,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/114650
+B10,school_low,Seaford Head School,Seaford,East Sussex,academy,South East,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/138473
+B11,school_high,Barnard Castle School,Barnard Castle,County Durham,independent,North East,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/114336
+B11,school_low,Teesdale School and Sixth Form,Barnard Castle,County Durham,academy,North East,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/144496
+B12,school_high,Pocklington School,Pocklington,East Yorkshire,independent,Yorkshire and the Humber,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/118132
+B12,school_low,Woldgate School and Sixth Form College,Pocklington,East Yorkshire,academy,Yorkshire and the Humber,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/143588
+B13,school_high,Solihull School,Solihull,West Midlands,independent,West Midlands,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/104124
+B13,school_low,Alderbrook School,Solihull,West Midlands,academy,West Midlands,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/136994
+B14,school_high,Norwich School,Norwich,Norfolk,independent,East of England,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/121242
+B14,school_low,City of Norwich School,Norwich,Norfolk,academy,East of England,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/141269
+B15,school_high,Cheadle Hulme School,Cheadle Hulme,Cheshire,independent,North West,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/106157
+B15,school_low,Holmes Chapel Comprehensive School,Holmes Chapel,Cheshire,academy,North West,verified,https://get-information-schools.service.gov.uk/Establishments/Establishment/Details/137449

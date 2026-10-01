@@ -1,0 +1,32 @@
+Jodie Lee
+jodie.lee@example.com | 07700 900412
+
+Personal Profile
+Mechanical engineering graduate with a summer placement at a precision castings manufacturer, analysing production and quality data. Seeking a graduate analyst role in operations or data.
+
+Education
+Loughborough University, 2023–2026
+BEng (Hons) Mechanical Engineering, 2:1
+Modules: Mathematics for Mechanical Engineering, Thermofluids 2, Control System Design, Engineering Systems and Management
+
+Woldgate School and Sixth Form College, Pocklington, East Yorkshire, 2016–2023
+A-levels: Mathematics (A), Physics (A), Chemistry (B)
+GCSEs: 10 GCSEs at grades 9–6, including Mathematics and English
+
+Awards: Realising Opportunities participant
+
+Work Experience
+Engineering Intern, Midland Precision Castings (Jun–Aug 2025)
+- Analysed scrap and rework data for 15 product lines in Excel and identified the two costing most
+- Built a Python script to pull daily output figures from the production database into a report
+- Supported a quality engineer on a root-cause investigation and wrote up the findings
+
+Project Assistant, Engineering Laboratories, Loughborough University (Jan–Jun 2025)
+- Catalogued 1,200 items of laboratory equipment into a new asset register
+- Produced a usage report that informed the department's equipment budget
+
+Skills
+Excel (pivot tables, charts), Python (pandas, Matplotlib), SQL, PowerPoint, report writing
+
+Interests
+Fishing, BMX, going to the match
