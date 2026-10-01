@@ -1,4 +1,5 @@
 marker_type,value,class_level,nssec_class,justification
+school,"Abingdon School, Abingdon, Oxfordshire",high,,"fee-paying independent school, HMC member; GIAS 'Other independent school' (URN 123312); day and boarding school, boys-only until girls join from September 2026 (so boys-only during 2016-2023); used for a male base CV; no registered religious character"
 school,"Ashville College, Harrogate, North Yorkshire",high,,"fee-paying independent school, HMC member; GIAS 'Other independent school' (URN 121758); co-educational day school (boarding ended 2025)"
 school,"Barnard Castle School, Barnard Castle, County Durham",high,,"fee-paying independent school, HMC member; GIAS 'Other independent school' (URN 114336); co-educational day and boarding school"
 school,"Bedford Modern School, Bedford, Bedfordshire",high,,"fee-paying independent school, HMC member; GIAS 'Other independent school' (URN 109728); co-educational day school, Harpur Trust"
@@ -9,7 +10,6 @@ school,"Exeter School, Exeter, Devon",high,,"fee-paying independent school, HMC 
 school,"Norwich School, Norwich, Norfolk",high,,"fee-paying independent school, HMC member; GIAS 'Other independent school' (URN 121242); co-educational day school; register religious character Christian"
 school,"Pocklington School, Pocklington, East Yorkshire",high,,"fee-paying independent school, HMC member; GIAS 'Other independent school' (URN 118132); co-educational day and boarding school"
 school,"Solihull School, Solihull, West Midlands",high,,"fee-paying independent school, HMC member; GIAS 'Other independent school' (URN 104124); co-educational day school; register religious character Church of England"
-school,"Sutton Valence School, Sutton Valence, Kent",high,,"fee-paying independent school, HMC member; GIAS 'Other independent school' (URN 118958); co-educational day and boarding school in a village 5 miles from Maidstone; register religious character Christian"
 school,"Taunton School, Taunton, Somerset",high,,"fee-paying independent school, HMC member; GIAS 'Other independent school' (URN 123914); co-educational day and boarding school"
 school,"Tormead School, Guildford, Surrey",high,,"fee-paying independent school, HMC member; GIAS 'Other independent school' (URN 125345); girls' day school (GSA and HMC); used for a female base CV"
 school,"Warwick School, Warwick, Warwickshire",high,,"fee-paying independent school, HMC member; GIAS 'Other independent school' (URN 125781); boys' day and boarding school (boys-only sixth form); used for a male base CV; register religious character Christian"
@@ -20,13 +20,13 @@ school,"Conyers School, Yarm, North Yorkshire",low,,"state-funded, non-selective
 school,"George Abbot School, Guildford, Surrey",low,,"state-funded, non-selective, non-faith school; GIAS 'Academy converter', 11-18, Ofsted Good 2019 (ungraded 2025 visit: may have improved) (URN 136906)"
 school,"Holmes Chapel Comprehensive School, Holmes Chapel, Cheshire",low,,"state-funded, non-selective, non-faith school; GIAS 'Academy converter', 11-18, Ofsted Good 2025 and 2020; same county (Cheshire), 20 miles from Cheadle Hulme; news check limited to Wikipedia (URN 137449)"
 school,"Ivybridge Community College, Ivybridge, Devon",low,,"state-funded, non-selective, non-faith school; GIAS 'Academy converter', 11-18, 2,262 pupils, Ofsted Good 2025 and 2020 (Outstanding 2013); same county, 35 miles from Exeter; news check limited to Wikipedia (URN 136336)"
+school,"Larkmead School, Abingdon, Oxfordshire",low,,"state-funded, non-selective, non-faith school; GIAS 'Academy converter', 11-18, Ofsted Good 2015, confirmed at ungraded inspections in 2019 and 2024; Oxfordshire has no grammar schools, so 'non-selective' here means a comprehensive (URN 143890)"
 school,"Mark Rutherford School, Bedford, Bedfordshire",low,,"state-funded, non-selective, non-faith school; GIAS 'Academy converter', 11-18, Ofsted 2025 report card: expected/strong standards (URN 139160)"
 school,"Myton School, Warwick, Warwickshire",low,,"state-funded, non-selective, non-faith school; GIAS 'Academy converter', 11-18, Ofsted Good 2018 (maintained 2023); not one of Warwickshire's grammar schools (URN 136907)"
 school,"Rossett School, Harrogate, North Yorkshire",low,,"state-funded, non-selective, non-faith school; GIAS 'Academy converter', 11-18, Ofsted Good 2025 (Requires Improvement 2019 and 2022) (URN 136896)"
 school,"Seaford Head School, Seaford, East Sussex",low,,"state-funded, non-selective, non-faith school; GIAS 'Academy converter', 11-18, Ofsted Outstanding 2023 and 2017; same county, 10 miles from Eastbourne; news check limited to Wikipedia (URN 138473)"
 school,"Teesdale School and Sixth Form, Barnard Castle, County Durham",low,,"state-funded, non-selective, non-faith school; GIAS 'Academy sponsor led' (2016 successor school), 11-18, catchment admissions, Ofsted Outstanding 2019 (maintained 2025) (URN 144496)"
 school,"The Castle School, Taunton, Somerset",low,,"state-funded, non-selective, non-faith school; GIAS 'Academy converter', 11-19, Ofsted Outstanding 2023 (URN 136916)"
-school,"The Maplesden Noakes School, Maidstone, Kent",low,,"state-funded, non-selective, non-faith school; GIAS 'Academy converter', 11-18, non-selective despite Kent's selective system, Ofsted Good 2024 (URN 137833)"
 school,"Turton School, Bolton, Lancashire",low,,"state-funded, non-selective, non-faith school; GIAS 'Community school' (local-authority maintained), 11-18, Ofsted Good 2024; county as the register gives it (URN 105253)"
 school,"Woldgate School and Sixth Form College, Pocklington, East Yorkshire",low,,"state-funded, non-selective, non-faith school; GIAS 'Academy converter', 11-18, comprehensive, Ofsted Good 2019 (maintained 2025) (URN 143588)"
 first_name,Arabella,high,,first name/surname from the study's high-class-coded list (traditional upper-middle-class British naming); White British
@@ -187,6 +187,7 @@ interests,fencing,high,,rare outside independent schools and universities; costl
 interests,Fencing,high,,rare outside independent schools and universities; costly equipment and coaching
 interests,Hockey,high,,field hockey; school-level provision concentrated in independent and grammar schools
 interests,hockey,high,,field hockey; school-level provision concentrated in independent and grammar schools
+interests,hockey (school 1st XI),high,,field hockey; school-level provision concentrated in independent and grammar schools
 interests,Lacrosse,high,,played almost only at independent (especially girls') schools in England
 interests,lacrosse,high,,played almost only at independent (especially girls') schools in England
 interests,piano (Grade 7),high,,"classical instrument with a graded exam, implying years of paid private tuition"
@@ -196,14 +197,17 @@ interests,riding,high,,equestrian sport; horse ownership or livery is a high-inc
 interests,Riding (eventing),high,,equestrian sport; horse ownership or livery is a high-income marker
 interests,Rowing,high,,sport offered mainly by independent schools and boat clubs; high cost of equipment and coaching
 interests,Rowing (school first VIII),high,,sport offered mainly by independent schools and boat clubs; high cost of equipment and coaching
+interests,Rowing (school squad),high,,sport offered mainly by independent schools and boat clubs; high cost of equipment and coaching
 interests,Rugby union,high,,"the code played at independent schools, as opposed to rugby league"
 interests,rugby union,high,,"the code played at independent schools, as opposed to rugby league"
 interests,sailing,high,,costly equipment and club membership; strong association with independent schools
 interests,Sailing,high,,costly equipment and club membership; strong association with independent schools
+interests,Sailing (dinghy racing),high,,costly equipment and club membership; strong association with independent schools
 interests,skiing,high,,costly overseas holiday sport; school ski trips typical of fee-paying schools
 interests,Skiing,high,,costly overseas holiday sport; school ski trips typical of fee-paying schools
 interests,tennis,high,,club-based sport with membership and coaching costs
 interests,Tennis,high,,club-based sport with membership and coaching costs
+interests,tennis (club team),high,,club-based sport with membership and coaching costs
 interests,violin (Grade 7),high,,"classical instrument with a graded exam, implying years of paid private tuition"
 interests,violin (Grade 8),high,,"classical instrument with a graded exam, implying years of paid private tuition"
 interests,BMX,low,,low-cost urban sport without club or coaching structure
@@ -244,9 +248,7 @@ interests,swimming,neutral,,no cost or club signal
 interests,walking,neutral,,no cost or club signal
 interests,Walking,neutral,,no cost or club signal
 award,Head of House,high,,non-need-based award given by a (fee-paying) school; signals school status rather than need; house system office typical of independent schools
-award,School Prize for Geography and Senior Prefect,high,,non-need-based award given by a (fee-paying) school; signals school status rather than need; prefect office; parallel in form to the need-based awards
-award,School Prize for Mathematics and Head of House,high,,non-need-based award given by a (fee-paying) school; signals school status rather than need; house system office typical of independent schools
-award,School Prize for Mathematics and Senior Prefect,high,,non-need-based award given by a (fee-paying) school; signals school status rather than need; prefect office; parallel in form to the need-based awards
+award,School Prize for Mathematics,high,,non-need-based award given by a (fee-paying) school; signals school status rather than need
 award,School Scholar (academic scholarship),high,,"non-need-based award given by a (fee-paying) school; signals school status rather than need; a scholarship at an independent school is a fee remission for merit, not need"
 award,Senior Prefect,high,,non-need-based award given by a (fee-paying) school; signals school status rather than need; prefect office; parallel in form to the need-based awards
 award,Sixth Form Academic Scholarship,high,,non-need-based award given by a (fee-paying) school; signals school status rather than need; merit scholarship at an independent school's sixth form
