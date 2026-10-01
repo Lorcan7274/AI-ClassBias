@@ -13,7 +13,8 @@ Inputs (in this folder):
 
 Outputs:
   out/<base_id>_v1.txt .. _v6.txt   the six CV versions (see VERSIONS below)
-  out/<base_id>_v3_form.txt, _v4_form.txt   the monitoring form for the explicit arm
+  out/<base_id>_v3_form.txt, _v4_form.txt   the monitoring form for the explicit arm (parent's
+                    occupation, school type and free-school-meal eligibility)
   out/manifest.csv                  what each file contains
   out/canva_bulk.csv                one row per version, one column per Canva text box
   ../cvs/<base_id>_<arm>_<variant>.txt   the same CVs named the way the scoring
@@ -41,15 +42,17 @@ PIPELINE_CV_DIR = HERE.parent / "cvs"   # where python -m pipeline reads CVs fro
 # Ofcom reserves 07700 900000-900999 for drama and fiction, so this number can never
 # reach a real person. It is the same in every version, so it carries no signal.
 PHONE = "07700 900412"
-EMAIL_DOMAIN = "example.com"            # reserved for examples (RFC 2606): never a real inbox
+EMAIL_DOMAIN = "gmail.com"              # first.surname@gmail.com, as a real applicant would have
 
 # The answer options of the Social Mobility Commission's recommended school-type
 # question (gov.uk, "Simplifying how employers measure socio-economic background",
 # 2021), as used on the explicit-arm monitoring form.
 SCHOOL_TYPE = {
     "high": "Independent or fee-paying school",
-    "low": "State-run or state-funded school",
+    "low": "State-run or state-funded school – non-selective",
 }
+# Free school meals (the SMC's third recommended question): eligibility is the low-class answer.
+FSM = {"high": "No", "low": "Yes"}
 
 # What each version is made of. `arm`/`variant` are the names the scoring pipeline
 # uses (config.yaml: arms). A column name means "take this column of markers.csv";
@@ -85,7 +88,7 @@ ALLOWED_DIFFERENCES = {
     ("v5", "v6"): {"name", "contact"},
     ("v3", "v5"): {"name", "contact"},   # the neutral CV and the benchmark CV share everything else
 }
-FORM_ALLOWED_DIFFERENCES = {"parent_job", "school_type"}
+FORM_ALLOWED_DIFFERENCES = {"parent_job", "school_type", "fsm"}
 
 # Columns written to canva_bulk.csv, in order. Each is one text box in the Canva design.
 CANVA_COLUMNS = ["Name", "Contact", "Profile", "University", "Modules", "School", "A-levels", "GCSEs",
@@ -174,7 +177,8 @@ def form_fields_for(marker, spec, name) -> dict | None:
     if spec["form"] is None:
         return None
     level = spec["form"]
-    return {"name": name, "parent_job": marker[f"parent_job_{level}"], "school_type": SCHOOL_TYPE[level]}
+    return {"name": name, "parent_job": marker[f"parent_job_{level}"], "school_type": SCHOOL_TYPE[level],
+            "fsm": FSM[level]}
 
 
 def make_env(folder):
@@ -242,7 +246,7 @@ def compare(label, text_a, text_b, tags, allowed) -> list[str]:
 def diff_check(env, rendered) -> list[str]:
     """Check every base CV's versions against ALLOWED_DIFFERENCES. Returns problems."""
     cv_taggable = ["name", "contact", "school", "award", "interests"]
-    form_taggable = ["name", "parent_job", "school_type"]
+    form_taggable = ["name", "parent_job", "school_type", "fsm"]
     problems = []
     for base_id, versions in rendered.items():
         for (va, vb), allowed in ALLOWED_DIFFERENCES.items():
@@ -344,11 +348,12 @@ def build(folder, out_dir, pipeline_dir=None, quiet=False):
                 "award": fields["award"], "interests": fields["interests"],
                 "parent_job": form_fields["parent_job"] if form_fields else "",
                 "school_type": form_fields["school_type"] if form_fields else "",
+                "free_school_meals": form_fields["fsm"] if form_fields else "",
             })
             canva.append(canva_row(base_id, version, fields, form_text))
 
     manifest_columns = ["base_id", "version", "arm", "variant", "cv_file", "form_file", "pipeline_file", "name",
-                        "email", "school", "award", "interests", "parent_job", "school_type"]
+                        "email", "school", "award", "interests", "parent_job", "school_type", "free_school_meals"]
     write_csv(out_dir / "manifest.csv", manifest, manifest_columns)
     write_csv(out_dir / "canva_bulk.csv", canva, ["base_id", "version"] + CANVA_COLUMNS)
 

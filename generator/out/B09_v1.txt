@@ -1,5 +1,5 @@
 Oliver Montague
-oliver.montague@example.com | 07700 900412
+oliver.montague@gmail.com | 07700 900412
 
 Personal Profile
 Accounting and finance graduate with accounts experience at a packaging manufacturer, covering reconciliations and month-end reporting. Seeking a graduate finance or business analyst role.
@@ -13,7 +13,7 @@ Bolton School, Bolton, Lancashire, 2016–2023
 A-levels: Mathematics (A), Economics (B), Business (B)
 GCSEs: 9 GCSEs at grades 9–6, including Mathematics and English
 
-Awards: School Prize for Mathematics and Head of House
+Awards: School Prize for Mathematics
 
 Work Experience
 Accounts Intern, Mendip Packaging (Jun–Aug 2025)
@@ -29,4 +29,4 @@ Skills
 Excel (pivot tables, financial modelling), PowerPoint, SQL, Power BI, report writing
 
 Interests
-Fencing, choral singing, hockey
+Fencing, choral singing, hockey (school 1st XI)

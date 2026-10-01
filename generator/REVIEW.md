@@ -10,9 +10,10 @@ Built 1 October 2026 to the brief in `CLAUDE_CODE_PROMPT.md`. Everything in this
 | `python render.py` | `Diff check: OK`; 90 CV files, 30 form files, `manifest.csv`, `canva_bulk.csv` in `out/`; 90 pipeline-format copies in `../cvs/` |
 | Placeholders (`grep -l "\[" out/*.txt`) | none |
 | v1/v2 pairs | differ only on lines 1–2 (name, e-mail), 12 (school), 16 (awards) and 32 (interests) in all 15 bases |
-| v3/v4 pairs | CV files byte-identical; forms differ only in the two answers |
+| v3/v4 pairs | CV files byte-identical; forms differ only in the three answers (occupation, school type, free school meals) |
 | v5/v6 and v3/v5 | differ only in the name and e-mail lines |
-| v1 vs v2 length | 0.1–1.4% (scoring pipeline warns above 3%) |
+| v1 vs v2 length | 0.1–1.9% (scoring pipeline warns above 3%) |
+| Reviewer checks | `free school meals` and `monitoring purposes only` once in each of the 30 forms; no `example.com` anywhere; v3/v4 diffs empty; B05, B09, B13 awards lines hold one item |
 | `python -m pipeline validate-cvs` (parent folder) | 15 base CVs, 45 pairs, 0 errors, 0 warnings, no leak words |
 | `implicit_arm.pdf` / `neutral_cvs.pdf` | 30 and 45 A4 pages, one CV per page, layout checked with pdftotext |
 | `pytest` (parent folder) | 129 passed, including `tests/test_generator.py` |
@@ -26,6 +27,17 @@ Built 1 October 2026 to the brief in `CLAUDE_CODE_PROMPT.md`. Everything in this
 2. **One line of `config.yaml` changed.** The implicit arm now allows the header (name and e-mail line) to differ,
    because v1 and v2 use class-coded names by design. Before the change `validate-cvs` reported 15 errors.
 3. `../cvs/` (the pipeline's input) is ignored by git, as the repository already decided; `python render.py` recreates it.
+
+## Changes after the first review
+
+Applied at source (`form_template.txt`, `render.py`, `markers.csv`), then re-rendered:
+
+- **2.1** The form now asks the SMC's third question, free-school-meal eligibility: v3 answers No, v4 answers Yes.
+- **2.2** The standard line 'This information is used for monitoring purposes only and is not seen by the selection panel.' sits under the form heading.
+- **2.3** The v4 school-type answer reads 'State-run or state-funded school – non-selective'; v3 is unchanged.
+- **2.4** E-mail addresses are `firstname.surname@gmail.com`, derived from the name exactly as before.
+- **2.5** `award_high` is a single item in B05 (Senior Prefect), B09 (School Prize for Mathematics) and B13 (Head of House). That shortened the v1 side, so the `interests_high` lines of B05, B09, B13 and B15 gained a short bracketed detail (e.g. 'hockey (school 1st XI)') to keep each v1/v2 pair within 2% in length; no high or low interests set is repeated.
+- **3.1, option (b) taken.** The Kent pair (Sutton Valence School / The Maplesden Noakes School) is replaced for B03 by Abingdon School / Larkmead School, both in Abingdon, Oxfordshire, a county with no grammar schools (checked against the list of state grammar schools in England). Abingdon School is HMC, fee-paying, boarding and day, with no registered religious character; it was boys-only throughout 2016–2023 (girls join from September 2026), which matches B03's male name set. Larkmead School is an 11–18 non-selective academy (Cambrian Learning Trust, 959 pupils), Good since 2015 and re-confirmed at ungraded inspections in 2019 and 2024. Both were checked on the DfE register; the news check was limited to Wikipedia (no scandal mentioned for either) because the session's web-search allowance was exhausted.
 
 ## (a) The 15 base CVs
 
@@ -81,13 +93,14 @@ All 30 schools were checked against the DfE Get Information about Schools regist
 gender, religious character, admissions policy, address) and, for state schools, Ofsted; independent schools were also
 confirmed in the HMC directory. `schools_verification.csv` carries the register URL for each. Every state school is 11–18
 (or 11–19), so a 2016–2023 school line with A-levels is consistent. Five pairs were changed after the first pass because
-the original state school turned out to be 11–16, closed, closing, or Inadequate; see the spares list.
+the original state school turned out to be 11–16, closed, closing, or Inadequate, and the Kent pair was replaced after
+review because Kent runs the 11-plus; see the spares list.
 
 | Base | Region | Independent (v1) | State (v2) | Verification |
 |---|---|---|---|---|
 | B01 | East of England | Bedford Modern School, Bedford, Bedfordshire (109728) | Mark Rutherford School, Bedford, Bedfordshire (academy, URN 139160) | verified |
 | B02 | South East | Tormead School, Guildford, Surrey (125345) | George Abbot School, Guildford, Surrey (academy, URN 136906) | verified |
-| B03 | South East | Sutton Valence School, Sutton Valence, Kent (118958) | The Maplesden Noakes School, Maidstone, Kent (academy, URN 137833) | verified |
+| B03 | South East | Abingdon School, Abingdon, Oxfordshire (123312) | Larkmead School, Abingdon, Oxfordshire (academy, URN 143890) | verified |
 | B04 | South West | Taunton School, Taunton, Somerset (123914) | The Castle School, Taunton, Somerset (academy, URN 136916) | verified |
 | B05 | West Midlands | Warwick School, Warwick, Warwickshire (125781) | Myton School, Warwick, Warwickshire (academy, URN 136907) | verified |
 | B06 | Yorkshire and the Humber | Ashville College, Harrogate, North Yorkshire (121758) | Rossett School, Harrogate, North Yorkshire (academy, URN 136896) | verified |
@@ -105,7 +118,7 @@ Notes per pair (things the team may want to weigh):
 
 - **B01** — Bedford Modern: co-educational day school (Harpur Trust). Mark Rutherford: 11–18; Ofsted 2025 report card expected/strong standards, post-16 'needs attention'; special measures 2006–07 (historic).
 - **B02** — Tormead is **girls-only including the sixth form**, so it sits with a female base; it absorbed a prep school in 2025 (not adverse). George Abbot: 11–18, Good 2019.
-- **B03** — Sutton Valence School is in a village 5 miles from Maidstone (same county, not same town); register ethos Christian. Maplesden Noakes is non-selective within Kent's selective system; 11–18, Good 2024.
+- **B03** — Abingdon School: day and boarding, boys-only during 2016–2023 (co-educational from September 2026), no registered religious character; HMC; well known regionally but not in the Eton/Harrow tier. Larkmead School: 11–18 comprehensive in the same town, Good 2015 (ungraded inspections 2019 and 2024 confirmed). Replaces the Kent pair after review; see 'Changes after the first review'.
 - **B04** — Taunton School: co-educational day and boarding, register character Christian. The Castle School: 11–19, Outstanding 2023. It replaced Heathfield Community School, which closed in 2023 after an Inadequate grade.
 - **B05** — Warwick School is **boys-only including the sixth form**, so it sits with a male base; register character Christian. Myton: 11–18, Good 2018 (maintained 2023); not one of Warwickshire's grammar schools.
 - **B06** — Ashville College: co-educational day school, boarding ended 2025, Methodist foundation. Rossett: 11–18, Good 2025 after Requires Improvement in 2019 and 2022 (local news only). The two share Green Lane.
@@ -121,6 +134,7 @@ Notes per pair (things the team may want to weigh):
 
 Verified but not used:
 
+- Sutton Valence School, Sutton Valence, Kent / The Maplesden Noakes School, Maidstone, Kent (South East): both fully verified; replaced for B03 because Kent runs the 11-plus, so a non-selective school there functions as a secondary modern, a stronger low-class signal than a comprehensive elsewhere (reviewer's option b).
 - Churcher's College, Petersfield, Hampshire / The Petersfield School, Petersfield, Hampshire (South East): both fully verified; dropped because The Petersfield School is 11-16 (no sixth form), which contradicts a 2016-2023 school line with A-levels.
 - Ipswich School, Ipswich, Suffolk / Chantry Academy, Ipswich, Suffolk (East of England): both fully verified; dropped because Chantry Academy is 11-16.
 - Exeter School, Exeter, Devon / West Exe School, Exeter, Devon (South West): both fully verified; West Exe dropped because it is 11-16 (replaced by Ivybridge Community College).
@@ -165,26 +179,26 @@ and the phone number `07700 900412` is the same in every version.
   'Social Mobility Foundation Aspiring Professionals Programme', 'Realising Opportunities', '16 to 19 Bursary Fund'.
 - **Parents' jobs** (explicit form): nine NS-SEC class 1 occupations and twelve class 6–7 occupations, each used at most twice,
   classified with the ONS SOC 2020 to NS-SEC derivation table (`class_ranking.csv` gives the SOC unit group and class).
-- **Monitoring form**: the two questions use the Social Mobility Commission's recommended employer wording
+- **Monitoring form**: a monitoring-only disclaimer, then the Social Mobility Commission's three recommended employer questions
   (occupation of the main household earner at 14; type of school attended most between 11 and 16, answered
-  'Independent or fee-paying school' or 'State-run or state-funded school').
+  'Independent or fee-paying school' or 'State-run or state-funded school – non-selective'; free-school-meal eligibility, No or Yes).
 
 ## (d) Questions and things I was unsure about
 
 1. The generator was built from scratch (see 'Read this first'). Are the column names and the CV layout what the rest of the team expects? `cv_template.txt` and `form_template.txt` are the only two files that fix the layout.
 2. The implicit arm varies the **name** as well as school, award and interests, as the brief's version table says. The scoring pipeline's config previously allowed only Education and Interests to differ in that arm; it now also allows the header. Confirm this is intended, or hold the name constant in v1/v2 if the team wants the implicit arm to be school/award/interests only.
 3. Versions 3–6 show the school line as 'Secondary school, 2016–2023'. Is that the wording you want, or should the line be dropped and the dates attached to the A-level line instead?
-4. The explicit form gives the parent's occupation as a **job title** (the brief's design) where the real SMC question offers occupational categories. It also omits the free-school-meals question the SMC recommends. Add it? (It would strengthen the signal but is not in the brief.)
-5. The SMC's school-type option reads 'State-run or state-funded school' with no 'non-selective'. I used the official wording; say if you want 'non-selective' added.
+4. The explicit form gives the parent's occupation as a **job title** (the brief's design) where the real SMC question offers occupational categories.
+5. The v4 school-type answer carries the suffix '– non-selective' at the reviewer's request; the SMC's own option list has no such suffix (it separates independent, state-funded and, in the Civil Service version, selective state schools).
 6. Three occupations the brief lists as NS-SEC class 1 were dropped because the ONS table disagrees for an employee: pharmacist is class 2; a company director is class 1 only in a firm of 25+ staff, otherwise class 4 or 2; a senior civil servant is class 1 only as a manager in a large organisation. 'Care assistant' is written as 'Care assistant (care home)' because a hospital care assistant codes to class 3.
 7. Sheffield no longer offers Mathematics and Statistics, so B03 is at York (York is the only university used twice). Exeter has no plain 'BSc Management', so B11 is 'BSc (Hons) Business and Management'. Bristol's module names are only partially verified (its programme catalogue was unreachable).
 8. The Liverpool module 'Maths, Statistics and Data Analysis for Business and Economics' contains a comma, so the Modules line of B14 reads as five items. Replace with another module if that bothers you.
-9. Tormead (girls) and Warwick School (boys) are single-sex; they sit with female and male bases respectively. Eight independents are registered with a Christian, Anglican or Church of England character that is not in their name (Sutton Valence, Taunton, Warwick, Eastbourne College, Barnard Castle, Pocklington, Solihull, Norwich). The brief's faith rule was applied to names only, and the four with no registered character are Bedford Modern, Yarm, Exeter and Cheadle Hulme (Tormead is inter-denominational, Ashville has a Methodist foundation but no registered character).
-10. Three replacement state schools (Seaford Head, Ivybridge Community College, Holmes Chapel Comprehensive) are in the same county as their independent school but 10–35 miles away, and their news check was limited to Wikipedia because the session's web-search allowance ran out. A quick news search on each before scoring would close that gap.
+9. Tormead (girls), Warwick School (boys) and Abingdon School (boys until 2026) are single-sex; they sit with female, male and male bases respectively. Seven independents are registered with a Christian, Anglican or Church of England character that is not in their name (Taunton, Warwick, Eastbourne College, Barnard Castle, Pocklington, Solihull, Norwich). The brief's faith rule was applied to names only; the five with no registered character are Bedford Modern, Abingdon, Yarm, Exeter and Cheadle Hulme (Tormead is inter-denominational, Ashville has a Methodist foundation but no registered character).
+10. Four replacement state schools (Seaford Head, Ivybridge Community College, Holmes Chapel Comprehensive, Larkmead) and Abingdon School had their news check limited to Wikipedia because the session's web-search allowance ran out; the first three are in the same county as their independent school but 10–35 miles away. A quick news search on each before scoring would close that gap.
 11. County wording follows the register or the school's own address where the two agree and ceremonial county where they do not (Yarm: North Yorkshire; Bolton: Lancashire; Pocklington: East Yorkshire). Say if you prefer 'Greater Manchester' or 'East Riding of Yorkshire'.
 12. 'Barnard Castle' as a town name carries the 2020 Cummings association for some readers. It appears in both v1 and v2 of B11, so it is held constant, but a different North East pair could be swapped in.
 13. Employer names in the base CVs are invented. The brief's example 'Riverside Housing Group' was replaced with 'Castlegate Housing Association' because a large real housing association is called Riverside. No NHS trust is called Avonside and no building society is called Ridings (checked against the lists of NHS trusts and building societies); Companies House shows small firms with a few of the other names, which is harmless.
-14. The phone number 07700 900412 is in Ofcom's drama range; Ofcom's page itself could not be fetched (bot protection), so this rests on search snippets of that page. The e-mail domain example.com is reserved for documentation.
+14. E-mail addresses are now @gmail.com at the reviewer's request; they are generated from the names and were not checked against real accounts. The phone number 07700 900412 is in Ofcom's drama range; Ofcom's page itself could not be fetched (bot protection), so this rests on search snippets of that page.
 15. The class readings of names and interests in `class_ranking.csv` follow the brief's lists and are design assumptions with a one-line rationale each, not externally verified facts.
 16. The human-survey file `survey/sample_survey.csv` in the parent folder still uses the dummy ids `cv01_implicit`; real survey exports should use `B01_implicit` and so on.
 

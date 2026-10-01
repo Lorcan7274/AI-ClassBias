@@ -1,5 +1,5 @@
 Cressida Pelham-Vane
-cressida.pelham-vane@example.com | 07700 900412
+cressida.pelham-vane@gmail.com | 07700 900412
 
 Personal Profile
 Mathematics with statistics graduate with a summer in the analytics team of a freight company, modelling delivery times. Seeking a graduate analyst role in data or operations.
@@ -29,4 +29,4 @@ Skills
 R, Excel (pivot tables, Solver), Python (pandas), SQL, Stata, report writing
 
 Interests
-Sailing, tennis, cello (Grade 7)
+Sailing, tennis (club team), cello (Grade 7)

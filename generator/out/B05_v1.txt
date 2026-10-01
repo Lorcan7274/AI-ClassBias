@@ -1,5 +1,5 @@
 Henry Fairfax
-henry.fairfax@example.com | 07700 900412
+henry.fairfax@gmail.com | 07700 900412
 
 Personal Profile
 Geography graduate with GIS and survey-analysis skills, applied last summer in a borough council's planning department. Seeking a graduate analyst role in a data or operations team.
@@ -13,7 +13,7 @@ Warwick School, Warwick, Warwickshire, 2016–2023
 A-levels: Geography (A), Economics (A), Biology (B)
 GCSEs: 9 GCSEs at grades 9–6, including Mathematics and English
 
-Awards: School Prize for Geography and Senior Prefect
+Awards: Senior Prefect
 
 Work Experience
 Planning Data Intern, Trent Valley Borough Council (Jul–Sep 2025)
@@ -29,4 +29,4 @@ Skills
 Excel (pivot tables, charts), R, SPSS, PowerPoint, report writing, data cleaning
 
 Interests
-Sailing, debating, fencing
+Sailing (dinghy racing), debating, fencing

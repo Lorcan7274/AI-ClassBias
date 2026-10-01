@@ -38,7 +38,7 @@ def test_explicit_versions_share_one_cv_and_differ_only_on_the_form(generator_co
         assert versions["v3"]["cv"] == versions["v4"]["cv"]
         form_diff = [(a, b) for a, b in zip(versions["v3"]["form"].splitlines(),
                                             versions["v4"]["form"].splitlines()) if a != b]
-        assert len(form_diff) == 2  # the parent's occupation and the school type
+        assert len(form_diff) == 3  # occupation, school type and free school meals
 
 
 def test_pipeline_copy_of_the_explicit_arm_carries_the_form_as_its_own_section(generator_copy):

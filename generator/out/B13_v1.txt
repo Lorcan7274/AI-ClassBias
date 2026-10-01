@@ -1,5 +1,5 @@
 Benedict Ashcroft
-benedict.ashcroft@example.com | 07700 900412
+benedict.ashcroft@gmail.com | 07700 900412
 
 Personal Profile
 Computer science graduate with experience of building reporting tools for a vehicle leasing company. Seeking a graduate data analyst role.
@@ -13,7 +13,7 @@ Solihull School, Solihull, West Midlands, 2016–2023
 A-levels: Mathematics (A), Computer Science (B), Physics (B)
 GCSEs: 9 GCSEs at grades 9–6, including Mathematics and English
 
-Awards: School Prize for Mathematics and Senior Prefect
+Awards: Head of House
 
 Work Experience
 Data Analyst Intern, Vale Vehicle Leasing (Jul–Sep 2025)
@@ -29,4 +29,4 @@ Skills
 Python (pandas), SQL, Power BI, Excel (pivot tables, Power Query), Tableau, data cleaning
 
 Interests
-Rowing, fencing, choral singing
+Rowing (school squad), fencing, choral singing

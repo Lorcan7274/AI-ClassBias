@@ -38,8 +38,8 @@ pipeline in the parent folder (`python -m pipeline`) reads the CVs this folder w
 |---|---|---|---|---|---|
 | v1 implicit high | school_high | name_high | interests_high | award_high | none |
 | v2 implicit low | school_low | name_low | interests_low | award_low | none |
-| v3 explicit high | not named | name_neutral | interests_neutral | award_neutral | separate form: parent_job_high, independent school |
-| v4 explicit low | not named | name_neutral | interests_neutral | award_neutral | separate form: parent_job_low, state school |
+| v3 explicit high | not named | name_neutral | interests_neutral | award_neutral | separate form: parent_job_high, independent school, no free school meals |
+| v4 explicit low | not named | name_neutral | interests_neutral | award_neutral | separate form: parent_job_low, non-selective state school, free school meals |
 | v5 benchmark a | not named | name_bench_a | interests_neutral | award_neutral | none |
 | v6 benchmark b | not named | name_bench_b | interests_neutral | award_neutral | none |
 
@@ -48,12 +48,13 @@ never contradict a real school the model recognises. All four omit it equally, s
 
 For the explicit arm the monitoring section is a **separate file** (`..._form.txt`), mirroring a real
 application form. Versions 3 and 4 share a byte-identical CV; only their form files differ, in the
-parent's occupation and the school type. The two questions use the Social Mobility Commission's
-recommended wording for employers.
+parent's occupation, the school type and free-school-meal eligibility. The three questions use the Social
+Mobility Commission's recommended wording for employers, under a standard line saying the information is
+for monitoring only and not seen by the selection panel.
 
-The e-mail address is `first.surname@example.com` (a domain reserved for examples) and the phone
-number is in Ofcom's drama range, so no version can point at a real person. Both are derived the
-same way for every version, so only the name itself differs between them.
+The e-mail address is `first.surname@gmail.com`, derived from the name the same way for every version,
+so only the name itself differs between versions. The phone number is in Ofcom's drama range and is the
+same everywhere.
 
 ## Outputs of `render.py`
 - `out/<base_id>_v1.txt` … `_v6.txt` — the 6 CV versions (90 files for 15 bases).
@@ -69,7 +70,7 @@ same way for every version, so only the name itself differs between them.
 ## Diff check
 `render.py` ends with a line-by-line comparison of each pair:
 - v1 vs v2 may differ only in the name line, the e-mail line, the school line, the awards line and the interests line, and must differ in all five;
-- v3 and v4 must be byte-identical, and their forms may differ only in the two answers;
+- v3 and v4 must be byte-identical, and their forms may differ only in the three answers;
 - v5 vs v6, and v3 vs v5, may differ only in the name and e-mail lines.
 It also fails if any output still contains a square bracket (a `[placeholder]` left in a sheet), and
 prints the length difference of each v1/v2 pair (the scoring pipeline warns above 3%).
