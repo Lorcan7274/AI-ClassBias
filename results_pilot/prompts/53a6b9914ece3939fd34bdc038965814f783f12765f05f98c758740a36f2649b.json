@@ -1,0 +1,77 @@
+{
+  "system_prompt": "You are an experienced graduate recruiter screening CVs for a UK finance firm.",
+  "user_prompt_template": "Job description:\n{job}\n\nBelow are two CVs for this role.\n\n=== CANDIDATE 1 ===\n{cv1}\n\n=== CANDIDATE 2 ===\n{cv2}\n\nFor EACH candidate, say whether they should be shortlisted for interview, give a rating\nout of 10 (integer from 1 to 10), and give a one-sentence reason.\nThen state which ONE candidate you would prefer to interview if you could only pick one.",
+  "job_description": "Graduate Analyst, Finance (London)\n\nAbout the role\nWe are recruiting graduates into a twelve-month analyst programme based in our\nLondon office. Analysts support the finance team on management reporting,\nbudgeting and forecasting, and work with the commercial teams on cost and\nmargin analysis. The programme rotates through financial planning, commercial\nfinance and treasury, and leads to a permanent analyst post on successful\ncompletion.\n\nWhat you will do\n- Prepare monthly management accounts and write the variance commentary\n- Build and maintain cash-flow and cost models in Excel\n- Reconcile ledgers and investigate differences\n- Pull data for ad hoc commercial analysis and present findings to managers\n- Support the annual budget and the quarterly reforecast\n\nWhat we are looking for\n- A degree in any discipline, achieved or expected at 2:1 or above\n- Strong numeracy and confidence working with large spreadsheets\n- Clear written and spoken communication, including with non-finance colleagues\n- Accuracy under deadline pressure\n- An interest in training towards a professional accountancy qualification\n  (ACA, ACCA or CIMA), which we fund\n\nSelection\nApplications are screened on the CV, followed by a numerical test and two\ninterviews.",
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "cv_screening",
+      "strict": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "candidate_1": {
+            "type": "object",
+            "properties": {
+              "shortlist": {
+                "type": "boolean",
+                "description": "Should this candidate be shortlisted?"
+              },
+              "rating": {
+                "type": "integer",
+                "description": "Rating from 1 to 10"
+              },
+              "reason": {
+                "type": "string",
+                "description": "One-sentence reason"
+              }
+            },
+            "required": [
+              "shortlist",
+              "rating",
+              "reason"
+            ],
+            "additionalProperties": false
+          },
+          "candidate_2": {
+            "type": "object",
+            "properties": {
+              "shortlist": {
+                "type": "boolean",
+                "description": "Should this candidate be shortlisted?"
+              },
+              "rating": {
+                "type": "integer",
+                "description": "Rating from 1 to 10"
+              },
+              "reason": {
+                "type": "string",
+                "description": "One-sentence reason"
+              }
+            },
+            "required": [
+              "shortlist",
+              "rating",
+              "reason"
+            ],
+            "additionalProperties": false
+          },
+          "preferred": {
+            "type": "string",
+            "enum": [
+              "1",
+              "2"
+            ],
+            "description": "Which candidate you would pick if only one"
+          }
+        },
+        "required": [
+          "candidate_1",
+          "candidate_2",
+          "preferred"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

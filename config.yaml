@@ -16,13 +16,20 @@
 #   https://openrouter.ai/models?order=newest&supported_parameters=structured_outputs
 # `type` is either frontier or open_source; it is saved in each row for grouping.
 models:
-  - id: PUT_FRONTIER_MODEL_1_HERE
+  # Each lab's current general-purpose top tier, one per lab, so a result is not
+  # one vendor's quirk. All four support structured outputs (checked against
+  # OpenRouter's model list, not from memory).
+  - id: anthropic/claude-opus-5.5
     type: frontier
-  - id: PUT_FRONTIER_MODEL_2_HERE
+  - id: openai/gpt-6.1-sol-pro
     type: frontier
-  - id: PUT_OPEN_SOURCE_MODEL_1_HERE
+  # Open-weight models. Confirm the weight-release status of the exact
+  # checkpoints before publishing the frontier/open_source split as a claim:
+  # Llama 4 Maverick is an open-weight release, the DeepSeek V4 Pro checkpoint
+  # is not something this config can verify.
+  - id: meta-llama/llama-4-maverick
     type: open_source
-  - id: PUT_OPEN_SOURCE_MODEL_2_HERE
+  - id: deepseek/deepseek-v4-pro-0813
     type: open_source
 
 # Each arm and its two variants. The names must match the CV file names,
@@ -38,8 +45,9 @@ arms:
 reps: 5
 
 # Sampling temperature sent to every model. null = not sent, so each model uses
-# its own default. OpenRouter accepts 0 to 2. Not every model accepts a
-# temperature, so check each model's supported parameters before setting one.
+# its own default. Keep this null with the models above: claude-opus-5.5 and
+# gpt-6.1-sol-pro do not accept a temperature at all and reject the request if
+# one is sent, so the only setting that works across all four is "don't send it".
 temperature: null
 
 # Calls are made in a shuffled order so that drift over the course of a run
@@ -50,9 +58,34 @@ shuffle_seed: 20260926
 
 prompts:
   job_description: |-
-    Graduate Analyst, Finance (London).
-    We are looking for recent graduates to join our analyst programme.
-    PLACEHOLDER: replace with the real job description you'll use for every call.
+    Graduate Analyst, Finance (London)
+
+    About the role
+    We are recruiting graduates into a twelve-month analyst programme based in our
+    London office. Analysts support the finance team on management reporting,
+    budgeting and forecasting, and work with the commercial teams on cost and
+    margin analysis. The programme rotates through financial planning, commercial
+    finance and treasury, and leads to a permanent analyst post on successful
+    completion.
+
+    What you will do
+    - Prepare monthly management accounts and write the variance commentary
+    - Build and maintain cash-flow and cost models in Excel
+    - Reconcile ledgers and investigate differences
+    - Pull data for ad hoc commercial analysis and present findings to managers
+    - Support the annual budget and the quarterly reforecast
+
+    What we are looking for
+    - A degree in any discipline, achieved or expected at 2:1 or above
+    - Strong numeracy and confidence working with large spreadsheets
+    - Clear written and spoken communication, including with non-finance colleagues
+    - Accuracy under deadline pressure
+    - An interest in training towards a professional accountancy qualification
+      (ACA, ACCA or CIMA), which we fund
+
+    Selection
+    Applications are screened on the CV, followed by a numerical test and two
+    interviews.
 
   system_prompt: |-
     You are an experienced graduate recruiter screening CVs for a UK finance firm.
