@@ -1,0 +1,55 @@
+{
+  "system_prompt": "You are an experienced graduate recruiter screening CVs for a UK finance firm.",
+  "user_prompt_template": "Job description:\n{job}\n\nBelow are the CVs of the applicants in this screening round.\n\n{applicants}\n\nAssess {target} only. The other applicants are the rest of this round, shown so you\ncan judge {target} against it. Say whether {target} should be shortlisted for\ninterview (yes or no), give your likelihood of shortlisting them as a whole number\nfrom 0 to 100, and give a one-sentence reason.",
+  "job_description": "Graduate Analyst, Finance (London)\n\nAbout the role\nWe are recruiting graduates into a twelve-month analyst programme based in our\nLondon office. Analysts support the finance team on management reporting,\nbudgeting and forecasting, and work with the commercial teams on cost and\nmargin analysis. The programme rotates through financial planning, commercial\nfinance and treasury, and leads to a permanent analyst post on successful\ncompletion.\n\nWhat you will do\n- Prepare monthly management accounts and write the variance commentary\n- Build and maintain cash-flow and cost models in Excel\n- Reconcile ledgers and investigate differences\n- Pull data for ad hoc commercial analysis and present findings to managers\n- Support the annual budget and the quarterly reforecast\n\nWhat we are looking for\n- A degree in any discipline, achieved or expected at 2:1 or above\n- Strong numeracy and confidence working with large spreadsheets\n- Clear written and spoken communication, including with non-finance colleagues\n- Accuracy under deadline pressure\n- An interest in training towards a professional accountancy qualification\n  (ACA, ACCA or CIMA), which we fund\n\nSelection\nApplications are screened on the CV, followed by a numerical test and two\ninterviews. At this stage you expect to shortlist roughly 3 in 10 applicants.",
+  "fillers": [
+    {
+      "name": "F1.txt",
+      "text": "Ryan Metcalfe\nryan.metcalfe@gmail.com | 07700 900101\n\nPersonal Profile\nBusiness Studies graduate looking for a first full-time role. Hard-working and reliable, with experience of working in a busy customer-facing team.\n\nEducation\nSheffield Hallam University, 2023–2026\nBA (Hons) Business Studies, 2:2\nModules: Introduction to Marketing, Business Environment, People and Organisations, Managing Finance\n\nSecondary school, 2016–2023\nA-levels: Business Studies (C), Geography (C), Media Studies (B)\nGCSEs: 7 GCSEs at grades 6–4, including Mathematics and English\n\nWork Experience\nSales Assistant (part-time), Fieldway Sports, Sheffield (Sep 2023–present)\n- Served customers, handled returns and restocked the shop floor\n- Helped with the weekly stock count\n\nSkills\nMicrosoft Word and PowerPoint, basic Excel, customer service\n\nInterests\nRunning, films, cooking\n"
+    },
+    {
+      "name": "F2.txt",
+      "text": "Bethany Bradshaw\nbethany.bradshaw@gmail.com | 07700 900102\n\nPersonal Profile\nGeography graduate with an interest in data and a summer of office experience. Looking to build a career in a numerate role and willing to train.\n\nEducation\nUniversity of Portsmouth, 2023–2026\nBSc (Hons) Geography, 2:1\nModules: Quantitative Methods, GIS, Environmental Economics, Urban Geography\n\nSecondary school, 2016–2023\nA-levels: Geography (B), Biology (B), English Literature (C)\nGCSEs: 8 GCSEs at grades 7–5, including Mathematics and English\n\nWork Experience\nOffice Assistant (summer), Portsmouth City Council, Planning Department (Jul–Aug 2025)\n- Logged planning applications on the department's database and answered phone enquiries\n- Kept a spreadsheet of application processing times for the team\n\nWaitress (part-time), a local restaurant (2023–2025)\n\nSkills\nExcel (basic formulas, charts), ArcGIS, Word, PowerPoint\n\nInterests\nSwimming, baking, podcasts\n"
+    },
+    {
+      "name": "F3.txt",
+      "text": "Tom Ashworth\ntom.ashworth@gmail.com | 07700 900103\n\nPersonal Profile\nAccounting and Finance graduate with placement experience in practice, now looking for a graduate analyst role and planning to start the ACCA. Methodical, good with numbers and comfortable with month-end routines.\n\nEducation\nUniversity of Hull, 2023–2026\nBSc (Hons) Accounting and Finance, 2:1\nModules: Financial Accounting, Management Accounting, Corporate Finance, Taxation, Audit and Assurance\n\nSecondary school, 2016–2023\nA-levels: Mathematics (B), Business Studies (B), Economics (B)\nGCSEs: 9 GCSEs at grades 8–5, including Mathematics and English\n\nWork Experience\nPlacement Trainee, Harrison Dyer Accountants, Hull (Jun–Jul 2025, six weeks)\n- Bookkeeping for small-business clients in Sage and Xero: posting invoices, bank reconciliations\n- Prepared draft VAT returns for a manager to review\n- Helped prepare year-end accounts for two sole traders\n\nStudent Ambassador, University of Hull (2024–2026)\n\nSkills\nExcel (pivot tables, lookups), Sage, Xero, basic SQL\n\nInterests\nClimbing, cooking, crime fiction\n"
+    },
+    {
+      "name": "F4.txt",
+      "text": "Zoe Sandford\nzoe.sandford@gmail.com | 07700 900104\n\nPersonal Profile\nFirst-class Economics graduate with a ten-week finance internship at a listed company and a society treasurer role, looking to start a graduate analyst programme and train towards the ACA.\n\nEducation\nUniversity of Sheffield, 2023–2026\nBSc (Hons) Economics, First Class\nModules: Econometrics, Corporate Finance, Financial Economics, Game Theory\n\nSecondary school, 2016–2023\nA-levels: Mathematics (A*), Economics (A), Chemistry (A)\nGCSEs: 10 GCSEs at grades 9–7, including Mathematics and English\n\nAwards: Departmental prize for best final-year dissertation\n\nWork Experience\nSummer Finance Analyst, Meridian Foods plc, Group Finance (Jun–Sep 2025, ten weeks)\n- Built the quarterly reforecast model for two business units in Excel, reviewed by the FP&A manager\n- Wrote the monthly variance commentary for the group reporting pack\n- Automated a weekly cash report in Python, saving the team around two hours a week\n\nTreasurer, University Economics Society (2024–2025): managed a £6,000 budget and the annual accounts\n\nSkills\nExcel (advanced: Power Query, macros), Python (pandas), SQL, PowerPoint, financial modelling\n\nInterests\nRunning, chess, cooking\n"
+    }
+  ],
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "cv_screening",
+      "strict": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "shortlist": {
+            "type": "boolean",
+            "description": "Should this applicant be shortlisted for interview?"
+          },
+          "likelihood": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Likelihood of shortlisting, a whole number from 0 to 100"
+          },
+          "reason": {
+            "type": "string",
+            "description": "One-sentence reason"
+          }
+        },
+        "required": [
+          "shortlist",
+          "likelihood",
+          "reason"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}
