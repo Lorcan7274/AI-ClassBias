@@ -633,6 +633,39 @@ against 1 of 10 lower-class, after 4 of 5 against 0 of 5 in the third pilot. The
 `monitoring.csv` table records it per model and base; it is for the full run to
 test.
 
+## The targets are not a band: the fifteen bases alone
+
+Before retuning the level fillers, every base's neutral version was scored on its
+own, one call each, on the same single-CV prompt as the filler calibration (this
+model is near-deterministic alone, so one call is enough to place a base):
+
+| base | B05 | B07 | B13 | B04 | B08 | B10 | B11 | B12 | B15 | B03 | B14 | B02 | B06 | B01 | B09 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| alone | 35 | 35 | 38 | 40 | 40 | 40 | 42 | 58 | 62 | 65 | 65 | 78 | 80 | 82 | 82 |
+
+Median 58, range 35–82. **The "72–86 band" the calibration was aimed at was an
+artefact of piloting on B01 and B02 only — the two strongest bases in the set.**
+Seven of the fifteen score 42 or below alone. The bases were matched on
+qualification level (a 2:1, A-levels in the same range, a summer-2025 internship)
+and checked for carrying no class signal, which they do not; they were not matched
+on relevance to a *finance* role, and the job description is finance-specific, so
+degree subject and the kind of internship separate them widely in the model's eyes.
+That is a property of the set and the role together, not a flaw in either, and
+it was invisible until a base other than B01 or B02 was scored.
+
+It does not bias the class estimate — every effect is within a base, higher-class
+version against lower-class — but it shapes power. A base far below the
+shortlist line is out under both versions, and one far above is in under both;
+either contributes a tie to the sign test. Only bases near the line can flip, so
+the level fillers should sit at the bases' median, not at the top of the strongest
+two: F06 at about 60 rather than 85, F02 at about 48 rather than 75, which puts
+roughly half the bases above the line, half below, and the four at 58–65 on it.
+Rank and likelihood are graded for every base whatever side of the line it sits
+on, so those two measures keep their power across all fifteen. The next pilot
+should include a strong, a median and a weak base rather than B01 and B02 again.
+Not yet done: the two fillers are the user's calibration target, and the target
+has changed.
+
 ## Change outside this folder
 
 `config.yaml` → `cv_checks.allowed_sections.implicit` gained `header`.
