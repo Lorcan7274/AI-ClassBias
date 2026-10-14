@@ -349,6 +349,66 @@ model noticed. Each base now has its own number in the fictional 07700 900xxx
 range, shared across its six versions. Under single-CV calls it no longer
 matters, but a shared dummy number in a released stimulus set looks careless.
 
+## Second pilot, 60 calls: the plumbing passed, the measure did not
+
+One model (`claude-opus-5.5`, not sent a temperature because it rejects one), B01
+and B02, all six versions, 5 samples each. 60 of 60 calls succeeded, no retries,
+$0.52; every raw response valid JSON and schema-conformant; no key material in
+the saved output.
+
+The three things this pilot was run to check:
+
+| wanted | got |
+|---|---|
+| shortlist rates that are not all 100% | **100% on all 12 CVs, all 60 calls** |
+| scores that spread | **five distinct values across 60 calls: 78, 80, 82, 85, 86**; within a CV, sd 0.5; 6 of 12 CVs gave five identical likelihoods |
+| explicit-arm reasons that use the monitoring data, or decline it without citing an instruction | **passed** — 0 of 20 cite any instruction, and 0 of 20 mention the monitoring answers at all; the model ignores the block silently |
+
+So the explicit arm is now a clean manipulation (removing the two lines did its
+job), and whatever the model does with the monitoring data is a finding about the
+model. But the two outcome measures have no variance to carry an effect, and the
+per-base effects are accordingly all within ±3 points, with no shortlist
+difference anywhere.
+
+### Why
+
+**The shortlist budget cannot bite on a single strong CV.** "You expect to
+shortlist roughly 3 in 10" needs a reference set to constrain anything. Shown one
+applicant with a 2:1, relevant internship and good data skills, the model
+reasonably puts them in the top 3 in 10 — it says so: "a clear fit for the top 3
+in 10", "well within the top third of applicants" — and says yes. Every base CV
+in the set was built to be exactly that strong, and identically so across the
+pair, because the design needs the class marker to be the only difference. A
+ceiling follows.
+
+**The frontier model's default sampling is near-deterministic.** It cannot be
+sent a temperature, so the share of "yes" across 5 samples — the estimator of its
+shortlist probability — collapses to 0 or 1, and the likelihoods move by at most
+a few points between samples. Five samples buy almost nothing here. The two
+open-weight models are sent 1.0 and will vary; the two frontier models, the ones
+the study is mostly about, will not.
+
+### Not decided here
+
+Three ways forward, none chosen; they change the design and are the study's call.
+
+1. **A fixed comparison set, with the target never paired.** Show every call the
+   same four filler CVs of varied strength, always in the same positions, with
+   the target CV last, and ask only about the target. The 3-in-10 budget then has
+   a reference class; position is constant across all 90 targets and so cancels;
+   the twin is never in the prompt. It uses the within-prompt comparison the
+   first pilot showed models make readily, but only against constants. Needs a
+   pilot of its own.
+2. **Make the likelihood scale do the work**, and re-anchor it so it is not an
+   8-point band near 80 — for instance by defining what 50 means. Cheap, but
+   prompt-tuning, and the within-CV variance problem for the frontier models
+   stays.
+3. **Swap the frontier models for ones that accept a temperature**, so the
+   sampling estimator works for all four. Depends on what is available; see the
+   check below.
+
+Whichever is chosen, the next pilot should be judged on the same three criteria.
+
 ## Change outside this folder
 
 `config.yaml` → `cv_checks.allowed_sections.implicit` gained `header`.
