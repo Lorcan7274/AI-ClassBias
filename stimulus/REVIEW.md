@@ -187,29 +187,50 @@ class connotation and are not validated against a name-SES dataset. Every one of
 those rows carries that caveat in its `justification`, so a reader cannot mistake
 them for the sourced school and NS-SEC rows.
 
-## Open: B09's high-side award is the confound B13's change removed
+## The rule for award coding
 
-B13's award was changed to `Senior Prefect` because the high-side award should be
-status-coded, not ability-coded: a subject prize reads as attainment beyond the
-identical A-levels, which is a productivity confound rather than a class signal.
+> **High-side awards are merit-based (scholarships, school offices); subject-specific
+> prizes are excluded because they signal a competence beyond the identical
+> qualifications. Low-side awards are need-based or widening-participation.**
 
-**B09's high-side award is `School Prize for Mathematics`** — exactly that
-pattern. Fix 2.5 set it from the first item of B09's old line
-(`School Prize for Mathematics and Head of House`); the second item,
-`Head of House`, is the status-coded one, and is also the value the review
-mistakenly prescribed for B13. Reading the two together, the review's B09 and
-B13 values look transposed, and taking `Head of House` for B09 would make every
-high-side award status-coded:
+The principle is deliberately narrower than "no ability signal on the high side",
+which would be the wrong rule: the academic scholarships on B01, B02, B06, B08,
+B11 and B12 are ability-coded, and so are the Sutton Trust and Social Mobility
+Foundation programmes on the low side, which also select on attainment. The
+scholarship-versus-bursary contrast is the canonical one — Rivera and Tilcsik's
+award versus award-for-financial-aid — so it stays.
 
-| | Now | Status-coded alternative |
+What the rule excludes is only the subject-specific prize: "School Prize for
+Mathematics" claims a particular competence beyond the A-levels that are
+identical across the pair, which is a productivity confound rather than a class
+signal. Two awards were changed under it:
+
+| | Was | Now |
 |---|---|---|
-| B09 high | School Prize for Mathematics | `Head of House` |
-| B13 high | Senior Prefect ✓ | — |
+| B09 high | School Prize for Mathematics | **Head of House** |
+| B13 high | School Prize for Mathematics and Senior Prefect | **Senior Prefect** |
 
-Not changed, because the instruction covered B13 only. It is one cell in
-`markers.csv` plus a re-render. `class_ranking.csv` flags the row in the
-meantime: its justification reads "signals attainment, not status — an ability
-confound on the high side".
+No base now carries a subject-specific prize on the high side. The high-side set
+is three academic scholarships and two school offices; the low-side set is two
+need-based bursaries and three widening-participation programmes.
+`make_class_ranking.py` keeps the excluded value in its `AWARDS` dict, marked
+`EXCLUDED`, so the rule stays legible to the next reader.
+
+### One consequence, not yet resolved
+
+B09's low-side award is the longest in the set (`Social Mobility Foundation
+Aspiring Professionals Programme`, 59 characters) and `Head of House` is the
+shortest high-side one (13), so the pair now differs in length by **3.3%
+(1318 vs 1363 characters) against the 3% limit** — `validate-cvs` warns, which
+does not block a run. The same thing happened to B13 and was resolved there by a
+longer award. Three ways out, none chosen:
+
+- accept 3.3%, on the grounds that the coding rule matters more than the margin;
+- give B09 a longer status-coded award — `Sixth Form Academic Scholarship`
+  (31 characters) brings the pair to 2.0% and stays inside the rule, since
+  scholarships are permitted;
+- shorten B09's low-side award, which would break the five-programme cycle used
+  across the other bases.
 
 ## Change outside this folder
 

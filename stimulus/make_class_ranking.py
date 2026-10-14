@@ -85,10 +85,11 @@ AWARDS = {
         "merit scholarship at a fee-paying school, signals selective private entry",
     "Sixth Form Academic Scholarship":
         "merit scholarship at a fee-paying school, signals selective private entry",
-    # Flagged: unlike the other four, this one signals attainment rather than status.
-    # See REVIEW.md -- it is B09's high-side award and is an ability confound there.
+    # Retained to document the exclusion rule, not used by any base: a subject-specific
+    # prize claims a competence beyond the identical qualifications. See REVIEW.md.
     "School Prize for Mathematics":
-        "subject prize; signals attainment, not status -- an ability confound on the high side",
+        "EXCLUDED: subject-specific prize, claims a competence beyond the identical "
+        "qualifications",
     # Need-based or widening-participation awards, which mark low family income.
     "16 to 19 Bursary Fund recipient":
         "need-based state bursary, eligibility requires low household income",
