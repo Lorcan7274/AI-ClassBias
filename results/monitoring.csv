@@ -1,0 +1,6 @@
+model,n_calls_x,n_calls_y,mentions_x_pct,mentions_y_pct,cv_level_mean_diff,ci_low,ci_high,t_p,wilcoxon_p,cvs_more_for_x,cvs_more_for_y,cvs_tied,sign_p,n_cvs
+all models,300,300,13.0,4.0,0.09000000000000002,0.05056302161292631,0.12943697838707374,0.00023664216566275458,0.002064350261092704,12,0,3,0.00048828125,15
+anthropic/claude-opus-5.5,75,75,48.0,12.0,0.3600000000000001,0.20225208645170523,0.517747913548295,0.00023664216566275458,0.002014748600923641,12,0,3,0.00048828125,15
+google/gemini-4-argon,75,75,0.0,0.0,0.0,,,,,0,0,15,,15
+meta-llama/llama-4-maverick,75,75,4.0,4.0,0.0,,,,,0,0,15,,15
+openai/gpt-6.1-sol-pro,75,75,0.0,0.0,0.0,,,,,0,0,15,,15

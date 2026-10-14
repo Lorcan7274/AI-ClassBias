@@ -790,6 +790,43 @@ at $6.70 alone — so the working figure is about $14 for one session of all fou
 models. Spend to date is $4.80 of the $50 key limit; $45.20 remains. The pilot's
 rows, raw responses, prompt and analysis tables are under `results_pilot5/`.
 
+## Session 1 of the confirmatory run, 14 October 2026
+
+Preregistered first (`PREREGISTRATION.md`, commit `bcaf7c1`), then run: 1,800 calls,
+all four models, every one of the 90 CVs five times, in the shuffled order that
+`shuffle_seed` and the label `session1` fix. 21:58 to 23:05 UTC, with a stop in the
+middle: after 467 calls OpenRouter refused Opus calls with HTTP 402. The key's $50
+limit had $41 left; the account's credits were $10 bought and $8.96 used, and it is
+the balance, not the key's limit, that pays. After a top-up the run resumed from
+call 468 in the same order, re-made the three refused calls, and finished with
+1,800 of 1,800 successful rows and no other failure. `preflight` now reads the
+balance as well (commit `8f8d4cf`).
+
+| model | ok | cached calls | prefix read | provider | cost |
+|---|---|---|---|---|---|
+| anthropic/claude-opus-5.5 | 450 | 445 | 4,670 tokens | Claude Platform on AWS (447), Anthropic (3) | $6.05 |
+| openai/gpt-6.1-sol-pro | 450 | 450 | 5,833–5,837 | OpenAI | $6.29 |
+| google/gemini-4-argon | 450 | 265 | ~1,520 (implicit, partial) | Google (449), Google AI Studio (1) | $2.90 |
+| meta-llama/llama-4-maverick | 450 | 320 | 2,800–3,300 (partial) | Novita (449), DigitalOcean (1) | $0.43 |
+
+$15.66 in all. The five uncached Opus calls are the cold-cache writes at the two
+starts plus one call routed to Anthropic directly; GPT wrote the prefix 59 times
+(its cache expires between bursts) and read it on every call. Every row carries
+prompt_hash `b444c984…` and session `session1`; temperature 1.0 was sent to Gemini
+and Llama only.
+
+**Behaviour of the instrument, which is not a finding.** Opus, GPT and Gemini
+shortlisted 45%, 41% and 33% of targets overall, at ranks 2–5, against the stated
+three in ten; Llama shortlisted 83% with likelihoods near 88, so it sits at the
+ceiling and most of its bases tie. Five identical decisions on 89% (Opus), 94%
+(GPT), 99% (Gemini) and 74% (Llama) of CVs, so the sign test is the test of record
+as preregistered, and most bases are ties on shortlist.
+
+**The tables.** `results/report.md` and the CSVs beside it hold the preregistered
+tables for this session; the preregistration says session 1 is looked at, not acted
+on, until session 2 (no earlier than 22 October 2026) is pooled with it. Nothing in
+the design changes between the sessions.
+
 ## Change outside this folder
 
 `config.yaml` → `cv_checks.allowed_sections.implicit` gained `header`.

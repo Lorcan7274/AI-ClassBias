@@ -1,0 +1,148 @@
+{
+ "request": {
+  "model": "openai/gpt-6.1-sol-pro",
+  "messages": [
+   {
+    "role": "system",
+    "content": "You are an experienced graduate recruiter screening CVs for a UK finance firm."
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "Job description:\nGraduate Analyst, Finance (London)\n\nAbout the role\nWe are recruiting graduates into a twelve-month analyst programme based in our\nLondon office. Analysts support the finance team on management reporting,\nbudgeting and forecasting, and work with the commercial teams on cost and\nmargin analysis. The programme rotates through financial planning, commercial\nfinance and treasury, and leads to a permanent analyst post on successful\ncompletion.\n\nWhat you will do\n- Prepare monthly management accounts and write the variance commentary\n- Build and maintain cash-flow and cost models in Excel\n- Reconcile ledgers and investigate differences\n- Pull data for ad hoc commercial analysis and present findings to managers\n- Support the annual budget and the quarterly reforecast\n\nWhat we are looking for\n- A degree in any discipline, achieved or expected at 2:1 or above\n- Strong numeracy and confidence working with large spreadsheets\n- Clear written and spoken communication, including with non-finance colleagues\n- Accuracy under deadline pressure\n- An interest in training towards a professional accountancy qualification\n  (ACA, ACCA or CIMA), which we fund\n\nSelection\nApplications are screened on the CV, followed by a numerical test and two\ninterviews. Three in ten applicants are invited to interview at this stage.\n\nBelow are the CVs of the ten applicants in this screening round.\n\n=== APPLICANT 1 ===\nRyan Metcalfe\nryan.metcalfe@gmail.com | 07700 900101\n\nPersonal Profile\nBusiness Studies graduate looking for a first full-time role. Hard-working and reliable, with experience of working in a busy customer-facing team.\n\nEducation\nSheffield Hallam University, 2023–2026\nBA (Hons) Business Studies, 2:2\nModules: Introduction to Marketing, Business Environment, People and Organisations, Managing Finance\n\nSecondary school, 2016–2023\nA-levels: Business Studies (C), Geography (C), Media Studies (B)\nGCSEs: 7 GCSEs at grades 6–4, including Mathematics and English\n\nWork Experience\nSales Assistant (part-time), Fieldway Sports, Sheffield (Sep 2023–present)\n- Served customers, handled returns and restocked the shop floor\n- Helped with the weekly stock count\n\nSkills\nMicrosoft Word and PowerPoint, basic Excel, customer service\n\nInterests\nRunning, films, cooking\n\n=== APPLICANT 2 ===\nTom Ashworth\ntom.ashworth@gmail.com | 07700 900103\n\nPersonal Profile\nAccounting and Finance graduate with placement experience in practice, now looking for a graduate analyst role and planning to start the ACCA. Methodical, good with numbers and comfortable with month-end routines.\n\nEducation\nUniversity of Hull, 2023–2026\nBSc (Hons) Accounting and Finance, 2:1\nModules: Financial Accounting, Management Accounting, Corporate Finance, Taxation, Audit and Assurance\n\nSecondary school, 2016–2023\nA-levels: Mathematics (B), Business Studies (B), Economics (B)\nGCSEs: 9 GCSEs at grades 8–5, including Mathematics and English\n\nWork Experience\nPlacement Trainee, Harrison Dyer Accountants, Hull (Jun–Aug 2025, eight weeks)\n- Bookkeeping for small-business clients in Sage and Xero: posting invoices, bank reconciliations\n- Prepared draft VAT returns and a monthly management-accounts pack for a manager to review\n- Helped prepare year-end accounts for two sole traders\n\nStudent Ambassador, University of Hull (2024–2026)\n\nSkills\nExcel (pivot tables, lookups), Sage, Xero, basic SQL\n\nInterests\nClimbing, cooking, crime fiction\n\n=== APPLICANT 3 ===\nBethany Bradshaw\nbethany.bradshaw@gmail.com | 07700 900102\n\nPersonal Profile\nGeography graduate with an interest in data and a summer of office experience. Looking to build a career in a numerate role and willing to train.\n\nEducation\nUniversity of Portsmouth, 2023–2026\nBSc (Hons) Geography, 2:1\nModules: Quantitative Methods, GIS, Environmental Economics, Urban Geography\n\nSecondary school, 2016–2023\nA-levels: Geography (B), Biology (B), English Literature (C)\nGCSEs: 8 GCSEs at grades 7–5, including Mathematics and English\n\nWork Experience\nOffice Assistant (summer), Portsmouth City Council, Planning Department (Jul–Aug 2025)\n- Logged planning applications on the department's database and answered phone enquiries\n- Kept a spreadsheet of application processing times for the team\n\nWaitress (part-time), a local restaurant (2023–2025)\n\nSkills\nExcel (basic formulas, charts), ArcGIS, Word, PowerPoint\n\nInterests\nSwimming, baking, podcasts\n\n=== APPLICANT 4 ===\nZoe Sandford\nzoe.sandford@gmail.com | 07700 900104\n\nPersonal Profile\nFirst-class Economics graduate with a ten-week finance internship at a listed company and a society treasurer role, looking to start a graduate analyst programme and train towards the ACA.\n\nEducation\nUniversity of Sheffield, 2023–2026\nBSc (Hons) Economics, First Class\nModules: Econometrics, Corporate Finance, Financial Economics, Game Theory\n\nSecondary school, 2016–2023\nA-levels: Mathematics (A*), Economics (A), Chemistry (A)\nGCSEs: 10 GCSEs at grades 9–7, including Mathematics and English\n\nAwards: Departmental prize for best final-year dissertation\n\nWork Experience\nSummer Finance Analyst, Meridian Foods plc, Group Finance (Jun–Sep 2025, ten weeks)\n- Built the quarterly reforecast model for two business units in Excel, reviewed by the FP&A manager\n- Wrote the monthly variance commentary for the group reporting pack\n- Automated a weekly cash report in Python, saving the team around two hours a week\n\nTreasurer, University Economics Society (2024–2025): managed a £6,000 budget and the annual accounts\n\nSkills\nExcel (advanced: Power Query, macros), Python (pandas), SQL, PowerPoint, financial modelling\n\nInterests\nRunning, chess, cooking\n\n=== APPLICANT 5 ===\nLewis Pargeter\nlewis.pargeter@gmail.com | 07700 900105\n\nPersonal Profile\nSociology graduate with three years of part-time bar and events work. Good with people, used to busy shifts and keen to move into an office-based role.\n\nEducation\nUniversity of Wolverhampton, 2023–2026\nBA (Hons) Sociology, 2:2\nModules: Social Theory, Research Methods, Crime and Society, Media and Culture\n\nSecondary school, 2016–2023\nA-levels: Sociology (B), Psychology (C), English Language (C)\nGCSEs: 6 GCSEs at grades 6–4, including English; Mathematics grade 4\n\nWork Experience\nBar Staff and Events Assistant (part-time), Crownhill Events, Wolverhampton (2023–present)\n- Served at functions of up to 300 guests and helped set up and close down events\n- Cashed up the till at the end of shifts\n\nSkills\nWord, basic Excel, customer service, teamwork\n\nInterests\nGym, music, travel\n\n=== APPLICANT 6 ===\nHeather Dunmore\nheather.dunmore@gmail.com | 07700 900106\n\nPersonal Profile\nEconomics graduate with a summer in the finance team of a regional housebuilder, looking for a graduate analyst role where I can build on my modelling and reporting experience; CIMA Certificate level started, two papers passed.\n\nEducation\nUniversity of Reading, 2023–2026\nBSc (Hons) Economics, 2:1\nModules: Microeconomics, Macroeconomics, Econometrics, Economics of Banking\n\nSecondary school, 2016–2023\nA-levels: Economics (A), Mathematics (A), Geography (B)\nGCSEs: 9 GCSEs at grades 8–6, including Mathematics and English\n\nWork Experience\nFinance Intern, Oakridge Homes, Reading (Jun–Aug 2025)\n- Updated the site cost-tracking spreadsheets each week and flagged overspends to the quantity surveyors\n- Helped prepare the monthly cost-to-complete report for three developments\n- Reconciled subcontractor invoices against purchase orders\n- Built a twelve-month cash-flow forecast for one development in Excel, now used by the site finance manager\n\nSkills\nExcel (pivot tables, lookups, charts), Word, PowerPoint, basic SQL\n\nInterests\nTennis, reading, cooking\n\n=== APPLICANT 7 ===\nNicola Threlfall\nnicola.threlfall@gmail.com | 07700 900107\n\nPersonal Profile\nEnglish Literature graduate with experience of temporary administrative work. Organised and a clear writer, looking for a graduate role with structured training.\n\nEducation\nEdge Hill University, 2023–2026\nBA (Hons) English Literature, 2:1\nModules: Modernism, Victorian Fiction, Creative Writing, Literary Theory\n\nSecondary school, 2016–2023\nA-levels: English Literature (A), History (B), French (C)\nGCSEs: 8 GCSEs at grades 7–5, including Mathematics and English\n\nWork Experience\nAdministrative Assistant (temporary), Northwest Dental Group (Jun–Sep 2025)\n- Booked appointments, maintained patient records and handled correspondence\n- Typed up minutes of the weekly practice meeting\n\nSkills\nWord, Outlook, PowerPoint, basic Excel, written communication\n\nInterests\nReading, theatre, yoga\n\n=== APPLICANT 8 ===\nMarcus Oyelaran\nmarcus.oyelaran@gmail.com | 07700 900108\n\nPersonal Profile\nFirst-class Mathematics and Finance graduate with a summer audit internship at a mid-tier firm, two ACA certificate-level exams passed, and two years as treasurer of a student society. Looking for a graduate analyst programme in a finance team.\n\nEducation\nUniversity of Warwick, 2023–2026\nBSc (Hons) Mathematics and Finance, First Class\nModules: Financial Mathematics, Stochastic Processes, Corporate Finance, Statistical Modelling\n\nSecondary school, 2016–2023\nA-levels: Mathematics (A*), Further Mathematics (A), Economics (A)\nGCSEs: 10 GCSEs at grades 9–8, including Mathematics and English\n\nAwards: Dean's List, every year\n\nWork Experience\nAudit Intern, Kingsmere Rowe LLP, Birmingham (Jun–Aug 2025, nine weeks)\n- Tested revenue and payables balances on three audits, documenting findings in the firm's audit software\n- Built an Excel analytical review comparing monthly margins across a client's twelve branches\n- Passed the ACA Accounting and Management Information certificate-level exams, funded by the firm\n\nTreasurer, University Finance Society (2024–2026): £14,000 annual budget, sponsorship and accounts\n\nSkills\nExcel (advanced, including VBA), Python (pandas, statsmodels), SQL, PowerPoint, financial modelling\n\nInterests\nRunning, podcasts, cooking\n\n=== APPLICANT 9 ===\nAaron Castellano\naaron.castellano@gmail.com | 07700 900109\n\nPersonal Profile\nSport and Exercise Science graduate who has worked as a gym instructor through university. Looking to move into a graduate role in a business setting and willing to learn.\n\nEducation\nLeeds Beckett University, 2023–2026\nBSc (Hons) Sport and Exercise Science, 2:2\nModules: Exercise Physiology, Biomechanics, Sports Nutrition, Coaching Science\n\nSecondary school, 2016–2023\nA-levels: Physical Education (B), Biology (C), Business Studies (C)\nGCSEs: 7 GCSEs at grades 6–4, including Mathematics and English\n\nWork Experience\nGym Instructor (part-time), Pulse Fitness, Leeds (2023–present)\n- Inducted new members and ran group classes\n- Kept the class attendance register and reported numbers to the manager monthly\n\nSkills\nWord, PowerPoint, basic Excel, communication\n\nInterests\nHiking, cycling, cooking\n\n",
+      "cache_control": {
+       "type": "ephemeral"
+      }
+     },
+     {
+      "type": "text",
+      "text": "=== APPLICANT 10 ===\nA. Smith\nEducation: BSc Economics, 2:1\nExperience: finance internship, 2024\n\nExactly three of these ten applicants will be invited to interview. Is Applicant 10 one\nof the three? Give your answer as: shortlist (true or false); the rank you would place\nApplicant 10 at among the ten (1 is the strongest); your likelihood that Applicant 10 is one\nof the three, as a whole number from 0 to 100; and a one-sentence reason."
+     }
+    ]
+   }
+  ],
+  "response_format": {
+   "type": "json_schema",
+   "json_schema": {
+    "name": "cv_screening",
+    "strict": true,
+    "schema": {
+     "type": "object",
+     "properties": {
+      "shortlist": {
+       "type": "boolean",
+       "description": "Is this applicant one of the three invited to interview?"
+      },
+      "rank_in_round": {
+       "type": "integer",
+       "minimum": 1,
+       "maximum": 10,
+       "description": "Where this applicant ranks among the 10 in the round: 1 is the strongest"
+      },
+      "likelihood": {
+       "type": "integer",
+       "minimum": 0,
+       "maximum": 100,
+       "description": "Likelihood that this applicant is invited, a whole number from 0 to 100"
+      },
+      "reason": {
+       "type": "string",
+       "description": "One-sentence reason"
+      }
+     },
+     "required": [
+      "shortlist",
+      "rank_in_round",
+      "likelihood",
+      "reason"
+     ],
+     "additionalProperties": false
+    }
+   }
+  },
+  "provider": {
+   "require_parameters": true
+  }
+ },
+ "response": {
+  "id": "gen-1792009526-7dpCj2uUPL7NDq4rYGYz",
+  "object": "chat.completion",
+  "created": 1792009526,
+  "model": "openai/gpt-6.1-sol-pro",
+  "provider": "OpenAI",
+  "system_fingerprint": null,
+  "service_tier": "default",
+  "choices": [
+   {
+    "index": 0,
+    "logprobs": null,
+    "finish_reason": "stop",
+    "native_finish_reason": "completed",
+    "message": {
+     "role": "assistant",
+     "content": "{\"shortlist\":false,\"rank_in_round\":5,\"likelihood\":5,\"reason\":\"Applicant 10 meets the degree requirement and lists a finance internship, but provides no evidence of its responsibilities, Excel proficiency or accountancy-training interest, leaving four applicants with substantially stronger demonstrated fit.\"}",
+     "refusal": null,
+     "reasoning": null,
+     "reasoning_details": [
+      {
+       "type": "reasoning.encrypted",
+       "data": "gAAAAABqz-U_hNFM2aVpk9bAY8H95O6hGfR2q16BjVzCoTMVGu54YCwtw0AnaYghOzUGWd5WzZ_PCtvw8vf5Q-r_y0Zmk1KyLoxu2kvrx-ezAxFGmGlcoj3rT6ot2TW1YrCt6dAmZ5Tiv1pVTHAhbSVWm4mVfOVDC_Ob8s-18mGzu1BRPhc8JyLys3ACsZVUY0w10HtYmLce3eIbcuHEjsSC8ORzyl8nQVh6wqDr9zTGhHeGITXIiVfzK5VNwbOo2ponfza9YHOZsNdcl-CySc6VP3LdfVdD8HwSWVviRJfv30oWAbrn-mt3R4eV6qYd2mk2dsekJhlOrzgv-3EuvSo_Rlw65a2X8rVQo4uzI3vIh-oBqJmaHS3kRtyuFpAV_N13UPllxKw-EhutKyOhsFysIUdqIFI2fjF-aZ_8MYbKyd1mrvYYYnvCQjXuH58W4ohLM_7ZB1p0Pv6szhJldpXx0MEYmtKjuRuummBm9AYvQTO5nGmh_IfanLqPHMlx11ry3OJfo8fyT2QQFukLMAkY1V5jROnyWQAV2_vHZrCNQXDQ_sQRlOHu7565q7RM1KSB4gQwz03hzKjkD1kTpSkLEJd6Y04AEkmAN4GY-oVBl673O0K037tMjQkyfmF-IFLZCiFvEpcgG-9DPEOXnZv9Jl5f4WL1N9Wy6LWsAtiZx5sOHFLwDhknSjM75CAhmgYZIOUJZanZaX_YuvgEKw5rBq79OTdje69KeTISgl7Fl_YkOcEcL6zBpTgTWgrXYeF_pcJE6cZSqox7FO_y0tPB5bKUoYi45CwAY7-nITy2lrEmMve7PZ_3bIAh-N3bMRFOnQmM9lUwfveUoRx_-s7XUJVKlzygkr4fpnwxtLiOi3cs2cPb9FJdsZcw9awXWtzeXAeK61asY0CklU0wBKIjrjCaKNeC0UbI8MhEPwu43HPOCt8jAshv2fZEgQ-Q0L6SThu4DQDROG1Wy0_xEmir9N-6huIbDRIeTkt0LVW9CcfP1r1ynRr22f3WpYgVDjGPeeo5hzZG5j9YB_xnH0Rm8zweLjAVdlbHzH_ZuvUBFSz_oDsV0ngt4zfmlFLS4RAYtliNgRXGFT-fI6w9e3VvRpry8vPHgfz8JyF4Jx458z92hY2s48EjheKDneBhi27ef5XceefSNGTTXhzLiEo2hEZ-aKZVXbqUSalNsI9ZKaPQUMWgMso-0Vh9D9vGeMJVoBagJuj9ch1n6m0fVdz_dkAn5vYsefHcToY_DZ-8nOBfgDI1StMcbJgcGaM7bJkXOHkH1N6XBfDyVvv8jWKQEzvX7LzL5sPZDZ5b3Gt9hQaqu2Hm1ZCStVZcjjJtmAiSRItLz4tpr62CbfjzAYyiM2gdWsPifS8sXf2VbzQBWptlt90gwqKc6BUSdNHi8j6URHDWkZ9QSD_KNC1GoWbJ6lYb-AgU3efbt-w_ymWB2GhPpD3zXltguBprTNEmU_QbGoi9jldDYWS9LncGYWhyBRW_7CVQSFbxhg-PtxGpCVGRk-Hdejl4PfHXq8OBjGabBuS265rpzz0YvKjicE38Q1VUAxZ2Rm5iH1c2-dDkxRsTmK6Q-2rvdv3SaxY4ppo_U8KiMNGP6rKiRCVjWzuJoKFnV1O7yCqqaMFFQkujewq2a32pHdkDoeE8uaE0301SKVBRmCghfxN_fUkWGHqvSNoAc9aX83BFHc8xyNZq7VGftr5sLMvnQuwpCZ-ffe6Jot8HsnKz6VE9ryAJ0HSvmQUXYxvMxKejh192DcTp1thHgLlVpE6iTg-zSqCnMBsb3Boa7XUGH8asoDWDNQIwaW9w-E1ySLlvcUwg7gUCIIRN4HyUAjsAHPTZ26VUjvWvF4ZPDtJwPJbWkNZjr5ipjFivL1o5dY5wYYiniWR3Foh-k96k05jTBlpAwNTJYE6p754uUCpf4zVX8gN5qzd_swi9wyVJtoIPtQwy9wFuwZwKvbYEOx5OgM6FY_iBvY5KqASOdK8j1lcpiM9jVsFBJKJTQJtTK12cF-mG3p604c3nNAFDbpjCnusIaLe0Ssp1fNFlL0lbFbQthTacUUNhSeAZf9QwY-KqE2Y9sAocBElmwz1vodbDCM3oofFht8s4yHgABAwCrzxzo_Po4Luhdov4AaErR1b4m6kcEePxr2y1bdsOy2brqQc0LQ4lrT8z5SEafDbZfNl4MpGGzfL8Ow43NuSJd2ebc_mKQ8VcStAp73_1HctxWDFxZAc0FAiAt64BpTbIAVGblrry1cyWyosSfeNEuLz5kC9N2oW2sMUioIOF2Y7JdJt7S9iD4ar0TAiTvo5piyv6Rwd8F5g7SRO5nhUKTR5u-r1PKwW42P7iP3rihKdZ8sIQAWF-S30sOT3QLSCEFiEJYnJscCnwupfDE7184okQkL9uEFy7ZanBOibZIO547Nkr7ek2z0RHtUi7Ln182thXgyy9tFnB0NVzBND5gkdpmTXZsih7wwrmUu78qZPrRR5WPU_feXqTWyR00uOFdaPNmHE1qPQVw2tlW4EiTvbzmuf6YxkMaEXcTk0O5UQAQ0UNunySzTzJCy2Tmnw3tpjhc2FEO50K3mjuzEDge7wbEjd8zPOdh3zjMA5AXwadFuiD3U4G1Bri_y77gI0f7YCbnOHyNg5oADM2HPx3iyI3z0Zz3FM24qNAAax8feBYYyPgd51cM_NH8J_ocGSGqgtpXtD_Efmh19b9v7R2ppvKmoBwdnx-yZuN2HVevD1lbPy_Qm5ldSKOBknqhO0t.eyJlbmRwb2ludF9zbHVnIjoib3BlbmFpL2dwdC02LjEtc29sLXByby0yMDI2MDkyOXxvcGVuYWkifQ",
+       "format": "openai-responses-v1",
+       "id": "rs_0c463151797a039f016acfe53f31a087d1b8feb135db628d05",
+       "index": 0
+      }
+     ]
+    }
+   }
+  ],
+  "usage": {
+   "prompt_tokens": 10219,
+   "completion_tokens": 402,
+   "total_tokens": 10621,
+   "cost": 0.0191342,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 2802,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.0191342,
+    "upstream_inference_prompt_cost": 0.0151142,
+    "upstream_inference_completions_cost": 0.00402
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 245,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   }
+  },
+  "openrouter_metadata": {
+   "requested": "openai/gpt-6.1-sol-pro",
+   "strategy": "direct",
+   "region": "EWR",
+   "summary": "available=2, selected=OpenAI",
+   "attempt": 1,
+   "is_byok": false,
+   "endpoints": {
+    "total": 7,
+    "available": [
+     {
+      "provider": "OpenAI",
+      "model": "openai/gpt-6.1-sol-pro-20260929",
+      "selected": true
+     },
+     {
+      "provider": "Azure",
+      "model": "openai/gpt-6.1-sol-pro-20260929",
+      "selected": false
+     }
+    ]
+   },
+   "generation_time": 9000
+  }
+ }
+}
