@@ -1,12 +1,14 @@
 """Running one session: build the list of calls, skip the ones already done, make the
 rest with several workers at once, and append one row per call to the results file.
 
-One call shows the model one CV on its own. Each CV is sent `samples` times per
-session, so the share of "yes" answers across its samples estimates the model's
-probability of shortlisting it, and the mean of its 0-100 likelihoods is the finer
-measure. No call ever contains two CVs: a model shown both versions of a CV side by
-side recognises them as the same CV, anchors one answer to the other, and prefers
-whichever is listed first (see stimulus/REVIEW.md, the first pilot).
+One call assesses one CV. It is shown last, after a fixed set of filler CVs that is
+identical in every call, and the model is asked about it alone: the fillers give the
+shortlist budget a reference class without ever putting the two versions of a CV in
+one prompt (a model shown both recognises them as the same CV, anchors one answer to
+the other, and prefers whichever is listed first: stimulus/REVIEW.md, the first
+pilot). Each CV is sent `samples` times per session, so the share of "yes" answers
+across its samples estimates the model's probability of shortlisting it, and the
+mean of its 0-100 likelihoods is the finer measure.
 """
 
 from __future__ import annotations
@@ -26,7 +28,7 @@ from tqdm import tqdm
 
 from pipeline import client as api
 from pipeline.config import ModelSpec
-from pipeline.cvs import Stimulus, load_stimuli
+from pipeline.cvs import Stimulus, load_fillers, load_stimuli
 
 # After one of these, every further call would fail the same way, so the run stops.
 FATAL_ERROR_TYPES = {"auth", "payment"}
@@ -76,12 +78,14 @@ def raw_dir(output_dir) -> Path:
 
 # ----------------------------- the prompt hash -----------------------------
 
-def prompt_record(cfg) -> dict:
-    """Everything sent with each call apart from the CV itself."""
+def prompt_record(cfg, fillers) -> dict:
+    """Everything sent with each call apart from the CV being assessed. The fillers are
+    in it because they are in every prompt: changing one changes the hash."""
     return {
         "system_prompt": cfg.system_prompt,
         "user_prompt_template": cfg.user_prompt_template,
         "job_description": cfg.job_description,
+        "fillers": [{"name": name, "text": text} for name, text in fillers],
         "response_format": api.RESPONSE_FORMAT,
     }
 
@@ -175,10 +179,24 @@ def shuffle_jobs(jobs, seed, session) -> list[Job]:
 
 # ----------------------------- making the calls -----------------------------
 
-def fill_prompt(cfg, cv_text) -> str:
-    """The user prompt for one call. The model only ever sees the CV text: no file
-    name, arm or variant label."""
-    return cfg.user_prompt_template.format(job=cfg.job_description, cv=cv_text)
+def target_label(fillers) -> str:
+    """How the prompt refers to the CV being assessed: the last applicant listed."""
+    return f"Applicant {len(fillers) + 1}"
+
+
+def applicants_block(fillers, cv_text) -> str:
+    """The fillers, numbered in their fixed order, then the target as the last applicant."""
+    parts = [f"=== APPLICANT {i} ===\n{text.rstrip()}" for i, (_, text) in enumerate(fillers, 1)]
+    parts.append(f"=== APPLICANT {len(fillers) + 1} ===\n{cv_text.rstrip()}")
+    return "\n\n".join(parts)
+
+
+def fill_prompt(cfg, cv_text, fillers) -> str:
+    """The user prompt for one call. The model sees the fillers and the target CV as
+    numbered applicants: no file names, arm or variant labels."""
+    return cfg.user_prompt_template.format(job=cfg.job_description,
+                                           applicants=applicants_block(fillers, cv_text),
+                                           target=target_label(fillers))
 
 
 class ResultsWriter:
@@ -208,7 +226,7 @@ class ResultsWriter:
         self.file.close()
 
 
-def run_one(cfg, session, job, client, prompt_hash, dry_run, out_dir) -> dict:
+def run_one(cfg, session, job, client, prompt_hash, dry_run, out_dir, fillers) -> dict:
     """Make one call, save the full response under results/raw/, and return the row.
     A failed call gives ok=False plus error_type and error."""
     s = job.stimulus
@@ -227,11 +245,13 @@ def run_one(cfg, session, job, client, prompt_hash, dry_run, out_dir) -> dict:
         "arm": s.arm,
         "variant": s.variant,
         "sample": job.sample,
+        "n_fillers": len(fillers),
+        "target_position": len(fillers) + 1,
         "temperature": temperature,
         "prompt_hash": prompt_hash,
         "dry_run": dry_run,
     }
-    body = api.build_request_body(job.model.id, cfg.system_prompt, fill_prompt(cfg, s.text), temperature)
+    body = api.build_request_body(job.model.id, cfg.system_prompt, fill_prompt(cfg, s.text, fillers), temperature)
     raw = {"call_id": call_id, "session": session, "stimulus_id": s.stimulus_id, "sample": job.sample,
            "prompt_hash": prompt_hash, "dry_run": dry_run, "request": body}
     try:
@@ -292,10 +312,14 @@ def run_session(cfg, session, client, dry_run=False, limit=None, workers=None, b
         print(f"WARNING: incomplete pairs skipped: {missing}")
     if not stimuli:
         raise RuntimeError(f"No complete CV pairs found in {cfg.cv_dir}")
+    fillers = load_fillers(cfg.filler_dir)
+    if not fillers:
+        raise RuntimeError(f"No filler CVs found in {cfg.filler_dir} (paths.filler_dir): every call shows "
+                           "the same fillers before the CV it assesses, so there must be at least one")
 
     out_dir = cfg.output_dir(dry_run)
     out_file = results_file(out_dir)
-    record = prompt_record(cfg)
+    record = prompt_record(cfg, fillers)
     prompt_hash = compute_prompt_hash(record)
 
     rows, bad_lines = read_results(out_file)
@@ -316,7 +340,7 @@ def run_session(cfg, session, client, dry_run=False, limit=None, workers=None, b
         todo = todo[:limit]
         note += f", limited to {len(todo)}"
     workers = workers or cfg.workers
-    print(f"{len(stimuli)} CVs, {len(jobs)} calls in session '{session}': {note}.")
+    print(f"{len(stimuli)} CVs, {len(fillers)} fillers, {len(jobs)} calls in session '{session}': {note}.")
     print(f"Writing to {out_file} (prompt_hash {prompt_hash[:12]}..., {workers} worker(s)"
           f"{'' if budget is None else f', budget ${budget:g}'})")
 
@@ -326,7 +350,7 @@ def run_session(cfg, session, client, dry_run=False, limit=None, workers=None, b
     writer = ResultsWriter(out_file)
 
     def work(job):
-        row = run_one(cfg, session, job, client, prompt_hash, dry_run, out_dir)
+        row = run_one(cfg, session, job, client, prompt_hash, dry_run, out_dir, fillers)
         writer.write(row)  # written by the worker, so an interrupted run keeps finished calls
         return row
 

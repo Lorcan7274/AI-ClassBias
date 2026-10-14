@@ -12,8 +12,8 @@ import json
 from pathlib import Path
 
 from pipeline import client as api
-from pipeline.cvs import load_stimuli, placeholder_stimuli
-from pipeline.runner import compute_prompt_hash, fill_prompt, prompt_record
+from pipeline.cvs import load_fillers, load_stimuli, placeholder_stimuli
+from pipeline.runner import compute_prompt_hash, fill_prompt, prompt_record, target_label
 from pipeline.validation import validate_cvs
 
 # Structured outputs guide: support "is determined per endpoint, not just per model",
@@ -53,6 +53,12 @@ def run_preflight(cfg, api_key, allow_paid=False) -> bool:
     if dummies:
         problems.append(f"{len(dummies)} CV(s) contain the word PLACEHOLDER, e.g. {dummies[0]}: "
                         "these look like dummy CVs")
+    fillers = load_fillers(cfg.filler_dir)
+    print(f"Fillers in {cfg.filler_dir}: {len(fillers)}"
+          + (f" ({', '.join(name for name, _ in fillers)}); the target is always {target_label(fillers)}"
+             if fillers else ""))
+    if not fillers:
+        problems.append(f"no filler CVs in {cfg.filler_dir} (paths.filler_dir)")
     check = validate_cvs(cfg)
     print(f"CV check: {len(check.errors)} error(s), {len(check.warnings)} warning(s) (details: validate-cvs)")
     if check.errors:
@@ -68,16 +74,16 @@ def run_preflight(cfg, api_key, allow_paid=False) -> bool:
               + (f"; not sent to {', '.join(not_sent)} (send_temperature: false)" if not_sent else ""))
     print(f"Workers: {cfg.workers}, rate limit: {cfg.calls_per_minute:g} calls/minute, "
           f"retries: {cfg.max_retries}, timeout: {cfg.request_timeout:g}s")
-    print(f"prompt_hash: {compute_prompt_hash(prompt_record(cfg))}")
+    print(f"prompt_hash: {compute_prompt_hash(prompt_record(cfg, fillers))}")
 
     if api_key:
         problems += check_key(api_key)
-        problems += check_models(cfg, api_key, stimuli, n_calls // max(len(cfg.models), 1))
+        problems += check_models(cfg, api_key, stimuli, fillers, n_calls // max(len(cfg.models), 1))
         if allow_paid:
             if problems:
                 print("\nSkipping the paid test calls because of the problems below.")
             else:
-                problems += test_calls(cfg, api_key)
+                problems += test_calls(cfg, api_key, fillers)
         else:
             print("\nNo paid test call was made (add --allow-paid to make one tiny call per model).")
 
@@ -108,7 +114,7 @@ def check_key(api_key) -> list[str]:
     return []
 
 
-def check_models(cfg, api_key, stimuli, calls_per_model) -> list[str]:
+def check_models(cfg, api_key, stimuli, fillers, calls_per_model) -> list[str]:
     """Does each configured model exist and support structured outputs, and what would it cost?"""
     print("\nModels (GET /api/v1/models):")
     try:
@@ -117,7 +123,7 @@ def check_models(cfg, api_key, stimuli, calls_per_model) -> list[str]:
         print(f"  could not read the models list: {e.message}")
         return [f"could not read the models list: {e.message}"]
     problems = []
-    longest = max((len(fill_prompt(cfg, s.text)) + len(cfg.system_prompt) for s in stimuli), default=0)
+    longest = max((len(fill_prompt(cfg, s.text, fillers)) + len(cfg.system_prompt) for s in stimuli), default=0)
     prompt_tokens = longest // CHARS_PER_TOKEN
     estimate_total = 0.0
     for spec in cfg.models:
@@ -175,7 +181,7 @@ def print_endpoints(model, api_key):
               f"uptime last day {ep.get('uptime_last_1d')}")
 
 
-def test_calls(cfg, api_key) -> list[str]:
+def test_calls(cfg, api_key, fillers) -> list[str]:
     """One tiny paid call per model, with the real system prompt, template and answer
     schema. Checks the answer parses and shows the cost and provider recorded."""
     print("\nTest calls (--allow-paid: one small call per model):")
@@ -185,7 +191,7 @@ def test_calls(cfg, api_key) -> list[str]:
     out_dir.mkdir(parents=True, exist_ok=True)
     problems = []
     for spec in cfg.models:
-        body = api.build_request_body(spec.id, cfg.system_prompt, fill_prompt(cfg, TEST_CV),
+        body = api.build_request_body(spec.id, cfg.system_prompt, fill_prompt(cfg, TEST_CV, fillers),
                                       cfg.temperature)
         raw_path = out_dir / (spec.id.replace("/", "__") + ".json")
         try:

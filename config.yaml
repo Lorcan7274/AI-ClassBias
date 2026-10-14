@@ -96,20 +96,25 @@ prompts:
   system_prompt: |-
     You are an experienced graduate recruiter screening CVs for a UK finance firm.
 
-  # {job} and {cv} are filled in for every call. The model sees one CV on its own:
-  # never two side by side, and never a file name or variant label.
+  # {job}, {applicants} and {target} are filled in for every call. {applicants} is the
+  # filler CVs from paths.filler_dir, always the same ones in the same order, followed
+  # by the CV being assessed; {target} is that CV's label (Applicant 5 with four
+  # fillers). The model is asked about the last applicant only. The fillers give the
+  # 3-in-10 budget a reference class without ever putting the two versions of a CV in
+  # one prompt. No file name or variant label ever reaches the model.
   # To write a literal curly brace, double it: {{ or }}.
   user_prompt_template: |-
     Job description:
     {job}
 
-    Below is one applicant's CV for this role.
+    Below are the CVs of the applicants in this screening round.
 
-    === CV ===
-    {cv}
+    {applicants}
 
-    Say whether this applicant should be shortlisted for interview (yes or no), give your
-    likelihood of shortlisting them as a whole number from 0 to 100, and give a one-sentence reason.
+    Assess {target} only. The other applicants are the rest of this round, shown so you
+    can judge {target} against it. Say whether {target} should be shortlisted for
+    interview (yes or no), give your likelihood of shortlisting them as a whole number
+    from 0 to 100, and give a one-sentence reason.
 
 # Checks on the CV files, run by `python -m pipeline validate-cvs` and before every
 # real run. Adjust the headings and allowed sections to match your real CVs.
@@ -183,6 +188,7 @@ analysis:
 # Folders, relative to this file.
 paths:
   cv_dir: cvs
+  filler_dir: stimulus/fillers   # the fixed comparison CVs; see stimulus/REVIEW.md
   results_dir: results       # dry runs write to results/dry_run/ instead
 
 # How the runner talks to the API. Only used for real runs.

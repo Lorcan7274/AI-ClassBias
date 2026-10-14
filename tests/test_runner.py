@@ -4,7 +4,7 @@ import pytest
 from conftest import CALLS_PER_SESSION
 
 from pipeline.client import CallResult, DryRunClient
-from pipeline.cvs import load_stimuli
+from pipeline.cvs import load_fillers, load_stimuli
 from pipeline.runner import (build_jobs, compute_prompt_hash, prompt_record, results_file,
                              run_session, shuffle_jobs)
 
@@ -80,17 +80,25 @@ def test_each_row_records_its_cv_and_the_answer(project):
     assert set(counts.values()) == {project.samples}
 
 
-def test_the_prompt_holds_exactly_the_one_cv_the_row_names(project):
+def test_the_prompt_is_the_fixed_fillers_then_the_one_target_cv(project):
     client = SaysYes()
     run_session(project, "day1", client, dry_run=True, workers=1, quiet=True)
     rows = read_rows(results_file(project.output_dir(True)))
     texts = {s.stimulus_id: s.text for s in load_stimuli(project.cv_dir, project.arms)[0]}
+    fillers = load_fillers(project.filler_dir)
+    assert [name for name, _ in fillers] == ["F1.txt", "F2.txt"]
     assert len(client.bodies) == len(rows)
     for body, row in zip(client.bodies, rows):
         prompt = body["messages"][1]["content"]
-        assert texts[row["stimulus_id"]] in prompt
+        target = texts[row["stimulus_id"]].rstrip()
+        # The same fillers in the same order, then the target as the last applicant, asked about by name.
+        positions = [prompt.index(text.rstrip()) for _, text in fillers] + [prompt.index(target)]
+        assert positions == sorted(positions)
+        assert prompt.index("=== APPLICANT 3 ===") < prompt.index(target)
+        assert prompt.count("=== APPLICANT") == 3 and "Assess Applicant 3 only." in prompt
+        assert (row["n_fillers"], row["target_position"]) == (2, 3)
         others = [t for sid, t in texts.items() if sid != row["stimulus_id"] and t not in texts[row["stimulus_id"]]]
-        assert not any(t in prompt for t in others)  # one CV per call, never two
+        assert not any(t in prompt for t in others)  # never a second stimulus CV, never the twin
         assert ".txt" not in prompt  # no file name reaches the model
 
 
@@ -112,15 +120,18 @@ def test_temperature_is_sent_only_to_models_that_take_it(make_config):
 
 def test_every_row_carries_the_prompt_hash_and_the_prompt_is_saved(project):
     run_session(project, "day1", DryRunClient(), dry_run=True, limit=3)
-    expected = compute_prompt_hash(prompt_record(project))
+    fillers = load_fillers(project.filler_dir)
+    expected = compute_prompt_hash(prompt_record(project, fillers))
     rows = read_rows(results_file(project.output_dir(True)))
     assert [r["prompt_hash"] for r in rows] == [expected] * 3
     saved = project.output_dir(True) / "prompts" / f"{expected}.json"
-    assert json.loads(saved.read_text(encoding="utf-8")) == prompt_record(project)
+    assert json.loads(saved.read_text(encoding="utf-8")) == prompt_record(project, fillers)
+    assert [f["name"] for f in prompt_record(project, fillers)["fillers"]] == ["F1.txt", "F2.txt"]
 
 
 def test_prompt_hash_changes_when_any_part_of_the_prompt_changes(project):
-    record = prompt_record(project)
+    fillers = load_fillers(project.filler_dir)
+    record = prompt_record(project, fillers)
     original = compute_prompt_hash(record)
     assert compute_prompt_hash(dict(record)) == original
     for part in ("system_prompt", "user_prompt_template", "job_description"):
@@ -128,10 +139,23 @@ def test_prompt_hash_changes_when_any_part_of_the_prompt_changes(project):
     schema = json.loads(json.dumps(record["response_format"]))
     schema["json_schema"]["name"] = "renamed"
     assert compute_prompt_hash(dict(record, response_format=schema)) != original
+    # A changed filler is a changed prompt: it is in every call.
+    changed = [(fillers[0][0], fillers[0][1] + " "), *fillers[1:]]
+    assert compute_prompt_hash(prompt_record(project, changed)) != original
+    # So is the same text under a different file name, or a different order.
+    assert compute_prompt_hash(prompt_record(project, list(reversed(fillers)))) != original
+
+
+def test_a_run_refuses_to_start_without_fillers(project):
+    for path in project.filler_dir.glob("*.txt"):
+        path.unlink()
+    with pytest.raises(RuntimeError, match="No filler CVs found"):
+        run_session(project, "day1", DryRunClient(), dry_run=True, quiet=True)
 
 
 def test_moving_text_between_prompt_parts_changes_the_hash(project):
-    record = prompt_record(project)
+    fillers = load_fillers(project.filler_dir)
+    record = prompt_record(project, fillers)
     a = dict(record, system_prompt="AB", job_description="C")
     b = dict(record, system_prompt="A", job_description="BC")
     assert compute_prompt_hash(a) != compute_prompt_hash(b)

@@ -13,7 +13,9 @@ def test_shipped_config_matches_the_study_design():
     assert cfg.temperature == 1.0
     assert [m.send_temperature for m in cfg.models if m.type == "frontier"] == [False, False]
     assert all(m.send_temperature for m in cfg.models if m.type == "open_source")
-    assert "{cv}" in cfg.user_prompt_template and "{cv1}" not in cfg.user_prompt_template
+    assert "{applicants}" in cfg.user_prompt_template and "{target}" in cfg.user_prompt_template
+    assert cfg.filler_dir == DEFAULT_CONFIG_PATH.parent / "stimulus" / "fillers"
+    assert sorted(p.name for p in cfg.filler_dir.glob("*.txt")) == ["F1.txt", "F2.txt", "F3.txt", "F4.txt"]
     assert "3 in 10" in cfg.job_description
 
 
@@ -38,7 +40,7 @@ def test_folders_are_relative_to_the_config_file(make_config, tmp_path):
     ("implicit: [high, low]", "implicit: [high_class, low]", "implicit"),  # "_" would break file names
     ("type: frontier", "type: closed", "type"),
     ("id: test/open-model", "id: test/frontier-model", "more than once"),
-    ("{cv}", "{cv2}", r"missing \{cv\}; unknown \{cv2\}"),
+    ("{target}", "{cv}", r"missing \{target\}; unknown \{cv\}"),
     ("Job: {job}", "Job: {job} {", "unmatched curly brace"),
     ("job_description: Graduate Analyst.", "job_description: ''", "job_description"),
 ])

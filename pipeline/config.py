@@ -23,7 +23,7 @@ DEFAULT_CONFIG_PATH = PROJECT_DIR / "config.yaml"
 MODEL_TYPES = ("frontier", "open_source")
 
 # The user prompt template must use exactly these {placeholders}.
-TEMPLATE_FIELDS = {"job", "cv"}
+TEMPLATE_FIELDS = {"job", "applicants", "target"}
 
 # Arm and variant names become part of CV file names (cv01_implicit_high.txt),
 # which are split on "_", so the names themselves must not contain "_".
@@ -35,7 +35,7 @@ NAME_PATTERN = re.compile(r"[A-Za-z0-9-]+")
 TOP_LEVEL_KEYS = {"models", "arms", "samples", "temperature", "shuffle_seed", "prompts", "paths", "runner", "cv_checks",
                   "analysis"}
 PROMPT_KEYS = {"job_description", "system_prompt", "user_prompt_template"}
-PATH_KEYS = {"cv_dir", "results_dir"}
+PATH_KEYS = {"cv_dir", "filler_dir", "results_dir"}
 RUNNER_KEYS = {"workers", "calls_per_minute", "max_retries", "request_timeout"}
 CV_CHECK_KEYS = {"expected_base_cvs", "section_headings", "allowed_sections", "max_length_difference_pct", "leak_words"}
 ANALYSIS_KEYS = {"implicit_arm", "explicit_arm", "reason_keywords"}
@@ -78,6 +78,7 @@ class Config:
     system_prompt: str
     user_prompt_template: str
     cv_dir: Path
+    filler_dir: Path                   # the fixed comparison CVs shown before every target
     results_dir: Path
     workers: int                       # calls made at the same time
     calls_per_minute: float            # rate limit shared by all workers; 0 = no limit
@@ -147,6 +148,7 @@ def load_config(path=DEFAULT_CONFIG_PATH) -> Config:
         # Relative folders are read from the config file's folder, not from wherever
         # the command happens to be run.
         cv_dir=path.parent / _folder(paths.get("cv_dir", "cvs"), "paths.cv_dir"),
+        filler_dir=path.parent / _folder(paths.get("filler_dir", "fillers"), "paths.filler_dir"),
         results_dir=path.parent / _folder(paths.get("results_dir", "results"), "paths.results_dir"),
         workers=_whole_number(runner.get("workers", 4), "runner.workers", minimum=1),
         calls_per_minute=_number(runner.get("calls_per_minute", 60), "runner.calls_per_minute", minimum=0),
@@ -266,7 +268,7 @@ def _check_template(template):
         if unknown:
             problems.append("unknown " + ", ".join("{" + f + "}" for f in unknown))
         raise ConfigError(
-            "prompts.user_prompt_template must use {job} and {cv} and nothing else: "
+            "prompts.user_prompt_template must use {job}, {applicants} and {target} and nothing else: "
             + "; ".join(problems) + ". Write {{ or }} for a literal brace.")
 
 

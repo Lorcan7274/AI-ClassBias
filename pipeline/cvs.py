@@ -236,3 +236,19 @@ def load_stimuli(cv_dir, arms):
 def placeholder_stimuli(stimuli) -> list[str]:
     """Stimulus ids whose text still contains the word PLACEHOLDER (i.e. dummy CVs)."""
     return [s.stimulus_id for s in stimuli if "PLACEHOLDER" in s.text]
+
+
+# ----------------------------- the fixed comparison set -----------------------------
+
+def load_fillers(filler_dir) -> list[tuple[str, str]]:
+    """The filler CVs shown before every target, as (file name, text), in file-name order.
+
+    Every call shows the same fillers in the same order, so they are constants: the
+    3-in-10 shortlist budget has a reference class, position is the same for every
+    target and so cancels, and the two versions of a CV are never in one prompt.
+    Returns an empty list if the folder holds no .txt files.
+    """
+    folder = Path(filler_dir)
+    if not folder.is_dir():
+        return []
+    return [(path.name, read_cv(path)) for path in sorted(folder.glob("*.txt"))]

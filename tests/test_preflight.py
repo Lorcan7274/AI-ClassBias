@@ -48,6 +48,7 @@ def test_preflight_reports_models_without_structured_outputs(project, fake_api, 
     assert "model 'test/open-model' does not list structured_outputs" in out
     assert "CV(s) contain the word PLACEHOLDER" in out  # the test project uses dummy CVs
     assert "Calls per session: 72 = 2 models x 18 CVs x 2 samples" in out
+    assert "Fillers in" in out and "F1.txt, F2.txt); the target is always Applicant 3" in out
     assert "No paid test call was made" in out
     assert fake_api["paid_calls"] == 0
     assert "sk-test" not in out
@@ -72,6 +73,13 @@ def test_preflight_rejects_a_temperature_a_model_cannot_take_unless_opted_out(ma
     assert "does not list temperature" not in out
     assert "not sent to test/frontier-model (send_temperature: false)" in out
     assert "(not sent to this model: send_temperature is false)" in out
+
+
+def test_preflight_refuses_a_run_with_no_fillers(project, fake_api, capsys):
+    for path in project.filler_dir.glob("*.txt"):
+        path.unlink()
+    assert not preflight.run_preflight(project, "sk-test")
+    assert "no filler CVs in" in capsys.readouterr().out
 
 
 def test_preflight_flags_unknown_models_and_a_used_up_key(project, fake_api, capsys):

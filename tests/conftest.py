@@ -30,10 +30,11 @@ prompts:
   system_prompt: You are a recruiter.
   user_prompt_template: |-
     Job: {job}
-    === CV ===
-    {cv}
+    {applicants}
+    Assess {target} only.
 paths:
   cv_dir: cvs
+  filler_dir: fillers
   results_dir: results
 runner:
   workers: 2
@@ -77,6 +78,12 @@ def make_config(tmp_path):
             text = text.replace(old, new)
         path = tmp_path / "config.yaml"
         path.write_text(text, encoding="utf-8")
+        # Two tiny fillers, so every prompt has the fixed comparison set in front of the target.
+        fillers = tmp_path / "fillers"
+        fillers.mkdir(exist_ok=True)
+        (fillers / "F1.txt").write_text("Filler One\nEducation: BA History, 2:2\nExperience: none\n", encoding="utf-8")
+        (fillers / "F2.txt").write_text("Filler Two\nEducation: BSc Economics, First\nExperience: finance internship\n",
+                                        encoding="utf-8")
         return path
     return _make
 

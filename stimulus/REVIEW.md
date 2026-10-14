@@ -409,6 +409,42 @@ Three ways forward, none chosen; they change the design and are the study's call
 
 Whichever is chosen, the next pilot should be judged on the same three criteria.
 
+## Third design: a fixed comparison set, the target never paired
+
+Chosen from the three options above. Every call now shows the same four filler
+CVs, in the same order, as Applicants 1 to 4, then the CV being assessed as
+Applicant 5, and asks about Applicant 5 only. The fillers are constants: the
+3-in-10 budget has a reference class to constrain, position is identical for
+every one of the 90 targets and so cancels, and the two versions of a CV are
+never in one prompt. The within-prompt comparison the first pilot showed models
+make readily is used, but only against things that never change. The fillers'
+text is part of the prompt hash, so an edit to one shows up in the data.
+
+### The four fillers (`stimulus/fillers/`)
+
+Written for this purpose, as a ladder around the targets. Every target is a 2:1
+with a directly relevant internship and good data skills; the ladder is built so
+that a target is a genuine marginal case for a 30% cut:
+
+| | strength | what it is |
+|---|---|---|
+| F1 Ryan Metcalfe | clearly below | BA Business Studies 2:2, part-time retail, basic Excel |
+| F2 Bethany Bradshaw | below | BSc Geography 2:1, a summer in a council office, basic Excel |
+| F3 Tom Ashworth | about level | BSc Accounting and Finance 2:1, six-week practice placement, states ACCA interest (which the targets lack) |
+| F4 Zoe Sandford | clearly above | BSc Economics First, ten-week listed-company finance internship, Python, society treasurer, states ACA interest |
+
+With five applicants and a 3-in-10 budget, one-and-a-half places: F4 takes one,
+and the target competes with F3 for the rest. The fillers are class-neutral in the
+same way as the neutral versions of the targets — school not named, neutral
+interests, no awards except a university prize on F4 — and a check confirms they
+share no name, university or employer with the stimulus set and contain no leak
+word. Phone numbers are in the fictional range (07700 900101–104), distinct from
+the targets' 900001–015. Only the explicit-arm target carries a monitoring block;
+the fillers do not, which is the manipulation and is as it would be in a round
+where only some applicants' monitoring data were attached.
+
+The third pilot is judged on the same three criteria as the second.
+
 ## Change outside this folder
 
 `config.yaml` → `cv_checks.allowed_sections.implicit` gained `header`.
