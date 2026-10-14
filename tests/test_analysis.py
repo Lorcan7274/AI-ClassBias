@@ -219,3 +219,31 @@ def test_analyze_ignores_dry_run_rows_in_the_real_file_and_reports_empty_data(pr
     write_rows(project, rows)
     assert analysis.analyze(project, dry_run=False) is None
     assert "No usable rows" in capsys.readouterr().out
+
+
+def test_pooled_row_is_each_base_over_every_models_calls(project):
+    """with_pooled adds one row labelled "all models" to the H1, H2 and monitoring
+    tables; in a balanced design its per-base effect is the mean of the per-model
+    effects, and its deterministic share is still judged per real model."""
+    rows = make_rows(project, {"implicit": 0.9, "explicit": 0.5, "demographic": 0.5}, samples=4, seed=3)
+    df = analysis.prepare(project, rows, dry_run=False)
+    pooled = analysis.with_pooled(df)
+    assert set(pooled["model"]) == set(df["model"]) | {analysis.POOLED}
+    assert len(pooled) == 2 * len(df)
+    effects = analysis.effects_by_cv(pooled)
+    per_model = effects[effects["model"] != analysis.POOLED]
+    all_models = effects[effects["model"] == analysis.POOLED].set_index(["arm", "cv_id"])
+    expected = per_model.groupby(["arm", "cv_id"])["shortlist_effect"].mean()
+    assert np.allclose(all_models["shortlist_effect"].sort_index(), expected.sort_index())
+    h1 = analysis.h1_table(pooled, effects)
+    assert (h1["model"] == analysis.POOLED).sum() == len(project.arms)
+    row = h1[(h1["model"] == analysis.POOLED) & (h1["arm"] == "implicit")].iloc[0]
+    assert row["n_calls"] == len(df[df["arm"] == "implicit"]) and row["n_cvs"] == 3
+    assert 0 <= row["deterministic_share"] <= 1
+    h2 = analysis.h2_table(project, pooled, effects)
+    assert analysis.POOLED in set(h2["model"])
+    mon = analysis.monitoring_table(project, pooled)
+    assert analysis.POOLED in set(mon["model"])
+    # One model: nothing is added.
+    one = df[df["model"] == df["model"].iloc[0]]
+    assert len(analysis.with_pooled(one)) == len(one)

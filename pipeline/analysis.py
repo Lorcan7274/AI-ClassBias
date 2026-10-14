@@ -18,7 +18,7 @@ results file (results/, or results/dry_run/ for a dry run):
   summary.csv              shortlist rates and mean likelihoods per model x arm
   all_calls_flat.csv       every successful call with the derived columns
   effects_by_cv.csv        both effects for every model x arm x base CV
-  h1_class_effect.csv      mean effect across base CVs, with CIs and tests
+  h1_class_effect.csv      mean effect across base CVs, with CIs and tests; per model and pooled
   h2_explicit_vs_implicit.csv
   consistency.csv          agreement across the samples of each CV
   sessions.csv             the effect in each session and the change between them
@@ -52,6 +52,10 @@ from pipeline.tables import fmt, md_table, pct
 ARM_COLOURS = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300"]
 INK, INK_SOFT, GRID, SURFACE = "#0b0b0b", "#52514e", "#dddcd7", "#fcfcfb"
 
+# The label of the pooled row that the H1, H2 and monitoring tables carry alongside
+# the per-model rows (see with_pooled).
+POOLED = "all models"
+
 
 # ----------------------------- loading -----------------------------
 
@@ -73,6 +77,7 @@ def prepare(cfg, rows, dry_run) -> pd.DataFrame | None:
     if df.empty:
         return None
     df = df.copy()
+    df["model_id"] = df["model"]  # kept when the rows are pooled under one label (with_pooled)
     df["x_variant"] = df["arm"].map(lambda a: cfg.arms[a][0])
     # is_x = 1 for the first variant of the arm (for the class arms, the higher-class CV).
     df["is_x"] = (df["variant"] == df["x_variant"]).astype(int)
@@ -91,6 +96,19 @@ def prepare(cfg, rows, dry_run) -> pd.DataFrame | None:
     df["mentions_monitoring"] = df["reason"].fillna("").astype(str).map(
         lambda t: int(any(p.search(t) for p in patterns)))
     return df
+
+
+def with_pooled(df) -> pd.DataFrame:
+    """The rows plus a copy of them under the one label POOLED, so that the tables
+    built per model also get a row for all the models together. The base CV stays
+    the unit: in the pooled row each base's effect is its effect over every model's
+    calls (the mean of the per-model effects when the design is balanced), and the
+    regressions still cluster by base CV. Nothing is added when there is one model."""
+    if df["model"].nunique() < 2:
+        return df
+    pooled = df.copy()
+    pooled["model"] = POOLED
+    return pd.concat([df, pooled], ignore_index=True)
 
 
 # ----------------------------- the tables -----------------------------
@@ -156,7 +174,8 @@ def h1_table(df, effects) -> pd.DataFrame:
         # A model that gave every sample of a CV the same decision is deterministic
         # there; for such a model the share of "yes" is 0 or 1 and the sign test is
         # the test of record.
-        same = g.groupby("stimulus_id")["shortlist"].nunique() == 1
+        by_model = ["model_id", "stimulus_id"] if "model_id" in g else ["stimulus_id"]
+        same = g.groupby(by_model)["shortlist"].nunique() == 1
         out.append({
             "model": model, "arm": arm, "n_calls": len(g), "n_cvs": shortlist["n_cvs"],
             "deterministic_share": float(same.mean()) if len(same) else np.nan,
@@ -621,17 +640,20 @@ def analyze(cfg, dry_run=False):
         print("No usable rows.")
         return None
 
-    effects = effects_by_cv(df)
+    # The hypothesis tables carry a row per model and one for all models pooled
+    # (with_pooled); the descriptive tables stay per model.
+    pooled = with_pooled(df)
+    effects = effects_by_cv(pooled)
     tables = {
         "summary": descriptive_table(df),
         "effects": effects,
-        "h1": h1_table(df, effects),
-        "h2": h2_table(cfg, df, effects),
+        "h1": h1_table(pooled, effects),
+        "h2": h2_table(cfg, pooled, effects),
         "consistency": consistency_table(df),
         "sessions": sessions_table(df),
         "likelihood": likelihood_table(df),
         "reasons": reasons_table(cfg, df),
-        "monitoring": monitoring_table(cfg, df),
+        "monitoring": monitoring_table(cfg, pooled),
     }
     files = {"summary": "summary.csv", "effects": "effects_by_cv.csv", "h1": "h1_class_effect.csv",
              "h2": "h2_explicit_vs_implicit.csv", "consistency": "consistency.csv", "sessions": "sessions.csv",
