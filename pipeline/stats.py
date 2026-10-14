@@ -149,3 +149,18 @@ def clustered_difference(y, x, groups) -> dict:
     except Exception as e:
         out["note"] = f"model did not fit ({type(e).__name__})"
     return out
+
+
+def sign_test(differences) -> dict:
+    """The exact sign test on one difference per base CV: how many favour the
+    higher-class CV, how many the other, how many tie, and a two-sided binomial
+    p-value on the non-ties. For a model whose shortlist decision never varies across
+    samples, each base CV's difference is -1, 0 or 1 and this is the test of record,
+    as in a callback audit: one decision per CV, counted across the 15. (With paired
+    binary outcomes it is McNemar's exact test.)"""
+    d = np.asarray(differences, dtype=float)
+    d = d[~np.isnan(d)]
+    pos, neg = int((d > 0).sum()), int((d < 0).sum())
+    ties = int(len(d) - pos - neg)
+    p = float(stats.binomtest(pos, pos + neg, 0.5).pvalue) if pos + neg > 0 else math.nan
+    return {"n": int(len(d)), "pos": pos, "neg": neg, "ties": ties, "p": p}

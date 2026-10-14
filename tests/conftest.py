@@ -30,7 +30,8 @@ prompts:
   system_prompt: You are a recruiter.
   user_prompt_template: |-
     Job: {job}
-    {applicants}
+    {fillers}
+    {target_block}
     Assess {target} only.
 paths:
   cv_dir: cvs

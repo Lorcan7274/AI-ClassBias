@@ -13,16 +13,24 @@ from pathlib import Path
 
 from pipeline import client as api
 from pipeline.cvs import load_fillers, load_stimuli, placeholder_stimuli
-from pipeline.runner import compute_prompt_hash, fill_prompt, prompt_record, target_label
+from pipeline.runner import compute_prompt_hash, fill_prompt, prompt_record, split_prompt, target_label
 from pipeline.validation import validate_cvs
 
 # Structured outputs guide: support "is determined per endpoint, not just per model",
 # and the models list marks it with "structured_outputs" in supported_parameters.
 STRUCTURED = "structured_outputs"
 
-# A very rough token estimate for the cost preview: about 4 characters per token.
-CHARS_PER_TOKEN = 4
-ESTIMATED_ANSWER_TOKENS = 150
+# A rough token estimate for the cost preview. Measured on a real call: an Anthropic
+# model tokenised the round-of-ten prompt at about 2.6 characters per token (4,863
+# tokens for ~12,500 characters); Gemini and Llama tokenisers are sparser (3.9 and
+# 4.3), so for them this errs on the high side, which is the right side for a cost
+# preview and for the Anthropic cache-minimum check.
+CHARS_PER_TOKEN = 2.6
+ESTIMATED_ANSWER_TOKENS = 200
+
+# Anthropic will not cache a prefix shorter than this on its larger models (prompt
+# caching guide: 512 to 4,096 tokens depending on the model). The round has to clear it.
+ANTHROPIC_CACHE_MINIMUM = 4096
 
 # A tiny CV for the --allow-paid test call, to keep it as cheap as possible.
 TEST_CV = "A. Smith\nEducation: BSc Economics, 2:1\nExperience: finance internship, 2024\n"
@@ -123,9 +131,17 @@ def check_models(cfg, api_key, stimuli, fillers, calls_per_model) -> list[str]:
         print(f"  could not read the models list: {e.message}")
         return [f"could not read the models list: {e.message}"]
     problems = []
-    longest = max((len(fill_prompt(cfg, s.text, fillers)) + len(cfg.system_prompt) for s in stimuli), default=0)
-    prompt_tokens = longest // CHARS_PER_TOKEN
+    # The prefix (system prompt, job description, fillers) is identical in every call,
+    # the suffix (the CV) is not; the cost preview is given with and without caching.
+    prefix_chars = len(cfg.system_prompt) + (len(split_prompt(cfg, stimuli[0].text, fillers)[0]) if stimuli else 0)
+    suffix_chars = max((len(split_prompt(cfg, s.text, fillers)[1]) for s in stimuli), default=0)
+    prefix_tokens, suffix_tokens = int(prefix_chars / CHARS_PER_TOKEN), int(suffix_chars / CHARS_PER_TOKEN)
+    prompt_tokens = prefix_tokens + suffix_tokens
+    print(f"  Prompt: ~{prefix_tokens} tokens of cacheable prefix + ~{suffix_tokens} for the CV"
+          + (f" (below Anthropic's {ANTHROPIC_CACHE_MINIMUM}-token minimum: Anthropic models would not cache)"
+             if prefix_tokens < ANTHROPIC_CACHE_MINIMUM else ""))
     estimate_total = 0.0
+    estimate_cached = 0.0
     for spec in cfg.models:
         model = by_id.get(spec.id)
         print(f"  {spec.id}:")
@@ -146,19 +162,43 @@ def check_models(cfg, api_key, stimuli, fillers, calls_per_model) -> list[str]:
                             "but config.yaml sets one (require_parameters would leave it no provider); "
                             "give the model send_temperature: false")
         pricing = model.get("pricing") or {}
-        try:  # prices are strings in USD per token (models list docs)
-            prompt_price, completion_price = float(pricing.get("prompt", 0)), float(pricing.get("completion", 0))
-        except (TypeError, ValueError):
-            prompt_price = completion_price = 0.0
+        prompt_price, completion_price = _price(pricing, "prompt"), _price(pricing, "completion")
+        read_price, write_price = _price(pricing, "input_cache_read"), _price(pricing, "input_cache_write")
         per_call = prompt_tokens * prompt_price + ESTIMATED_ANSWER_TOKENS * completion_price
         estimate_total += per_call * calls_per_model
+        if read_price is None:
+            per_session_cached = per_call * calls_per_model
+            cache_note = "no cache price listed, so no saving assumed"
+        else:
+            # First call writes the prefix (at the write price, or the input price where
+            # none is listed); every later call reads it.
+            first = prefix_tokens * (write_price if write_price is not None else prompt_price) \
+                + suffix_tokens * prompt_price + ESTIMATED_ANSWER_TOKENS * completion_price
+            later = prefix_tokens * read_price + suffix_tokens * prompt_price + ESTIMATED_ANSWER_TOKENS * completion_price
+            per_session_cached = first + later * max(calls_per_model - 1, 0)
+            cache_note = (f"cache read ${read_price * 1e6:.3f} per M"
+                          + (f", write ${write_price * 1e6:.3f} per M" if write_price is not None else ""))
+        estimate_cached += per_session_cached
         print(f"    price: ${prompt_price * 1e6:.3f} per M prompt tokens, ${completion_price * 1e6:.3f} per M "
-              f"completion tokens; rough cost per session: ${per_call * calls_per_model:.2f} "
-              f"({calls_per_model} calls x ~{prompt_tokens} prompt + {ESTIMATED_ANSWER_TOKENS} answer tokens)")
+              f"completion tokens; {cache_note}")
+        print(f"    rough cost per session: ${per_call * calls_per_model:.2f} without caching, "
+              f"${per_session_cached:.2f} with ({calls_per_model} calls x ~{prompt_tokens} prompt + "
+              f"{ESTIMATED_ANSWER_TOKENS} answer tokens)")
         print_endpoints(model, api_key)
-    print(f"  Rough cost for one whole session: ${estimate_total:.2f} (a guess from character counts; "
-          "the real cost is recorded per call)")
+    print(f"  Rough cost for one whole session: ${estimate_total:.2f} without caching, ${estimate_cached:.2f} with "
+          "(a guess from character counts; the real cost is recorded per call)")
     return problems
+
+
+def _price(pricing, key):
+    """A price from the models list, USD per token, or None if not listed."""
+    value = pricing.get(key)
+    if value in (None, ""):
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
 
 
 def print_endpoints(model, api_key):
@@ -182,49 +222,42 @@ def print_endpoints(model, api_key):
 
 
 def test_calls(cfg, api_key, fillers) -> list[str]:
-    """One tiny paid call per model, with the real system prompt, template and answer
-    schema. Checks the answer parses and shows the cost and provider recorded."""
-    print("\nTest calls (--allow-paid: one small call per model):")
+    """Two small paid calls per model, with the real system prompt, template, fillers
+    and answer schema. The first writes the prefix to the provider's cache; the second
+    should read it, which the cached_tokens figure shows. Checks the answer parses."""
+    print("\nTest calls (--allow-paid: two small calls per model, so the second can hit the cache):")
     client = api.OpenRouterClient(api_key, timeout=cfg.request_timeout, max_retries=cfg.max_retries,
                                   calls_per_minute=cfg.calls_per_minute)
     out_dir = Path(cfg.results_dir) / "preflight"
     out_dir.mkdir(parents=True, exist_ok=True)
     problems = []
+    n_applicants = len(fillers) + 1
     for spec in cfg.models:
-        body = api.build_request_body(spec.id, cfg.system_prompt, fill_prompt(cfg, TEST_CV, fillers),
-                                      cfg.temperature)
-        raw_path = out_dir / (spec.id.replace("/", "__") + ".json")
-        try:
-            result = client.send(body)
-        except api.CallError as e:
-            print(f"  {spec.id}: FAILED ({e.error_type}: {e.message})")
-            raw_path.write_text(json.dumps({"request": body, "error": e.message, "response": e.response},
-                                           indent=1) + "\n", encoding="utf-8")
-            problems.append(f"the test call to '{spec.id}' failed: {e.error_type}: {e.message[:120]}")
-            continue
-        raw_path.write_text(json.dumps({"request": body, "response": result.response}, indent=1,
-                                       ensure_ascii=False) + "\n", encoding="utf-8")
-        details = api.extract_details(result.response)
-        try:
-            api.check_answer(api.parse_answer(result.content))
-            answer_note = "answer parsed and valid"
-        except (ValueError, TypeError) as e:
-            answer_note = f"ANSWER INVALID: {e}"
-            problems.append(f"the test call to '{spec.id}' returned an unusable answer: {e}")
-        print(f"  {spec.id}: {answer_note}; served by {details['provider']} as {details['served_model']}; "
-              f"{details['prompt_tokens']} + {details['completion_tokens']} tokens; "
-              f"cost ${details['cost_usd']}; finish_reason {details['finish_reason']}")
-        cross_check_cost(api_key, details)
+        temperature = cfg.temperature if spec.send_temperature else None
+        body = api.build_request_body(spec.id, cfg.system_prompt, split_prompt(cfg, TEST_CV, fillers), temperature,
+                                      response_format=api.response_format(n_applicants))
+        for attempt in (1, 2):
+            raw_path = out_dir / (spec.id.replace("/", "__") + f".{attempt}.json")
+            try:
+                result = client.send(body)
+            except api.CallError as e:
+                print(f"  {spec.id} call {attempt}: FAILED ({e.error_type}: {e.message})")
+                raw_path.write_text(json.dumps({"request": body, "error": e.message, "response": e.response},
+                                               indent=1) + "\n", encoding="utf-8")
+                problems.append(f"the test call to '{spec.id}' failed: {e.error_type}: {e.message[:120]}")
+                break
+            raw_path.write_text(json.dumps({"request": body, "response": result.response}, indent=1,
+                                           ensure_ascii=False) + "\n", encoding="utf-8")
+            details = api.extract_details(result.response)
+            try:
+                api.check_answer(api.parse_answer(result.content), n_applicants)
+            except (ValueError, TypeError) as e:
+                print(f"  {spec.id} call {attempt}: answered, but the answer is unusable ({e})")
+                problems.append(f"'{spec.id}' gave an unusable answer in the test call: {e}")
+                break
+            print(f"  {spec.id} call {attempt}: ok; provider {details['provider']}; "
+                  f"{details['prompt_tokens']} prompt tokens, cached {details['cached_tokens']}, "
+                  f"cache write {details['cache_write_tokens']}; cost ${details['cost_usd']}")
+            if attempt == 2 and not details["cached_tokens"]:
+                print(f"    note: the second call read nothing from the cache on this route")
     return problems
-
-
-def cross_check_cost(api_key, details):
-    """Compare the cost in the response with GET /api/v1/generation, which reports
-    total_cost and provider_name for the same call."""
-    try:
-        stats = api.generation_stats(api_key, details["generation_id"])
-    except api.CallError as e:
-        print(f"    generation stats: not available ({e.message[:100]})")
-        return
-    print(f"    generation stats: total_cost ${stats.get('total_cost')}, provider {stats.get('provider_name')}, "
-          f"tokens {stats.get('tokens_prompt')} + {stats.get('tokens_completion')}")

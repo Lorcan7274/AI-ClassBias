@@ -23,7 +23,7 @@ DEFAULT_CONFIG_PATH = PROJECT_DIR / "config.yaml"
 MODEL_TYPES = ("frontier", "open_source")
 
 # The user prompt template must use exactly these {placeholders}.
-TEMPLATE_FIELDS = {"job", "applicants", "target"}
+TEMPLATE_FIELDS = {"job", "fillers", "target_block", "target"}
 
 # Arm and variant names become part of CV file names (cv01_implicit_high.txt),
 # which are split on "_", so the names themselves must not contain "_".
@@ -38,10 +38,18 @@ PROMPT_KEYS = {"job_description", "system_prompt", "user_prompt_template"}
 PATH_KEYS = {"cv_dir", "filler_dir", "results_dir"}
 RUNNER_KEYS = {"workers", "calls_per_minute", "max_retries", "request_timeout"}
 CV_CHECK_KEYS = {"expected_base_cvs", "section_headings", "allowed_sections", "max_length_difference_pct", "leak_words"}
-ANALYSIS_KEYS = {"implicit_arm", "explicit_arm", "reason_keywords"}
+ANALYSIS_KEYS = {"implicit_arm", "explicit_arm", "reason_keywords", "monitoring_keywords"}
 
 # The lines of a CV before its first section heading (name and contact details).
 HEADER_SECTION = "header"
+
+# Words that show a one-sentence reason refers to the equal-opportunities monitoring
+# block, used when analysis.monitoring_keywords is not set. Chosen to match the
+# block's own content, not class in general: "background" or "class" alone would
+# also match "finance background" and "first-class".
+DEFAULT_MONITORING_KEYWORDS = ["monitoring", "equal opportunit*", "socio-economic", "socioeconomic",
+                               "free school meals", "household earner", "main earner", "parental occupation",
+                               "state-funded", "fee-paying", "disregard*"]
 
 
 def heading_key(text) -> str:
@@ -94,6 +102,7 @@ class Config:
     implicit_arm: str                  # the two class arms compared by hypothesis 2
     explicit_arm: str
     reason_keywords: list[str]         # class-related words counted in the models' reasons
+    monitoring_keywords: list[str]     # words showing a reason refers to the monitoring block
 
     def output_dir(self, dry_run: bool) -> Path:
         """Folder a run writes to. Dry runs get their own folder, so fake answers can
@@ -163,6 +172,8 @@ def load_config(path=DEFAULT_CONFIG_PATH) -> Config:
         implicit_arm=_arm_name(analysis.get("implicit_arm", "implicit"), "analysis.implicit_arm", arms),
         explicit_arm=_arm_name(analysis.get("explicit_arm", "explicit"), "analysis.explicit_arm", arms),
         reason_keywords=_read_words(analysis.get("reason_keywords"), "analysis.reason_keywords"),
+        monitoring_keywords=_read_words(analysis.get("monitoring_keywords", list(DEFAULT_MONITORING_KEYWORDS)),
+                                        "analysis.monitoring_keywords"),
     )
 
 
@@ -268,8 +279,14 @@ def _check_template(template):
         if unknown:
             problems.append("unknown " + ", ".join("{" + f + "}" for f in unknown))
         raise ConfigError(
-            "prompts.user_prompt_template must use {job}, {applicants} and {target} and nothing else: "
+            "prompts.user_prompt_template must use {job}, {fillers}, {target_block} and {target} and nothing else: "
             + "; ".join(problems) + ". Write {{ or }} for a literal brace.")
+    if template.count("{target_block}") != 1:
+        raise ConfigError("prompts.user_prompt_template must contain {target_block} exactly once: the prompt is "
+                          "split there into the cached prefix and the part that changes")
+    if template.index("{fillers}") > template.index("{target_block}"):
+        raise ConfigError("prompts.user_prompt_template must put {fillers} before {target_block}: the fillers "
+                          "are the cached prefix and the target comes after them")
 
 
 def _whole_number(value, name, minimum):

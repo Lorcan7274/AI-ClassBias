@@ -9,7 +9,8 @@ from pipeline import preflight
 MODELS = [
     {"id": "test/frontier-model", "name": "Frontier", "context_length": 128000,
      "supported_parameters": ["temperature", "structured_outputs", "response_format"],
-     "pricing": {"prompt": "0.000002", "completion": "0.000008"},
+     "pricing": {"prompt": "0.000002", "completion": "0.000008",
+                 "input_cache_read": "0.0000002", "input_cache_write": "0.0000025"},
      "links": {"details": "/api/v1/models/test/frontier-model/endpoints"}},
     {"id": "test/open-model", "name": "Open", "context_length": 32000,
      "supported_parameters": ["temperature", "max_tokens"],  # no structured outputs
@@ -44,7 +45,10 @@ def test_preflight_reports_models_without_structured_outputs(project, fake_api, 
     assert "structured_outputs: yes; response_format: yes; temperature: yes" in out
     assert "structured_outputs: NO" in out
     assert "provider Alpha: structured_outputs yes" in out
-    assert "$2.000 per M prompt tokens, $8.000 per M completion tokens" in out
+    assert "$2.000 per M prompt tokens, $8.000 per M completion tokens; cache read $0.200 per M, write $2.500 per M" in out
+    assert "no cache price listed" in out  # the open model lists none
+    assert "without caching" in out and "with (" in out
+    assert "Prompt: ~" in out and "cacheable prefix" in out
     assert "model 'test/open-model' does not list structured_outputs" in out
     assert "CV(s) contain the word PLACEHOLDER" in out  # the test project uses dummy CVs
     assert "Calls per session: 72 = 2 models x 18 CVs x 2 samples" in out

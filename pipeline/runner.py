@@ -86,7 +86,7 @@ def prompt_record(cfg, fillers) -> dict:
         "user_prompt_template": cfg.user_prompt_template,
         "job_description": cfg.job_description,
         "fillers": [{"name": name, "text": text} for name, text in fillers],
-        "response_format": api.RESPONSE_FORMAT,
+        "response_format": api.response_format(len(fillers) + 1),
     }
 
 
@@ -184,19 +184,32 @@ def target_label(fillers) -> str:
     return f"Applicant {len(fillers) + 1}"
 
 
-def applicants_block(fillers, cv_text) -> str:
-    """The fillers, numbered in their fixed order, then the target as the last applicant."""
-    parts = [f"=== APPLICANT {i} ===\n{text.rstrip()}" for i, (_, text) in enumerate(fillers, 1)]
-    parts.append(f"=== APPLICANT {len(fillers) + 1} ===\n{cv_text.rstrip()}")
-    return "\n\n".join(parts)
+def fillers_block(fillers) -> str:
+    """The fillers, numbered in their fixed order."""
+    return "\n\n".join(f"=== APPLICANT {i} ===\n{text.rstrip()}" for i, (_, text) in enumerate(fillers, 1))
+
+
+def target_block(fillers, cv_text) -> str:
+    """The CV being assessed, as the last applicant in the round."""
+    return f"=== APPLICANT {len(fillers) + 1} ===\n{cv_text.rstrip()}"
+
+
+def split_prompt(cfg, cv_text, fillers) -> tuple[str, str]:
+    """The user prompt for one call as (prefix, suffix), split where {target_block}
+    sits in the template. The prefix (job description, fillers) is identical in every
+    call and is what the providers cache; the suffix holds the CV that changes. The
+    model sees numbered applicants only: no file names, arm or variant labels."""
+    template = cfg.user_prompt_template
+    cut = template.index("{target_block}")
+    fields = {"job": cfg.job_description, "fillers": fillers_block(fillers),
+              "target_block": target_block(fillers, cv_text), "target": target_label(fillers)}
+    return template[:cut].format(**fields), template[cut:].format(**fields)
 
 
 def fill_prompt(cfg, cv_text, fillers) -> str:
-    """The user prompt for one call. The model sees the fillers and the target CV as
-    numbered applicants: no file names, arm or variant labels."""
-    return cfg.user_prompt_template.format(job=cfg.job_description,
-                                           applicants=applicants_block(fillers, cv_text),
-                                           target=target_label(fillers))
+    """The whole user prompt for one call, prefix and suffix together."""
+    prefix, suffix = split_prompt(cfg, cv_text, fillers)
+    return prefix + suffix
 
 
 class ResultsWriter:
@@ -251,7 +264,8 @@ def run_one(cfg, session, job, client, prompt_hash, dry_run, out_dir, fillers) -
         "prompt_hash": prompt_hash,
         "dry_run": dry_run,
     }
-    body = api.build_request_body(job.model.id, cfg.system_prompt, fill_prompt(cfg, s.text, fillers), temperature)
+    body = api.build_request_body(job.model.id, cfg.system_prompt, split_prompt(cfg, s.text, fillers), temperature,
+                                  response_format=api.response_format(len(fillers) + 1))
     raw = {"call_id": call_id, "session": session, "stimulus_id": s.stimulus_id, "sample": job.sample,
            "prompt_hash": prompt_hash, "dry_run": dry_run, "request": body}
     try:
@@ -270,7 +284,7 @@ def run_one(cfg, session, job, client, prompt_hash, dry_run, out_dir, fillers) -
                 "response": result.response})
     try:
         answer = api.parse_answer(result.content)
-        api.check_answer(answer)
+        api.check_answer(answer, n_applicants=len(fillers) + 1)
     except (ValueError, TypeError) as e:  # json.JSONDecodeError is a ValueError
         error_type = "bad_json" if isinstance(e, json.JSONDecodeError) else "bad_answer"
         row.update({"ok": False, "error_type": error_type, "error": f"{type(e).__name__}: {e}"[:300]})
@@ -281,6 +295,7 @@ def run_one(cfg, session, job, client, prompt_hash, dry_run, out_dir, fillers) -
     row.update({
         "ok": True,
         "shortlist": answer["shortlist"],
+        "rank_in_round": answer["rank_in_round"],
         "likelihood": answer["likelihood"],
         "reason": answer["reason"],
     })

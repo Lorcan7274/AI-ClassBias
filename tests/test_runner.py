@@ -17,7 +17,7 @@ class SaysYes:
 
     def send(self, body):
         self.bodies.append(body)
-        answer = {"shortlist": True, "likelihood": 80, "reason": "fine"}
+        answer = {"shortlist": True, "rank_in_round": 2, "likelihood": 80, "reason": "fine"}
         content = json.dumps(answer)
         response = {"id": "gen-fake", "model": body["model"], "usage": {"total_tokens": 10},
                     "choices": [{"finish_reason": "stop", "message": {"content": content}}]}
@@ -72,8 +72,10 @@ def test_each_row_records_its_cv_and_the_answer(project):
     for r in rows:
         assert r["variant"] in project.arms[r["arm"]]
         assert r["stimulus_id"] == f"{r['cv_id']}_{r['arm']}_{r['variant']}"
-        assert (r["shortlist"], r["likelihood"], r["reason"]) == (True, 80, "fine")
+        assert (r["shortlist"], r["rank_in_round"], r["likelihood"], r["reason"]) == (True, 2, 80, "fine")
         assert "pair_id" not in r and "order" not in r  # nothing pairwise is left in a row
+    # The prefix is byte-identical across calls: that is what the providers cache.
+    # (checked in the prompt-structure test through the content parts)
     # Every CV was sent exactly `samples` times to each model.
     from collections import Counter
     counts = Counter((r["model"], r["stimulus_id"]) for r in rows)
@@ -89,14 +91,22 @@ def test_the_prompt_is_the_fixed_fillers_then_the_one_target_cv(project):
     assert [name for name, _ in fillers] == ["F1.txt", "F2.txt"]
     assert len(client.bodies) == len(rows)
     for body, row in zip(client.bodies, rows):
-        prompt = body["messages"][1]["content"]
+        parts = body["messages"][1]["content"]
+        # Two content parts: the prefix that never changes, marked for caching, then the CV.
+        assert [p["type"] for p in parts] == ["text", "text"]
+        assert parts[0]["cache_control"] == {"type": "ephemeral"} and "cache_control" not in parts[1]
+        prefix, suffix = parts[0]["text"], parts[1]["text"]
+        prompt = prefix + suffix
         target = texts[row["stimulus_id"]].rstrip()
-        # The same fillers in the same order, then the target as the last applicant, asked about by name.
-        positions = [prompt.index(text.rstrip()) for _, text in fillers] + [prompt.index(target)]
-        assert positions == sorted(positions)
-        assert prompt.index("=== APPLICANT 3 ===") < prompt.index(target)
-        assert prompt.count("=== APPLICANT") == 3 and "Assess Applicant 3 only." in prompt
+        # The same fillers in the same order in the prefix, then the target as the last applicant in the suffix.
+        positions = [prefix.index(text.rstrip()) for _, text in fillers]
+        assert positions == sorted(positions) and target not in prefix
+        assert suffix.startswith("=== APPLICANT 3 ===") and target in suffix
+        assert prompt.count("=== APPLICANT") == 3 and "Assess Applicant 3 only." in suffix
         assert (row["n_fillers"], row["target_position"]) == (2, 3)
+        assert 1 <= row["rank_in_round"] <= 3 if "rank_in_round" in row else True
+        # The schema sent limits the rank to the round.
+        assert body["response_format"]["json_schema"]["schema"]["properties"]["rank_in_round"]["maximum"] == 3
         others = [t for sid, t in texts.items() if sid != row["stimulus_id"] and t not in texts[row["stimulus_id"]]]
         assert not any(t in prompt for t in others)  # never a second stimulus CV, never the twin
         assert ".txt" not in prompt  # no file name reaches the model
@@ -127,6 +137,8 @@ def test_every_row_carries_the_prompt_hash_and_the_prompt_is_saved(project):
     saved = project.output_dir(True) / "prompts" / f"{expected}.json"
     assert json.loads(saved.read_text(encoding="utf-8")) == prompt_record(project, fillers)
     assert [f["name"] for f in prompt_record(project, fillers)["fillers"]] == ["F1.txt", "F2.txt"]
+    # The schema in the record is the one for this round size.
+    assert prompt_record(project, fillers)["response_format"]["json_schema"]["schema"]["properties"]["rank_in_round"]["maximum"] == 3
 
 
 def test_prompt_hash_changes_when_any_part_of_the_prompt_changes(project):
