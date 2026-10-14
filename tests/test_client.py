@@ -199,28 +199,28 @@ def test_dry_run_client_looks_like_a_real_response():
 
 
 @pytest.mark.parametrize("content", [
-    '{"candidate_1": {"shortlist": true, "rating": 7, "reason": "ok"}, "candidate_2": {"shortlist": false, "rating": 3, "reason": "no"}, "preferred": "2"}',
-    '```json\n{"candidate_1": {"shortlist": true, "rating": 7, "reason": "ok"}, "candidate_2": {"shortlist": false, "rating": 3, "reason": "no"}, "preferred": "2"}\n```',
+    '{"shortlist": true, "likelihood": 72, "reason": "ok"}',
+    '```json\n{"shortlist": true, "likelihood": 72, "reason": "ok"}\n```',
 ])
 def test_answers_are_parsed_with_or_without_a_code_fence(content):
     answer = api.parse_answer(content)
     api.check_answer(answer)
-    assert answer["preferred"] == "2"
+    assert answer["likelihood"] == 72 and answer["shortlist"] is True
 
 
 @pytest.mark.parametrize("bad, message", [
     ("not json at all", None),
-    ('{"candidate_1": {"shortlist": true, "rating": 11, "reason": "x"}, "candidate_2": {"shortlist": true, "rating": 5, "reason": "x"}, "preferred": "1"}', "rating out of range"),
-    ('{"candidate_1": {"shortlist": true, "rating": true, "reason": "x"}, "candidate_2": {"shortlist": true, "rating": 5, "reason": "x"}, "preferred": "1"}', "rating out of range"),
-    ('{"candidate_1": {"shortlist": true, "rating": 7.5, "reason": "x"}, "candidate_2": {"shortlist": true, "rating": 5, "reason": "x"}, "preferred": "1"}', "rating out of range"),
-    ('{"candidate_1": {"shortlist": "yes", "rating": 7, "reason": "x"}, "candidate_2": {"shortlist": true, "rating": 5, "reason": "x"}, "preferred": "1"}', "shortlist"),
-    ('{"candidate_1": {"shortlist": true, "rating": 7, "reason": "x"}, "preferred": "1"}', "candidate_2 is missing"),
-    ('{"candidate_1": {"shortlist": true, "rating": 7}, "candidate_2": {"shortlist": true, "rating": 5, "reason": "x"}, "preferred": "1"}', "reason is missing"),
-    ('{"candidate_1": {"shortlist": true, "rating": 7, "reason": "x"}, "candidate_2": {"shortlist": true, "rating": 5, "reason": "x"}, "preferred": "3"}', "preferred"),
-    ('{"candidate_1": {"shortlist": true, "rating": 7, "reason": "x"}, "candidate_2": {"shortlist": true, "rating": 5, "reason": "x"}, "preferred": 1}', "preferred"),
+    ('{"shortlist": true, "likelihood": 101, "reason": "x"}', "likelihood out of range"),
+    ('{"shortlist": true, "likelihood": -1, "reason": "x"}', "likelihood out of range"),
+    ('{"shortlist": true, "likelihood": true, "reason": "x"}', "likelihood out of range"),
+    ('{"shortlist": true, "likelihood": 72.5, "reason": "x"}', "likelihood out of range"),
+    ('{"shortlist": "yes", "likelihood": 72, "reason": "x"}', "shortlist"),
+    ('{"likelihood": 72, "reason": "x"}', "shortlist is missing"),
+    ('{"shortlist": true, "likelihood": 72}', "reason is missing"),
+    ('{"shortlist": true, "likelihood": 72, "reason": 5}', "reason is not text"),
     ('[1, 2, 3]', "not a JSON object"),
 ])
-def test_bad_model_output_is_rejected(bad, message):
+def test_bad_answers_are_rejected(bad, message):
     if message is None:
         with pytest.raises(ValueError):
             api.parse_answer(bad)

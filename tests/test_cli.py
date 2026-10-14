@@ -35,7 +35,7 @@ def test_full_dry_run_from_the_command_line(make_config, tmp_path, capsys):
     assert {r["session"] for r in rows} == {"day1", "day2"}
     assert (dry / "summary.csv").exists() and (dry / "all_calls_flat.csv").exists()
     assert not (tmp_path / "results" / "results.jsonl").exists()
-    assert "pct_pick_x" in capsys.readouterr().out
+    assert "shortlist_diff" in capsys.readouterr().out
 
 
 def test_make_dummy_cvs_refuses_to_run_twice(make_config):
@@ -85,8 +85,8 @@ def test_real_run_refuses_placeholders_and_never_prints_the_key(make_config, tmp
 
 
 def test_bad_config_gives_a_clear_error(make_config):
-    config = make_config({"reps: 2": "reps: none"})
-    with pytest.raises(SystemExit, match="reps must be a whole number"):
+    config = make_config({"samples: 2": "samples: none"})
+    with pytest.raises(SystemExit, match="samples must be a whole number"):
         run_cli(config, "validate-cvs")
 
 

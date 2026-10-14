@@ -10,8 +10,8 @@ import requests
 from pipeline.config import load_config
 from pipeline.cvs import make_dummy_cvs
 
-# A small study: 2 models, 3 arms, 2 reps. With 3 base CVs that gives
-# 9 pairs and 2 x 9 x 2 x 2 = 72 calls per session.
+# A small study: 2 models, 3 arms, 2 samples. With 3 base CVs that gives
+# 18 CVs (9 pairs) and 2 x 18 x 2 = 72 calls per session.
 CONFIG_TEXT = """
 models:
   - id: test/frontier-model
@@ -22,7 +22,7 @@ arms:
   implicit: [high, low]
   explicit: [high, low]
   demographic: [a, b]
-reps: 2
+samples: 2
 temperature: null
 shuffle_seed: 1
 prompts:
@@ -30,10 +30,8 @@ prompts:
   system_prompt: You are a recruiter.
   user_prompt_template: |-
     Job: {job}
-    === CANDIDATE 1 ===
-    {cv1}
-    === CANDIDATE 2 ===
-    {cv2}
+    === CV ===
+    {cv}
 paths:
   cv_dir: cvs
   results_dir: results
@@ -71,7 +69,7 @@ def no_network(monkeypatch):
 @pytest.fixture
 def make_config(tmp_path):
     """Returns a function that writes config.yaml into the test's temporary folder.
-    Pass {old_text: new_text} to change settings, e.g. make_config({"reps: 2": "reps: 0"})."""
+    Pass {old_text: new_text} to change settings, e.g. make_config({"samples: 2": "samples: 0"})."""
     def _make(replacements=None):
         text = CONFIG_TEXT
         for old, new in (replacements or {}).items():

@@ -23,7 +23,7 @@ DEFAULT_CONFIG_PATH = PROJECT_DIR / "config.yaml"
 MODEL_TYPES = ("frontier", "open_source")
 
 # The user prompt template must use exactly these {placeholders}.
-TEMPLATE_FIELDS = {"job", "cv1", "cv2"}
+TEMPLATE_FIELDS = {"job", "cv"}
 
 # Arm and variant names become part of CV file names (cv01_implicit_high.txt),
 # which are split on "_", so the names themselves must not contain "_".
@@ -32,7 +32,7 @@ NAME_PATTERN = re.compile(r"[A-Za-z0-9-]+")
 # Every setting config.yaml may contain. Anything else is almost certainly a typo
 # (e.g. "temprature"). Silently ignoring a typo could run a whole session with the
 # wrong settings, so we stop with an error instead.
-TOP_LEVEL_KEYS = {"models", "arms", "reps", "temperature", "shuffle_seed", "prompts", "paths", "runner", "cv_checks",
+TOP_LEVEL_KEYS = {"models", "arms", "samples", "temperature", "shuffle_seed", "prompts", "paths", "runner", "cv_checks",
                   "analysis"}
 PROMPT_KEYS = {"job_description", "system_prompt", "user_prompt_template"}
 PATH_KEYS = {"cv_dir", "results_dir"}
@@ -58,6 +58,9 @@ class ConfigError(Exception):
 class ModelSpec:
     id: str    # exact OpenRouter model slug
     type: str  # "frontier" or "open_source"
+    # Some models reject a temperature outright (and require_parameters would then
+    # leave them no provider), so a model can opt out of being sent one.
+    send_temperature: bool = True
 
     def is_placeholder(self) -> bool:
         return self.id.startswith("PUT_")
@@ -68,7 +71,7 @@ class Config:
     path: Path                         # the config file these settings came from
     models: list[ModelSpec]
     arms: dict[str, tuple[str, str]]   # arm -> (variant_x, variant_y)
-    reps: int
+    samples: int                       # calls per CV per session
     temperature: float | None          # None = not sent, model default
     shuffle_seed: int | None           # None = a new random call order every run
     job_description: str
@@ -135,7 +138,7 @@ def load_config(path=DEFAULT_CONFIG_PATH) -> Config:
         path=path,
         models=_read_models(raw.get("models")),
         arms=arms,
-        reps=_whole_number(raw.get("reps"), "reps", minimum=1),
+        samples=_whole_number(raw.get("samples"), "samples", minimum=1),
         temperature=_read_temperature(raw.get("temperature")),
         shuffle_seed=_optional_whole_number(raw.get("shuffle_seed"), "shuffle_seed"),
         job_description=prompts["job_description"],
@@ -199,13 +202,15 @@ def _read_models(models):
         raise ConfigError("'models:' must be a list with at least one model")
     specs = []
     for i, m in enumerate(models, 1):
-        if not isinstance(m, dict) or set(m) != {"id", "type"}:
-            raise ConfigError(f"models entry {i} must have exactly two settings: id and type")
+        if not isinstance(m, dict) or not {"id", "type"} <= set(m) <= {"id", "type", "send_temperature"}:
+            raise ConfigError(f"models entry {i} must have the settings id and type (and optionally send_temperature)")
+        if not isinstance(m.get("send_temperature", True), bool):
+            raise ConfigError(f"models entry {i}: send_temperature must be true or false")
         if not isinstance(m["id"], str) or not m["id"].strip():
             raise ConfigError(f"models entry {i}: id must be the model's OpenRouter slug")
         if m["type"] not in MODEL_TYPES:
             raise ConfigError(f"models entry {i}: type must be one of: {', '.join(MODEL_TYPES)}")
-        specs.append(ModelSpec(id=m["id"].strip(), type=m["type"]))
+        specs.append(ModelSpec(id=m["id"].strip(), type=m["type"], send_temperature=m.get("send_temperature", True)))
     ids = [s.id for s in specs]
     repeated = sorted({i for i in ids if ids.count(i) > 1})
     if repeated:
@@ -261,7 +266,7 @@ def _check_template(template):
         if unknown:
             problems.append("unknown " + ", ".join("{" + f + "}" for f in unknown))
         raise ConfigError(
-            "prompts.user_prompt_template must use {job}, {cv1} and {cv2} and nothing else: "
+            "prompts.user_prompt_template must use {job} and {cv} and nothing else: "
             + "; ".join(problems) + ". Write {{ or }} for a literal brace.")
 
 

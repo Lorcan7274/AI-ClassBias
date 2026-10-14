@@ -42,14 +42,21 @@ delivery. The sheets therefore carry no new content of their own.
 | # | Fix | Where |
 |---|---|---|
 | 2.1 | Free-school-meals question added as the third question (v3 `No`, v4 `Yes`) | `form_template.txt`, new `free_school_meals` column |
-| 2.2 | Monitoring disclaimer added, directly under the heading | `form_template.txt` |
+| 2.2 | ~~Monitoring disclaimer added~~ **Reversed after the pilot, see below** | `form_template.txt` |
 | 2.3 | v4 school type → `State-run or state-funded school – non-selective` | `markers.csv` |
 | 2.4 | `@example.com` → `@gmail.com`, all 90 CVs | `markers.csv` |
-| 2.5 | High-side award reduced to one item in B05, B09, B13 | `markers.csv` |
+| 2.5 | High-side award reduced to one item in B05, B09, B13 (B09 later set to `Sixth Form Academic Scholarship`, see the award rule) | `markers.csv` |
 
-**2.2 placement.** The instruction read "directly under the form heading, before
-the questions". The disclaimer went immediately after the heading, satisfying
-both halves; the "Section 6 …" scaffolding line now sits third.
+**2.2 — reversed on pilot evidence.** The disclaimer was added as asked, and the
+first pilot showed it functioning as an instruction: all four explicit-arm calls
+disregarded the monitoring answers, one saying so "as instructed". It was removed
+again, together with the original "Section 6 … Not part of the CV" line, which did
+the same job. The form now carries only the heading and the three question-answer
+lines. The model knows what monitoring data is; whether it uses it is the
+question, and a model that then says unprompted that it did not consider
+background is a finding about the model, not about our text. Whether models obey
+an explicit firewall instruction is a separate question worth its own arm one day;
+it is not run here.
 
 **2.5 B13 — changed from the prescribed value, deliberately.** The review
 prescribed `Head of House`, which is neither item of B13's old line
@@ -207,7 +214,7 @@ signal. Two awards were changed under it:
 
 | | Was | Now |
 |---|---|---|
-| B09 high | School Prize for Mathematics | **Head of House** |
+| B09 high | School Prize for Mathematics | **Sixth Form Academic Scholarship** |
 | B13 high | School Prize for Mathematics and Senior Prefect | **Senior Prefect** |
 
 No base now carries a subject-specific prize on the high side. The high-side set
@@ -216,21 +223,12 @@ need-based bursaries and three widening-participation programmes.
 `make_class_ranking.py` keeps the excluded value in its `AWARDS` dict, marked
 `EXCLUDED`, so the rule stays legible to the next reader.
 
-### One consequence, not yet resolved
+### Why B09 is a scholarship rather than an office
 
-B09's low-side award is the longest in the set (`Social Mobility Foundation
-Aspiring Professionals Programme`, 59 characters) and `Head of House` is the
-shortest high-side one (13), so the pair now differs in length by **3.3%
-(1318 vs 1363 characters) against the 3% limit** — `validate-cvs` warns, which
-does not block a run. The same thing happened to B13 and was resolved there by a
-longer award. Three ways out, none chosen:
-
-- accept 3.3%, on the grounds that the coding rule matters more than the margin;
-- give B09 a longer status-coded award — `Sixth Form Academic Scholarship`
-  (31 characters) brings the pair to 2.0% and stays inside the rule, since
-  scholarships are permitted;
-- shorten B09's low-side award, which would break the five-programme cycle used
-  across the other bases.
+`Head of House` was tried first and left B09's pair 3.3% apart in length against
+a 3% limit, because B09's low-side award is the longest in the set. `Sixth Form
+Academic Scholarship` is inside the rule (scholarships are permitted), brings the
+pair to 2.0%, and stops being something anyone has to defend in a write-up.
 
 ## Pilot, 12 calls — three findings that need a decision
 
@@ -308,6 +306,48 @@ anchoring together, at the cost of doubling the call count. That is cheap here:
 (`preflight` estimates $6.48; the measured figure is about twice that, because
 the real job description is longer than the placeholder it guessed from —
 2,395 prompt tokens per call against its assumed 1,380.)
+
+## Design change after the pilot: one CV per call
+
+The pairwise design was wrong for LLMs with CVs this similar. Shown both versions
+of a CV in one prompt, the model recognised them as the same CV in 10 of 12 calls,
+anchored the second score to the first, and defaulted to whichever was listed
+first in 11 of 12. One CV per call removes all three at once, and it is the
+faithful analogue of a correspondence audit anyway: no real employer ever sees both
+versions. It also matches what the human raters see. The cost is unchanged — 90
+CVs is 45 pairs in two orders.
+
+The measure changed with it, because single-CV ratings on a 1–10 scale cluster at
+7–8 and say nothing:
+
+- the model is asked for a yes/no shortlist decision, a 0–100 likelihood of
+  shortlisting, and a one-line reason;
+- the job description now says the screener expects to shortlist roughly 3 in 10
+  applicants at this stage, so the decision has a budget — without one, everyone
+  gets a yes;
+- each CV is sampled 5 times per session at temperature 1.0. The share of "yes"
+  across the samples is the estimate of the model's shortlist probability, which
+  is how Tamkin et al. measure decisions; the mean 0–100 score is the secondary.
+
+The analysis stays as planned: per base CV, higher-class minus lower-class in
+shortlist rate and in mean score, averaged over models and sessions, with the
+15 base CVs as the units. Ordering is no longer a factor. `validate-cvs` is
+unchanged, since the pairs are still a property of the stimulus set.
+
+**One wrinkle to be aware of.** The two frontier models (`claude-opus-5.5`,
+`gpt-6.1-sol-pro`) do not accept a temperature at all — OpenRouter lists none in
+their supported parameters, and the pipeline's `require_parameters` would leave
+them no provider — so they are sent none (`send_temperature: false` in
+`config.yaml`) and sample at their own default. The two open-weight models are
+sent 1.0. Each row records the temperature actually sent. The second pilot runs on
+one of the frontier models precisely to see whether its default sampling varies
+enough for the shortlist rate to mean anything; the consistency table in the
+analysis is the check for the real run.
+
+Phone numbers: every CV carried the same `07700 900412`, which the first pilot's
+model noticed. Each base now has its own number in the fictional 07700 900xxx
+range, shared across its six versions. Under single-CV calls it no longer
+matters, but a shared dummy number in a released stimulus set looks careless.
 
 ## Change outside this folder
 

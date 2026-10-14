@@ -12,8 +12,8 @@ import json
 from pathlib import Path
 
 from pipeline import client as api
-from pipeline.cvs import load_pairs, placeholder_pairs
-from pipeline.runner import ORDERS, compute_prompt_hash, fill_prompt, prompt_record
+from pipeline.cvs import load_stimuli, placeholder_stimuli
+from pipeline.runner import compute_prompt_hash, fill_prompt, prompt_record
 from pipeline.validation import validate_cvs
 
 # Structured outputs guide: support "is determined per endpoint, not just per model",
@@ -24,9 +24,8 @@ STRUCTURED = "structured_outputs"
 CHARS_PER_TOKEN = 4
 ESTIMATED_ANSWER_TOKENS = 150
 
-# Two tiny CVs for the --allow-paid test call, to keep it as cheap as possible.
-TEST_CV_1 = "A. Smith\nEducation: BSc Economics, 2:1\nExperience: finance internship, 2024\n"
-TEST_CV_2 = "B. Jones\nEducation: BSc Economics, 2:1\nExperience: audit internship, 2024\n"
+# A tiny CV for the --allow-paid test call, to keep it as cheap as possible.
+TEST_CV = "A. Smith\nEducation: BSc Economics, 2:1\nExperience: finance internship, 2024\n"
 
 
 def run_preflight(cfg, api_key, allow_paid=False) -> bool:
@@ -43,32 +42,37 @@ def run_preflight(cfg, api_key, allow_paid=False) -> bool:
     if not api_key:
         problems.append("OPENROUTER_API_KEY is not set (copy .env.example to .env and add your key)")
 
-    pairs, missing = load_pairs(cfg.cv_dir, cfg.arms)
-    print(f"CV pairs in {cfg.cv_dir}: {len(pairs)} complete, {len(missing)} incomplete")
-    if not pairs:
+    stimuli, missing = load_stimuli(cfg.cv_dir, cfg.arms)
+    n_cvs = len({s.cv_id for s in stimuli})
+    print(f"CVs in {cfg.cv_dir}: {len(stimuli)} files from {n_cvs} base CVs; {len(missing)} incomplete pair(s)")
+    if not stimuli:
         problems.append(f"no complete CV pairs in {cfg.cv_dir}")
     if missing:
         problems.append(f"incomplete pairs: {', '.join(missing)} (run validate-cvs)")
-    dummies = placeholder_pairs(pairs)
+    dummies = placeholder_stimuli(stimuli)
     if dummies:
-        problems.append(f"{len(dummies)} CV pair(s) contain the word PLACEHOLDER, e.g. {dummies[0]}: "
+        problems.append(f"{len(dummies)} CV(s) contain the word PLACEHOLDER, e.g. {dummies[0]}: "
                         "these look like dummy CVs")
     check = validate_cvs(cfg)
     print(f"CV check: {len(check.errors)} error(s), {len(check.warnings)} warning(s) (details: validate-cvs)")
     if check.errors:
         problems.append(f"the CV check found {len(check.errors)} error(s): run validate-cvs")
 
-    n_calls = len(cfg.models) * len(pairs) * len(ORDERS) * cfg.reps
-    print(f"Calls per session: {n_calls} = {len(cfg.models)} models x {len(pairs)} pairs "
-          f"x {len(ORDERS)} orders x {cfg.reps} reps")
-    print(f"Temperature: {'model default (not sent)' if cfg.temperature is None else cfg.temperature}")
+    n_calls = len(cfg.models) * len(stimuli) * cfg.samples
+    print(f"Calls per session: {n_calls} = {len(cfg.models)} models x {len(stimuli)} CVs x {cfg.samples} samples")
+    not_sent = [m.id for m in cfg.models if not m.send_temperature]
+    if cfg.temperature is None:
+        print("Temperature: model default (not sent)")
+    else:
+        print(f"Temperature: {cfg.temperature:g}"
+              + (f"; not sent to {', '.join(not_sent)} (send_temperature: false)" if not_sent else ""))
     print(f"Workers: {cfg.workers}, rate limit: {cfg.calls_per_minute:g} calls/minute, "
           f"retries: {cfg.max_retries}, timeout: {cfg.request_timeout:g}s")
     print(f"prompt_hash: {compute_prompt_hash(prompt_record(cfg))}")
 
     if api_key:
         problems += check_key(api_key)
-        problems += check_models(cfg, api_key, pairs, n_calls // max(len(cfg.models), 1))
+        problems += check_models(cfg, api_key, stimuli, n_calls // max(len(cfg.models), 1))
         if allow_paid:
             if problems:
                 print("\nSkipping the paid test calls because of the problems below.")
@@ -104,7 +108,7 @@ def check_key(api_key) -> list[str]:
     return []
 
 
-def check_models(cfg, api_key, pairs, calls_per_model) -> list[str]:
+def check_models(cfg, api_key, stimuli, calls_per_model) -> list[str]:
     """Does each configured model exist and support structured outputs, and what would it cost?"""
     print("\nModels (GET /api/v1/models):")
     try:
@@ -113,7 +117,7 @@ def check_models(cfg, api_key, pairs, calls_per_model) -> list[str]:
         print(f"  could not read the models list: {e.message}")
         return [f"could not read the models list: {e.message}"]
     problems = []
-    longest = max((len(fill_prompt(cfg, p.x_text, p.y_text)) + len(cfg.system_prompt) for p in pairs), default=0)
+    longest = max((len(fill_prompt(cfg, s.text)) + len(cfg.system_prompt) for s in stimuli), default=0)
     prompt_tokens = longest // CHARS_PER_TOKEN
     estimate_total = 0.0
     for spec in cfg.models:
@@ -127,12 +131,14 @@ def check_models(cfg, api_key, pairs, calls_per_model) -> list[str]:
         print(f"    name: {model.get('name')}; context length: {model.get('context_length')}")
         print(f"    structured_outputs: {'yes' if STRUCTURED in params else 'NO'}; "
               f"response_format: {'yes' if 'response_format' in params else 'no'}; "
-              f"temperature: {'yes' if 'temperature' in params else 'no'}")
+              f"temperature: {'yes' if 'temperature' in params else 'no'}"
+              + ("" if spec.send_temperature else " (not sent to this model: send_temperature is false)"))
         if STRUCTURED not in params:
             problems.append(f"model '{spec.id}' does not list structured_outputs in supported_parameters")
-        if cfg.temperature is not None and "temperature" not in params:
+        if cfg.temperature is not None and spec.send_temperature and "temperature" not in params:
             problems.append(f"model '{spec.id}' does not list temperature in supported_parameters, "
-                            "but config.yaml sets one (require_parameters would leave it no provider)")
+                            "but config.yaml sets one (require_parameters would leave it no provider); "
+                            "give the model send_temperature: false")
         pricing = model.get("pricing") or {}
         try:  # prices are strings in USD per token (models list docs)
             prompt_price, completion_price = float(pricing.get("prompt", 0)), float(pricing.get("completion", 0))
@@ -179,7 +185,7 @@ def test_calls(cfg, api_key) -> list[str]:
     out_dir.mkdir(parents=True, exist_ok=True)
     problems = []
     for spec in cfg.models:
-        body = api.build_request_body(spec.id, cfg.system_prompt, fill_prompt(cfg, TEST_CV_1, TEST_CV_2),
+        body = api.build_request_body(spec.id, cfg.system_prompt, fill_prompt(cfg, TEST_CV),
                                       cfg.temperature)
         raw_path = out_dir / (spec.id.replace("/", "__") + ".json")
         try:

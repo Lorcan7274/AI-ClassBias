@@ -46,10 +46,32 @@ def test_preflight_reports_models_without_structured_outputs(project, fake_api, 
     assert "provider Alpha: structured_outputs yes" in out
     assert "$2.000 per M prompt tokens, $8.000 per M completion tokens" in out
     assert "model 'test/open-model' does not list structured_outputs" in out
-    assert "CV pair(s) contain the word PLACEHOLDER" in out  # the test project uses dummy CVs
+    assert "CV(s) contain the word PLACEHOLDER" in out  # the test project uses dummy CVs
+    assert "Calls per session: 72 = 2 models x 18 CVs x 2 samples" in out
     assert "No paid test call was made" in out
     assert fake_api["paid_calls"] == 0
     assert "sk-test" not in out
+
+
+def test_preflight_rejects_a_temperature_a_model_cannot_take_unless_opted_out(make_config, fake_api, capsys):
+    from pipeline.config import load_config
+    from pipeline.cvs import make_dummy_cvs
+    fake_api["models"] = [dict(MODELS[0], supported_parameters=["structured_outputs", "response_format"]),
+                          dict(MODELS[1], supported_parameters=["structured_outputs", "temperature"])]
+    cfg = load_config(make_config({"temperature: null": "temperature: 1.0"}))
+    make_dummy_cvs(cfg.cv_dir, cfg.arms, n_cvs=3)
+    preflight.run_preflight(cfg, "sk-test")
+    out = capsys.readouterr().out
+    assert "model 'test/frontier-model' does not list temperature" in out
+    assert "Temperature: 1" in out
+
+    cfg = load_config(make_config({"temperature: null": "temperature: 1.0",
+                                   "type: frontier": "type: frontier\n    send_temperature: false"}))
+    preflight.run_preflight(cfg, "sk-test")
+    out = capsys.readouterr().out
+    assert "does not list temperature" not in out
+    assert "not sent to test/frontier-model (send_temperature: false)" in out
+    assert "(not sent to this model: send_temperature is false)" in out
 
 
 def test_preflight_flags_unknown_models_and_a_used_up_key(project, fake_api, capsys):

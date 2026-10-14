@@ -1,13 +1,13 @@
 # CV bias pipeline
 
-Sends pairs of CVs to models via OpenRouter and analyses which one they prefer.
+Sends each CV to models via OpenRouter, one CV per call and several samples each, and analyses whether the higher-class version of a CV is shortlisted more often than the other.
 
 ## Parts
 
 - `config.yaml` – all settings: models, arms, reps, prompts, CV checks, analysis keywords, runner limits
 - `pipeline/` – the code
   - `config.py` – loads and checks `config.yaml`, reads the API key from `.env`
-  - `cvs.py` – reads `cvs/`, builds pairs, writes dummy CVs
+  - `cvs.py` – reads `cvs/`, lists the CVs and the pairs they form, writes dummy CVs
   - `validation.py` – checks the CV files (names, pair diffs, length, leak words)
   - `client.py` – OpenRouter calls, retries, rate limit
   - `runner.py` – runs a session with workers, resume, budget, raw response files

@@ -4,11 +4,17 @@ from pipeline.config import DEFAULT_CONFIG_PATH, ConfigError, load_config, read_
 
 
 def test_shipped_config_matches_the_study_design():
-    """config.yaml in the repo loads, with 3 arms, 5 reps, 2 frontier and 2 open-source models."""
+    """config.yaml in the repo loads, with 3 arms, 5 samples, 2 frontier and 2 open-source models,
+    a temperature that the two frontier models are not sent, and a one-CV prompt."""
     cfg = load_config(DEFAULT_CONFIG_PATH)
     assert cfg.arms == {"implicit": ("high", "low"), "explicit": ("high", "low"), "demographic": ("a", "b")}
-    assert cfg.reps == 5
+    assert cfg.samples == 5
     assert sorted(m.type for m in cfg.models) == ["frontier", "frontier", "open_source", "open_source"]
+    assert cfg.temperature == 1.0
+    assert [m.send_temperature for m in cfg.models if m.type == "frontier"] == [False, False]
+    assert all(m.send_temperature for m in cfg.models if m.type == "open_source")
+    assert "{cv}" in cfg.user_prompt_template and "{cv1}" not in cfg.user_prompt_template
+    assert "3 in 10" in cfg.job_description
 
 
 def test_folders_are_relative_to_the_config_file(make_config, tmp_path):
@@ -21,8 +27,10 @@ def test_folders_are_relative_to_the_config_file(make_config, tmp_path):
 @pytest.mark.parametrize("old, new, message", [
     ("temperature: null", "temprature: null", "temprature"),       # typo in a setting name
     ("max_retries: 3", "max_retry: 3", "max_retry"),               # typo inside a section
-    ("reps: 2", "reps: 0", "reps"),
-    ("reps: 2", "reps: 2.5", "reps"),
+    ("samples: 2", "samples: 0", "samples"),
+    ("samples: 2", "samples: 2.5", "samples"),
+    ("type: frontier", "type: frontier\n    send_temperature: maybe", "send_temperature"),
+    ("type: frontier", "type: frontier\n    colour: blue", "models entry 1"),
     ("temperature: null", "temperature: 2.5", "temperature"),      # OpenRouter allows 0-2
     ("temperature: null", "temperature: yes", "temperature"),      # YAML reads yes as true
     ("implicit: [high, low]", "implicit: [high, high]", "implicit"),
@@ -30,13 +38,18 @@ def test_folders_are_relative_to_the_config_file(make_config, tmp_path):
     ("implicit: [high, low]", "implicit: [high_class, low]", "implicit"),  # "_" would break file names
     ("type: frontier", "type: closed", "type"),
     ("id: test/open-model", "id: test/frontier-model", "more than once"),
-    ("{cv2}", "{cv3}", r"missing \{cv2\}; unknown \{cv3\}"),
+    ("{cv}", "{cv2}", r"missing \{cv\}; unknown \{cv2\}"),
     ("Job: {job}", "Job: {job} {", "unmatched curly brace"),
     ("job_description: Graduate Analyst.", "job_description: ''", "job_description"),
 ])
 def test_bad_settings_are_rejected_with_a_clear_message(make_config, old, new, message):
     with pytest.raises(ConfigError, match=message):
         load_config(make_config({old: new}))
+
+
+def test_send_temperature_defaults_to_true_and_can_be_turned_off(make_config):
+    cfg = load_config(make_config({"type: frontier": "type: frontier\n    send_temperature: false"}))
+    assert [m.send_temperature for m in cfg.models] == [False, True]
 
 
 def test_literal_braces_in_the_template_are_allowed(make_config):

@@ -64,14 +64,15 @@ def test_missing_columns_are_reported(project, sample):
 
 
 def test_analyze_survey_compares_with_the_models_on_the_same_pairs(project, sample, capsys):
-    write_rows(project, make_rows(project, {"implicit": 0.9, "explicit": 0.5, "demographic": 0.5}, reps=2))
+    write_rows(project, make_rows(project, {"implicit": 0.95, "explicit": 0.5, "demographic": 0.5}, samples=6))
     summary = survey.analyze_survey(project, sample, dry_run=False)
     assert 0 < summary.iloc[0]["human_pick_high_rate"] < 1
     out_dir = project.output_dir(False) / "survey"
     by_pair = pd.read_csv(out_dir / "survey_by_pair.csv")
     assert set(by_pair["pair_id"]) <= {"cv01_implicit", "cv02_implicit", "cv03_implicit"}
     assert {"model_frontier-model", "model_open-model"} <= set(by_pair.columns)
-    assert (by_pair["model_frontier-model"] > 0.6).all()
+    # The model column is now an effect (x's shortlist rate minus y's): 0.95 vs 0.5 gives about +0.45.
+    assert (by_pair["model_frontier-model"] > 0.2).all()
     for name in ["survey_summary.csv", "survey_manipulation_check.csv", "survey_report.md", "figures/survey_vs_models.png"]:
         assert (out_dir / name).exists(), name
     report = (out_dir / "survey_report.md").read_text(encoding="utf-8")

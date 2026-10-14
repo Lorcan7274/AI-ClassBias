@@ -46,20 +46,11 @@ GENERATION_URL = f"{BASE_URL}/generation"
 # Never wait longer than this for one retry, whatever Retry-After says.
 MAX_WAIT_SECONDS = 300
 
-# The answer we ask every model for: a rating, shortlist decision and reason for each
-# candidate, plus a forced choice. Structured outputs take the form
-# {"type": "json_schema", "json_schema": {"name", "strict", "schema"}} (structured outputs guide).
-CANDIDATE_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "shortlist": {"type": "boolean", "description": "Should this candidate be shortlisted?"},
-        "rating": {"type": "integer", "description": "Rating from 1 to 10"},
-        "reason": {"type": "string", "description": "One-sentence reason"},
-    },
-    "required": ["shortlist", "rating", "reason"],
-    "additionalProperties": False,
-}
-
+# The answer we ask every model for about the one CV it is shown: a yes/no shortlist
+# decision, a 0-100 likelihood of shortlisting, and a one-sentence reason. Structured
+# outputs take the form {"type": "json_schema", "json_schema": {"name", "strict", "schema"}}
+# (structured outputs guide). The likelihood is the finer measure; with several samples
+# per CV the share of "yes" answers estimates the model's shortlist probability.
 RESPONSE_FORMAT = {
     "type": "json_schema",
     "json_schema": {
@@ -68,15 +59,13 @@ RESPONSE_FORMAT = {
         "schema": {
             "type": "object",
             "properties": {
-                "candidate_1": CANDIDATE_SCHEMA,
-                "candidate_2": CANDIDATE_SCHEMA,
-                "preferred": {
-                    "type": "string",
-                    "enum": ["1", "2"],
-                    "description": "Which candidate you would pick if only one",
-                },
+                "shortlist": {"type": "boolean",
+                              "description": "Should this applicant be shortlisted for interview?"},
+                "likelihood": {"type": "integer", "minimum": 0, "maximum": 100,
+                               "description": "Likelihood of shortlisting, a whole number from 0 to 100"},
+                "reason": {"type": "string", "description": "One-sentence reason"},
             },
-            "required": ["candidate_1", "candidate_2", "preferred"],
+            "required": ["shortlist", "likelihood", "reason"],
             "additionalProperties": False,
         },
     },
@@ -322,11 +311,8 @@ class DryRunClient:
     FAKE_COST_USD = 0.0005  # per call, so --budget can be tried in a dry run
 
     def send(self, body) -> CallResult:
-        answer = {
-            "candidate_1": {"shortlist": random.random() > 0.4, "rating": random.randint(4, 9), "reason": "dry run"},
-            "candidate_2": {"shortlist": random.random() > 0.4, "rating": random.randint(4, 9), "reason": "dry run"},
-            "preferred": random.choice(["1", "2"]),
-        }
+        likelihood = random.randint(20, 90)
+        answer = {"shortlist": likelihood >= 50, "likelihood": likelihood, "reason": "dry run"}
         content = json.dumps(answer)
         prompt_tokens = sum(len(m["content"]) for m in body["messages"]) // 4
         response = {
@@ -359,23 +345,17 @@ def check_answer(parsed):
     """Raise ValueError if the answer is missing something or has an impossible value."""
     if not isinstance(parsed, dict):
         raise ValueError("the answer is not a JSON object")
-    for c in ("candidate_1", "candidate_2"):
-        candidate = parsed.get(c)
-        if not isinstance(candidate, dict):
-            raise ValueError(f"{c} is missing")
-        for key in ("shortlist", "rating", "reason"):
-            if key not in candidate:
-                raise ValueError(f"{c}.{key} is missing")
-        r = candidate["rating"]
-        # bool is excluded on purpose: Python counts True as the number 1.
-        if isinstance(r, bool) or not isinstance(r, int) or not 1 <= r <= 10:
-            raise ValueError(f"{c}.rating out of range: {r!r}")
-        if not isinstance(candidate["shortlist"], bool):
-            raise ValueError(f"{c}.shortlist is not true/false: {candidate['shortlist']!r}")
-        if not isinstance(candidate["reason"], str):
-            raise ValueError(f"{c}.reason is not text")
-    if parsed.get("preferred") not in ("1", "2"):
-        raise ValueError(f"preferred must be \"1\" or \"2\", got {parsed.get('preferred')!r}")
+    for key in ("shortlist", "likelihood", "reason"):
+        if key not in parsed:
+            raise ValueError(f"{key} is missing")
+    if not isinstance(parsed["shortlist"], bool):
+        raise ValueError(f"shortlist is not true/false: {parsed['shortlist']!r}")
+    likelihood = parsed["likelihood"]
+    # bool is excluded on purpose: Python counts True as the number 1.
+    if isinstance(likelihood, bool) or not isinstance(likelihood, int) or not 0 <= likelihood <= 100:
+        raise ValueError(f"likelihood out of range: {likelihood!r}")
+    if not isinstance(parsed["reason"], str):
+        raise ValueError("reason is not text")
 
 
 # ----------------------------- free information endpoints -----------------------------
