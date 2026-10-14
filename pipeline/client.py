@@ -41,6 +41,7 @@ BASE_URL = "https://openrouter.ai/api/v1"
 CHAT_URL = f"{BASE_URL}/chat/completions"
 MODELS_URL = f"{BASE_URL}/models"
 KEY_URL = f"{BASE_URL}/key"
+CREDITS_URL = f"{BASE_URL}/credits"
 GENERATION_URL = f"{BASE_URL}/generation"
 
 # Never wait longer than this for one retry, whatever Retry-After says.
@@ -435,6 +436,13 @@ def model_endpoints(details_path, api_key=None) -> dict:
 def key_info(api_key) -> dict:
     """Credit limit and usage (in USD) for the key, from GET /api/v1/key."""
     return get_json(KEY_URL, api_key)["data"]
+
+
+def credits(api_key) -> dict:
+    """What the account has bought and used (in USD), from GET /api/v1/credits.
+    The key's limit (key_info) is a cap set on the key; this balance is what pays
+    for calls, and a call is refused with HTTP 402 once it runs out."""
+    return get_json(CREDITS_URL, api_key)["data"]
 
 
 def generation_stats(api_key, generation_id) -> dict:

@@ -85,8 +85,9 @@ def run_preflight(cfg, api_key, allow_paid=False) -> bool:
     print(f"prompt_hash: {compute_prompt_hash(prompt_record(cfg, fillers))}")
 
     if api_key:
-        problems += check_key(api_key)
-        problems += check_models(cfg, api_key, stimuli, fillers, n_calls // max(len(cfg.models), 1))
+        key_problems, balance = check_key(api_key)
+        problems += key_problems
+        problems += check_models(cfg, api_key, stimuli, fillers, n_calls // max(len(cfg.models), 1), balance)
         if allow_paid:
             if problems:
                 print("\nSkipping the paid test calls because of the problems below.")
@@ -104,26 +105,45 @@ def run_preflight(cfg, api_key, allow_paid=False) -> bool:
     return True
 
 
-def check_key(api_key) -> list[str]:
-    """Credit limit and usage of the key, from GET /api/v1/key (all amounts in USD)."""
+def check_key(api_key) -> tuple[list[str], float | None]:
+    """The key's limit and usage (GET /api/v1/key) and the account's credit balance
+    (GET /api/v1/credits), in USD. Returns the problems found and the balance.
+
+    The two are different things: the key's limit is a cap chosen when the key was
+    made; the balance is what the account has bought minus what it has used, and it
+    is the balance that pays for calls. A session that fits the key's limit still
+    stops with HTTP 402 when the balance runs out."""
     print("\nAPI key (GET /api/v1/key):")
     try:
         info = api.key_info(api_key)
     except api.CallError as e:
         print(f"  could not read the key: {e.message}")
-        return [f"the API key was not accepted: {e.message}"]
+        return [f"the API key was not accepted: {e.message}"], None
     limit, remaining = info.get("limit"), info.get("limit_remaining")
     # The key's label is not printed: OpenRouter labels keys with a masked copy of the key.
     print(f"  spending limit: {'none' if limit is None else f'${limit:g}'}; "
           f"remaining: {'unlimited' if remaining is None else f'${remaining:g}'}")
     print(f"  used so far: ${info.get('usage', 0):g} in total, ${info.get('usage_daily', 0):g} today")
+    problems = []
     if remaining is not None and remaining <= 0:
-        return ["the key's spending limit is used up"]
-    return []
+        problems.append("the key's spending limit is used up")
+    balance = None
+    try:
+        account = api.credits(api_key)
+        bought, used = float(account.get("total_credits") or 0), float(account.get("total_usage") or 0)
+        balance = bought - used
+        print(f"  account credits (GET /api/v1/credits): ${bought:g} bought, ${used:g} used, "
+              f"${balance:.2f} left; this balance, not the key's limit, is what pays for calls")
+        if balance <= 0:
+            problems.append("the account has no credits left")
+    except api.CallError as e:
+        print(f"  could not read the account's credits: {e.message}")
+    return problems, balance
 
 
-def check_models(cfg, api_key, stimuli, fillers, calls_per_model) -> list[str]:
-    """Does each configured model exist and support structured outputs, and what would it cost?"""
+def check_models(cfg, api_key, stimuli, fillers, calls_per_model, balance=None) -> list[str]:
+    """Does each configured model exist and support structured outputs, and what would
+    it cost? With the account's credit balance given, also whether that covers it."""
     print("\nModels (GET /api/v1/models):")
     try:
         by_id = {m["id"]: m for m in api.list_models(api_key)}
@@ -184,9 +204,23 @@ def check_models(cfg, api_key, stimuli, fillers, calls_per_model) -> list[str]:
         print(f"    rough cost per session: ${per_call * calls_per_model:.2f} without caching, "
               f"${per_session_cached:.2f} with ({calls_per_model} calls x ~{prompt_tokens} prompt + "
               f"{ESTIMATED_ANSWER_TOKENS} answer tokens)")
+        # OpenRouter refuses a call (HTTP 402) when the balance would not cover the
+        # longest answer the model could give, however short the real answers are.
+        longest = (model.get("top_provider") or {}).get("max_completion_tokens")
+        if longest and completion_price:
+            print(f"    a call is refused once the balance is below about ${longest * completion_price:.2f} "
+                  f"(the longest possible answer, {longest} tokens, must be affordable)")
         print_endpoints(model, api_key)
     print(f"  Rough cost for one whole session: ${estimate_total:.2f} without caching, ${estimate_cached:.2f} with "
           "(a guess from character counts; the real cost is recorded per call)")
+    if balance is not None:
+        if balance < estimate_cached:
+            problems.append(f"the account's ${balance:.2f} of credits is below the ${estimate_cached:.2f} a session "
+                            "would cost even with caching: top up before running")
+        elif balance < estimate_total:
+            print(f"  The ${balance:.2f} of credits covers a session only if caching works as estimated.")
+        else:
+            print(f"  The ${balance:.2f} of credits covers a session.")
     return problems
 
 

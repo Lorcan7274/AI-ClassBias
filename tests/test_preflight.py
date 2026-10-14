@@ -22,8 +22,10 @@ MODELS = [
 @pytest.fixture
 def fake_api(monkeypatch):
     state = {"key": {"label": "study key", "limit": 50, "limit_remaining": 20, "usage": 30, "usage_daily": 1},
+             "credits": {"total_credits": 100, "total_usage": 30},
              "models": MODELS, "paid_calls": 0}
     monkeypatch.setattr(api, "key_info", lambda key: dict(state["key"]))
+    monkeypatch.setattr(api, "credits", lambda key: dict(state["credits"]))
     monkeypatch.setattr(api, "list_models", lambda key=None: list(state["models"]))
     monkeypatch.setattr(api, "model_endpoints", lambda path, key=None: {"endpoints": [
         {"provider_name": "Alpha", "status": 0, "uptime_last_1d": 99.5,
@@ -105,3 +107,21 @@ def test_preflight_without_a_key_makes_no_api_calls(project, fake_api, monkeypat
     monkeypatch.setattr(api, "key_info", lambda key: (_ for _ in ()).throw(AssertionError("called")))
     assert not preflight.run_preflight(project, "")
     assert "OPENROUTER_API_KEY is not set" in capsys.readouterr().out
+
+
+def test_preflight_reads_the_balance_that_pays_for_calls(project, fake_api, capsys):
+    """The key's limit is a cap; the account's credits are what a call draws on. A
+    balance below the session estimate is a problem, an empty one a plain stop."""
+    preflight.run_preflight(project, "sk-test")
+    out = capsys.readouterr().out
+    assert "account credits (GET /api/v1/credits): $100 bought, $30 used, $70.00 left" in out
+    assert "covers a session" in out and "top up before running" not in out
+    fake_api["credits"] = {"total_credits": 30, "total_usage": 29.9999}
+    assert not preflight.run_preflight(project, "sk-test")
+    out = capsys.readouterr().out
+    assert "below the $" in out and "top up before running" in out
+    fake_api["credits"] = {"total_credits": 30, "total_usage": 30}
+    assert not preflight.run_preflight(project, "sk-test")
+    out = capsys.readouterr().out
+    assert "the account has no credits left" in out
+    assert "a call is refused once the balance is below" not in out  # the fake models carry no top_provider
