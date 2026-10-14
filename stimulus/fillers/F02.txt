@@ -2,27 +2,28 @@ Tom Ashworth
 tom.ashworth@gmail.com | 07700 900103
 
 Personal Profile
-Accounting and Finance graduate with placement experience in practice, now looking for a graduate analyst role and planning to start the ACCA. Methodical, good with numbers and comfortable with month-end routines.
+Geography graduate with a summer of data work in a council planning team and a data-heavy dissertation. Comfortable with spreadsheets, SQL and R, and keen to build on that in an analyst role.
 
 Education
 University of Hull, 2023–2026
-BSc (Hons) Accounting and Finance, 2:1
-Modules: Financial Accounting, Management Accounting, Corporate Finance, Taxation, Audit and Assurance
+BSc (Hons) Geography, 2:1
+Modules: Quantitative Methods, GIS, Urban Geography, Environmental Change
+Dissertation: analysed ten years of river-level and rainfall data for the Humber catchment in R
 
 Secondary school, 2016–2023
-A-levels: Mathematics (B), Business Studies (B), Economics (B)
+A-levels: Geography (B), Mathematics (B), Economics (B)
 GCSEs: 9 GCSEs at grades 8–5, including Mathematics and English
 
 Work Experience
-Placement Trainee, Harrison Dyer Accountants, Hull (Jun–Aug 2025, eight weeks)
-- Bookkeeping for small-business clients in Sage and Xero: posting invoices, bank reconciliations
-- Prepared draft VAT returns and a monthly management-accounts pack for a manager to review
-- Helped prepare year-end accounts for two sole traders
+Planning Data Intern, Hull City Council, Planning Department (Jun–Aug 2025, eight weeks)
+- Pulled three years of planning-application records from the council's database with SQL and cleaned them in Excel
+- Built charts of processing times by application type for the team's monthly meeting
+- Wrote a short report on where delays were arising and presented it to the planning managers
 
 Student Ambassador, University of Hull (2024–2026)
 
 Skills
-Excel (pivot tables, lookups), Sage, Xero, basic SQL
+Excel (pivot tables, lookups, charts), SQL, R, ArcGIS, PowerPoint
 
 Interests
 Climbing, cooking, crime fiction

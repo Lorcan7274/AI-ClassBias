@@ -2,29 +2,29 @@ Zoe Sandford
 zoe.sandford@gmail.com | 07700 900104
 
 Personal Profile
-First-class Economics graduate with a ten-week finance internship at a listed company and a society treasurer role, looking to start a graduate analyst programme and train towards the ACA.
+First-class Mathematics graduate with a ten-week data internship in a retailer's customer-insight team, where my work went into use. Looking for a graduate analyst programme that combines data, reporting and working with the business.
 
 Education
 University of Sheffield, 2023–2026
-BSc (Hons) Economics, First Class
-Modules: Econometrics, Corporate Finance, Financial Economics, Game Theory
+BSc (Hons) Mathematics, First Class
+Modules: Statistics, Statistical Modelling, Operational Research, Machine Learning
 
 Secondary school, 2016–2023
-A-levels: Mathematics (A*), Economics (A), Chemistry (A)
+A-levels: Mathematics (A*), Further Mathematics (A), Physics (A)
 GCSEs: 10 GCSEs at grades 9–7, including Mathematics and English
 
-Awards: Departmental prize for best final-year dissertation
+Awards: Departmental prize for best final-year project
 
 Work Experience
-Summer Finance Analyst, Meridian Foods plc, Group Finance (Jun–Sep 2025, ten weeks)
-- Built the quarterly reforecast model for two business units in Excel, reviewed by the FP&A manager
-- Wrote the monthly variance commentary for the group reporting pack
-- Automated a weekly cash report in Python, saving the team around two hours a week
+Data Analyst Intern, Meridian Foods plc, Customer Insight (Jun–Sep 2025, ten weeks)
+- Built a customer-churn model in Python on two years of loyalty-card data; the insight team now runs it monthly
+- Wrote SQL queries against the sales database to answer questions from the buying team
+- Built a weekly dashboard in Tableau that replaced a manual report, and presented it to the commercial director
 
-Treasurer, University Economics Society (2024–2025): managed a £6,000 budget and the annual accounts
+Treasurer, University Mathematics Society (2024–2025): managed a £4,000 budget
 
 Skills
-Excel (advanced: Power Query, macros), Python (pandas), SQL, PowerPoint, financial modelling
+Python (pandas, scikit-learn), SQL, Excel (Power Query, pivot tables), Tableau, PowerPoint
 
 Interests
 Running, chess, cooking

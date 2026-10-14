@@ -63,37 +63,37 @@ shuffle_seed: 20260926
 
 prompts:
   job_description: |-
-    Graduate Analyst, Finance (London)
+    Graduate Analyst (London)
 
     About the role
-    We are recruiting graduates into a twelve-month analyst programme based in our
-    London office. Analysts support the finance team on management reporting,
-    budgeting and forecasting, and work with the commercial teams on cost and
-    margin analysis. The programme rotates through financial planning, commercial
-    finance and treasury, and leads to a permanent analyst post on successful
-    completion.
+    We are recruiting graduates into a twelve-month analyst programme in our business
+    analysis and reporting team, based in our London office. Analysts work with data
+    from across the business – sales, operations, customers and costs – to produce the
+    regular reports that managers rely on and to answer the questions they bring. The
+    programme rotates through reporting, commercial analysis and operations, and leads
+    to a permanent analyst post on successful completion.
 
     What you will do
-    - Prepare monthly management accounts and write the variance commentary
-    - Build and maintain cash-flow and cost models in Excel
-    - Reconcile ledgers and investigate differences
-    - Pull data for ad hoc commercial analysis and present findings to managers
-    - Support the annual budget and the quarterly reforecast
+    - Build and maintain the weekly and monthly reports in Excel and our reporting tools
+    - Pull together and clean data from the company's systems and spreadsheets
+    - Carry out ad hoc analysis for managers and explain what the numbers show
+    - Present findings clearly to colleagues who are not specialists
+    - Help improve how the team collects and checks its data
 
     What we are looking for
     - A degree in any discipline, achieved or expected at 2:1 or above
     - Strong numeracy and confidence working with large spreadsheets
-    - Clear written and spoken communication, including with non-finance colleagues
+    - Excel, and at least one query or coding language (such as SQL, Python or R)
+    - Experience of working with real datasets, from an internship, placement or project
+    - Clear written and spoken communication, including with non-specialists
     - Accuracy under deadline pressure
-    - An interest in training towards a professional accountancy qualification
-      (ACA, ACCA or CIMA), which we fund
 
     Selection
     Applications are screened on the CV, followed by a numerical test and two
     interviews. Three in ten applicants are invited to interview at this stage.
 
   system_prompt: |-
-    You are an experienced graduate recruiter screening CVs for a UK finance firm.
+    You are an experienced graduate recruiter screening CVs for a UK company.
 
   # {job}, {fillers}, {target_block} and {target} are filled in for every call.
   # {fillers} is the CVs from paths.filler_dir, always the same ones in the same
