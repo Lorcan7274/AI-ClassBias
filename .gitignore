@@ -16,3 +16,6 @@ __pycache__/
 .venv/
 venv/
 .DS_Store
+
+# The GIAS register is 64 MB and republished daily; verify_schools.py downloads it.
+stimulus/_gias_register.csv
