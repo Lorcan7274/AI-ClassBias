@@ -13,11 +13,15 @@ Everything in `out/` and both PDFs are **generated**. The sources are:
 | `markers.csv` | the values that vary, one row per (base, version) — 90 rows |
 | `form_template.txt` | the equal-opportunities monitoring form |
 
+`class_ranking.csv` and `schools_verification.csv` are generated from the above
+by `make_class_ranking.py` and `verify_schools.py`.
+
 ```
 python render.py              # rebuild out/ + both PDFs, then run the diff check
 python install_to_pipeline.py # copy into ../cvs/ under the pipeline's naming
 python -m pipeline validate-cvs
 python verify_schools.py      # re-check all 30 schools against the DfE register
+python make_class_ranking.py  # rebuild class_ranking.csv from markers.csv
 ```
 
 Edit the sheets, never `out/`. `render.py` ends with `Diff check: OK` only when
@@ -142,11 +146,70 @@ The other 27 schools are Mixed, so no gender inference bears on them.
 B02, B04, B06, B08, B10, B12, B14, B15). Nothing depends on the split, but the
 review's figure appears to be off by one.
 
-## Still open
+## `class_ranking.csv` — now generated, and one correction
 
-**`class_ranking.csv` cannot be reconstructed.** Nothing in the delivered `out/`
-files or `manifest.csv` records what it ranked or in what shape. It is the one
-section-4 file not reproduced. Its intended columns are needed.
+Previously hand-written by an earlier session against Part 3 of the stimulus
+brief, which is why nothing in the delivery recorded how it was made. It is now
+produced by `make_class_ranking.py` from `markers.csv`: 267 rows, one per
+distinct marker value, with the justifications held in dicts in the script so
+the reasoning sits beside the coding.
+
+| marker_type | rows |
+|---|---|
+| school | 31 |
+| first_name | 75 |
+| surname | 75 |
+| interests | 45 |
+| award | 20 |
+| parent_job | 21 |
+
+**NS-SEC correction applied.** The low parent jobs are classified individually
+rather than all set to 7, which the brief's own sourcing requires: it drew them
+from classes 6 and 7. Five are semi-routine (class 6: care assistant,
+supermarket cashier, security guard, kitchen assistant, catering assistant) and
+seven are routine (class 7: warehouse operative, packer, labourer, cleaner,
+hospital porter, bus driver, delivery driver). A test asserts both classes are
+present, so a future edit cannot quietly flatten them again.
+
+School rows take their justification from `schools_verification.csv`, so each
+cites the establishment type the DfE register records plus the URN, rather than
+an assertion. Interests rows are composed from the individually coded activities
+actually present in the value.
+
+**Scope.** The six marker types the brief defines. `school_type` and
+`free_school_meals` are the explicit arm's instrument rather than descriptors in
+this taxonomy — their class level is carried by `parent_job` — and `email` and
+`phone` are derived from the name or constant, so none appear.
+
+**Two of the 267 justifications are weaker than the rest and say so in the sheet
+itself:** `first_name` and `surname` rows (150 of the 267) are coded on British
+class connotation and are not validated against a name-SES dataset. Every one of
+those rows carries that caveat in its `justification`, so a reader cannot mistake
+them for the sourced school and NS-SEC rows.
+
+## Open: B09's high-side award is the confound B13's change removed
+
+B13's award was changed to `Senior Prefect` because the high-side award should be
+status-coded, not ability-coded: a subject prize reads as attainment beyond the
+identical A-levels, which is a productivity confound rather than a class signal.
+
+**B09's high-side award is `School Prize for Mathematics`** — exactly that
+pattern. Fix 2.5 set it from the first item of B09's old line
+(`School Prize for Mathematics and Head of House`); the second item,
+`Head of House`, is the status-coded one, and is also the value the review
+mistakenly prescribed for B13. Reading the two together, the review's B09 and
+B13 values look transposed, and taking `Head of House` for B09 would make every
+high-side award status-coded:
+
+| | Now | Status-coded alternative |
+|---|---|---|
+| B09 high | School Prize for Mathematics | `Head of House` |
+| B13 high | Senior Prefect ✓ | — |
+
+Not changed, because the instruction covered B13 only. It is one cell in
+`markers.csv` plus a re-render. `class_ranking.csv` flags the row in the
+meantime: its justification reads "signals attainment, not status — an ability
+confound on the high side".
 
 ## Change outside this folder
 
