@@ -18,7 +18,7 @@ from reportlab.lib.enums import TA_LEFT
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
-from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
+from reportlab.platypus import HRFlowable, Paragraph, SimpleDocTemplate, Spacer
 
 ROOT = Path(__file__).resolve().parent
 CV_DIR = ROOT.parent / "cvs"
@@ -42,9 +42,9 @@ def styles(scale: float, gap: float = 0.0) -> dict:
         "name": ParagraphStyle("name", fontName="Helvetica-Bold", fontSize=18 * scale, leading=22 * scale,
                                textColor=INK, spaceAfter=2 * scale),
         "contact": ParagraphStyle("contact", fontName="Helvetica", fontSize=10 * scale, leading=13 * scale,
-                                  textColor=SOFT, spaceAfter=6 * scale + gap),
+                                  textColor=SOFT, spaceAfter=3 * scale + gap),
         "heading": ParagraphStyle("heading", fontName="Helvetica-Bold", fontSize=12 * scale, leading=15 * scale,
-                                  textColor=INK, spaceBefore=9 * scale + gap, spaceAfter=3 * scale),
+                                  textColor=INK, spaceBefore=9 * scale + gap, spaceAfter=1.5 * scale),
         "entry": ParagraphStyle("entry", fontName="Helvetica-Bold", fontSize=body, leading=1.22 * body,
                                 textColor=INK, spaceBefore=4 * scale + gap / 2),
         "body": ParagraphStyle("body", fontName="Helvetica", fontSize=body, leading=1.22 * body, textColor=INK,
@@ -93,7 +93,9 @@ def flow(text: str, headings: set[str], st: dict) -> list:
     "- " are bullets. A one-line block (the profile, skills, interests) is plain."""
     lines = text.splitlines()
     bullet = ParagraphStyle("bullet", parent=st["body"], leftIndent=14 * st["body"].fontSize / 11, bulletIndent=0)
-    story = [Paragraph(esc(lines[0].strip()), st["name"]), Paragraph(esc(lines[1].strip()), st["contact"])]
+    scale = st["body"].fontSize / 11
+    story = [Paragraph(esc(lines[0].strip()), st["name"]), Paragraph(esc(lines[1].strip()), st["contact"]),
+             HRFlowable(width="100%", thickness=1, color=INK, spaceBefore=0, spaceAfter=2 * scale)]
     blocks: list[list[str]] = [[]]
     for raw in lines[2:]:
         line = raw.strip()
@@ -113,6 +115,7 @@ def flow(text: str, headings: set[str], st: dict) -> list:
             continue
         if len(block) == 1 and block[0] in headings:
             story.append(Paragraph(esc(block[0]), st["heading"]))
+            story.append(HRFlowable(width="100%", thickness=0.6, color=RULE, spaceBefore=0, spaceAfter=3 * scale))
             continue
         for i, line in enumerate(block):
             if line.startswith("- "):
