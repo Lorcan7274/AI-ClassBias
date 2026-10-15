@@ -1,9 +1,11 @@
 """Printable cards for the human check:  python survey/make_cards.py
 
-One implicit-arm CV per A4 page, set like a real CV, with only a card number in the
-corner. survey/cards/cards.pdf is what you print; survey/cards/card_key.csv says
-which CV each card is (keep it off the table). Cards are numbered in a shuffled
-order with a fixed seed, so neighbouring numbers are not the two versions of one base.
+One implicit-arm CV per card, set like a real CV. survey/cards/cards.pdf has the
+30 cards on A4 pages with a card number in the corner, for printing;
+survey/cards/web/card-NN.png is each card as a phone-width image with no number,
+for the online form (survey/google_form.gs); survey/cards/card_key.csv says which
+CV each card is. Cards are numbered in a shuffled order with a fixed seed, so
+neighbouring numbers are not the two versions of one base.
 """
 
 from __future__ import annotations
@@ -127,6 +129,43 @@ def flow(text: str, headings: set[str], st: dict) -> list:
     return story
 
 
+WEB = OUT / "web"
+WEB_WIDTH_MM = 90          # a narrow page, so the text stays large when a phone scales it
+WEB_DPI = 200
+
+
+def render_web(cards, headings):
+    """One PNG per card at phone width, no card number on it, for the online form.
+    The card is set on a narrow, very tall page at a fixed type size, rasterised,
+    and the blank bottom cropped off."""
+    import io
+    import subprocess
+    import tempfile
+    from PIL import Image, ImageChops
+
+    WEB.mkdir(parents=True, exist_ok=True)
+    page = (WEB_WIDTH_MM * mm, 600 * mm)
+    margin = dict(leftMargin=5 * mm, rightMargin=5 * mm, topMargin=5 * mm, bottomMargin=5 * mm)
+    for n, (sid, cv_id, variant, text) in cards:
+        buf = io.BytesIO()
+        doc = SimpleDocTemplate(buf, pagesize=page, **margin)
+        doc.build(flow(text, headings, styles(1.0)))
+        if doc.page != 1:
+            sys.exit(f"card {n:02d}: the web page height is too small")
+        with tempfile.TemporaryDirectory() as tmp:
+            pdf = Path(tmp) / "card.pdf"
+            pdf.write_bytes(buf.getvalue())
+            subprocess.run(["pdftoppm", "-r", str(WEB_DPI), "-singlefile", "-png", str(pdf), str(Path(tmp) / "card")],
+                           check=True)
+            img = Image.open(Path(tmp) / "card.png").convert("RGB")
+        bg = Image.new("RGB", img.size, (255, 255, 255))
+        box = ImageChops.difference(img, bg).getbbox()
+        pad = int(WEB_DPI * 0.2)
+        img = img.crop((0, 0, img.width, min(img.height, box[3] + pad)))
+        img.convert("L").save(WEB / f"card-{n:02d}.png", optimize=True)  # greyscale: a fifth of the size
+    print(f"{len(cards)} phone-width images -> {WEB}")
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     cvs = load_cvs()
@@ -190,6 +229,8 @@ def main():
     if doc.page != len(cards):
         sys.exit(f"{doc.page} pages for {len(cards)} cards: a card spilled on to a second page")
     print("type scale and gap per card:", ", ".join(f"{n:02d}:{sc:g}/{g:.0f}" for (n, _), (sc, g) in zip(cards, chosen)))
+
+    render_web(cards, headings)
 
     with open(OUT / "card_key.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
