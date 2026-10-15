@@ -18,12 +18,10 @@
 var IMAGE_BASE = 'https://raw.githubusercontent.com/Lorcan7274/AI-ClassBias/stimulus-set/survey/cards/web/';
 var CARD_COUNT = 30;
 
-var ROLE = 'Graduate Analyst, London. A twelve-month programme in a business analysis and '
-  + 'reporting team: building weekly and monthly reports in Excel, cleaning data from the '
-  + "company's systems, ad hoc analysis for managers, and explaining the numbers to "
-  + 'non-specialists. They want a 2:1 in any subject, strong numeracy, Excel plus one query '
-  + 'or coding language (SQL, Python or R), experience with real data from an internship, '
-  + 'placement or project, and clear communication. Three in ten applicants are invited to interview.';
+var ROLE = 'Graduate Analyst, London: a one-year programme building reports in Excel, cleaning '
+  + 'company data, and explaining the numbers to managers. They want a 2:1 in any subject, Excel '
+  + 'plus SQL, Python or R, some experience with real data, and clear communication; three in ten '
+  + 'applicants get an interview.';
 
 function pad(n) { return (n < 10 ? '0' : '') + n; }
 
