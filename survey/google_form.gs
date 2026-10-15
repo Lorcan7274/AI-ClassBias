@@ -18,11 +18,11 @@
 var IMAGE_BASE = 'https://raw.githubusercontent.com/Lorcan7274/AI-ClassBias/stimulus-set/survey/cards/web/';
 var CARD_COUNT = 30;
 
-var ROLE = 'Job description: An entry-level analyst job in London for a recent graduate. The work '
-  + 'is building reports in Excel, cleaning up company data, and explaining what the numbers mean '
-  + 'to managers. They want someone with a good college degree in any subject, skills in Excel and '
-  + 'a coding language like SQL or Python, some experience working with real data, and clear '
-  + 'communication. Only 3 in 10 applicants get an interview.';
+var ROLE = 'An entry-level analyst job in London for a recent graduate. The work is building '
+  + 'reports in Excel, cleaning up company data, and explaining what the numbers mean to managers. '
+  + 'They want someone with a good college degree in any subject, skills in Excel and a coding '
+  + 'language like SQL or Python, some experience working with real data, and clear communication. '
+  + 'Only 3 in 10 applicants get an interview.';
 
 function pad(n) { return (n < 10 ? '0' : '') + n; }
 
@@ -53,7 +53,7 @@ function buildForm() {
     }
     sections.push(pageBreak);
 
-    form.addSectionHeaderItem().setTitle('The job').setHelpText(ROLE);
+    form.addSectionHeaderItem().setTitle('Job description').setHelpText(ROLE);
 
     var blob = UrlFetchApp.fetch(IMAGE_BASE + 'card-' + pad(c) + '.png').getBlob();
     form.addImageItem().setTitle('The applicant\'s CV').setImage(blob).setWidth(700)
@@ -69,8 +69,8 @@ function buildForm() {
         .setTitle('What kind of school do you think they went to?')
         .setChoiceValues(['Private (fee-paying)', 'State', 'No idea']).setRequired(true);
     form.addTextItem()
-        .setTitle('What do you think their parents do for a living? (optional)')
-        .setRequired(false);
+        .setTitle('What do you think their parents do for a living?')
+        .setRequired(true);
   }
 
   var choices = [];
@@ -89,20 +89,28 @@ function buildForm() {
            + '"Restrict to users in your organisation" under the form\'s Settings > Responses.');
 }
 
-// Change the job text on an existing form without rebuilding it: put the form's
-// ID (the long string in its edit link) in FORM_ID, edit ROLE above, run this.
+// Change the wording on an existing form without rebuilding it: put the form's
+// ID (the long string in its edit link) in FORM_ID, edit the text above, run this.
+// It sets every section header to "Job description" with ROLE as its text, and
+// makes the parents question required.
 var FORM_ID = '';
 
-function updateRole() {
+function updateWording() {
   if (!FORM_ID) throw new Error('Put the form ID in FORM_ID first.');
   var form = FormApp.openById(FORM_ID);
-  var items = form.getItems(FormApp.ItemType.SECTION_HEADER);
+  var headers = form.getItems(FormApp.ItemType.SECTION_HEADER);
   var n = 0;
-  for (var i = 0; i < items.length; i++) {
-    if (items[i].getTitle() === 'The job') {
-      items[i].asSectionHeaderItem().setHelpText(ROLE);
-      n++;
+  for (var i = 0; i < headers.length; i++) {
+    headers[i].asSectionHeaderItem().setTitle('Job description').setHelpText(ROLE);
+    n++;
+  }
+  var texts = form.getItems(FormApp.ItemType.TEXT);
+  var m = 0;
+  for (var j = 0; j < texts.length; j++) {
+    if (texts[j].getTitle().indexOf('parents') !== -1) {
+      texts[j].asTextItem().setTitle('What do you think their parents do for a living?').setRequired(true);
+      m++;
     }
   }
-  Logger.log('Updated the job text in ' + n + ' sections.');
+  Logger.log('Updated ' + n + ' job descriptions and made ' + m + ' parents questions required.');
 }

@@ -11,7 +11,7 @@ import form_responses as form  # noqa: E402
 
 QUESTIONS = ["Would you invite this person to interview?", "How likely is it that this person gets an interview?",
              "What kind of school do you think they went to?",
-             "What do you think their parents do for a living? (optional)"]
+             "What do you think their parents do for a living?"]
 
 
 def fake_export(path, per_card=2):
