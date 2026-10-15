@@ -27,16 +27,32 @@ seen about equally and by different people.
 
 ## The form
 
-Six fields per answer; nothing that identifies the person.
+`survey/google_form.gs` builds it: paste the file into a new project at
+script.google.com, run `buildForm`, allow the permissions, and the log prints the
+link to fill in, the link to edit, and the responses sheet. Six fields, nothing
+that identifies the person:
 
 | field | values |
 |---|---|
-| interviewer | your initials |
-| location | e.g. "King's Cross platform 9", "campus library entrance" |
-| card | 01–30 |
-| interview | yes / no |
-| school | private / state / don't know |
-| likelihood (optional) | 0–100, "how likely are they to be invited?" if they're happy to say |
+| Interviewer | your initials |
+| Location | e.g. "King's Cross platform 9", "campus library entrance" |
+| Card | 01–30 |
+| Would you give this person an interview? | Yes / No |
+| Private school or state school? | Private / State / Don't know |
+| How likely are they to be invited, 0 to 100? (optional) | a number, if they're happy to say |
 
-Export the form to CSV when you're done; the key turns card numbers into the
-CV, base and version for the analysis.
+Add each interviewer's initials and location to `INTERVIEWERS` in the script and
+run `prefilledLinks` to give each person a link with those two fields already
+filled, so an answer is three taps.
+
+## Afterwards
+
+In the responses sheet, File > Download > CSV, then
+
+```
+python survey/street_responses.py <the export>.csv
+```
+
+writes `survey/street_responses.csv` (one row per answer, joined to the CV
+through the key) and prints the interview rate and private-school guesses for
+each version, the manipulation check, and a sign test across bases.
