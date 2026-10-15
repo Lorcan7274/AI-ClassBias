@@ -4,7 +4,7 @@ Commands:
   make-dummy-cvs   write placeholder CVs into cvs/ for testing
   validate-cvs     check the CV files: names, pair differences, lengths, leak words
   preflight        check config, key, CVs and the models before a real run
-  run              send CV pairs to the models and save one row per call
+  run              send each CV to the models, several samples each, one row per call
   analyze          summarise the results: tables, tests, figures and report.md
   analyze-survey   compare the human survey (a CSV export) with the models
 
@@ -54,7 +54,7 @@ def build_parser():
     p = sub.add_parser("preflight", help="check config, key, CVs and the models before a real run")
     p.add_argument("--allow-paid", action="store_true", help="also make one tiny paid test call per model")
 
-    p = sub.add_parser("run", help="send CV pairs to the models and save one row per call")
+    p = sub.add_parser("run", help="send each CV to the models, several samples each, one row per call")
     p.add_argument("--session", required=True, help="label for this run date, e.g. day1")
     p.add_argument("--dry-run", action="store_true",
                    help="no API calls: fake answers, saved under results/dry_run/")
@@ -146,10 +146,10 @@ def run(cfg, args):
     else:
         # Refuse to spend money on a set-up that still has placeholders or CV errors in it.
         problems = cfg.placeholder_problems() + ([cv_problem] if cv_problem else [])
-        pairs, _ = cvs.load_pairs(cfg.cv_dir, cfg.arms)
-        dummies = cvs.placeholder_pairs(pairs)
+        stimuli, _ = cvs.load_stimuli(cfg.cv_dir, cfg.arms)
+        dummies = cvs.placeholder_stimuli(stimuli)
         if dummies:
-            problems.append(f"{len(dummies)} CV pair(s) contain the word PLACEHOLDER, e.g. {dummies[0]}")
+            problems.append(f"{len(dummies)} CV(s) contain the word PLACEHOLDER, e.g. {dummies[0]}")
         api_key = read_api_key(cfg.path.parent)
         if not api_key:
             problems.append("OPENROUTER_API_KEY is not set (copy .env.example to .env and add your key)")

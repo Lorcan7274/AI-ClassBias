@@ -1,0 +1,149 @@
+{
+ "call_id": "84cf67fe1ba54fbea52114847a4806be",
+ "session": "pilot2",
+ "stimulus_id": "B01_implicit_low",
+ "sample": 3,
+ "prompt_hash": "2214bb26c8030ea125ea27f20ecfa4d5bbe7e02c7d5686feae9da4d762aed069",
+ "dry_run": false,
+ "request": {
+  "model": "anthropic/claude-opus-5.5",
+  "messages": [
+   {
+    "role": "system",
+    "content": "You are an experienced graduate recruiter screening CVs for a UK finance firm."
+   },
+   {
+    "role": "user",
+    "content": "Job description:\nGraduate Analyst, Finance (London)\n\nAbout the role\nWe are recruiting graduates into a twelve-month analyst programme based in our\nLondon office. Analysts support the finance team on management reporting,\nbudgeting and forecasting, and work with the commercial teams on cost and\nmargin analysis. The programme rotates through financial planning, commercial\nfinance and treasury, and leads to a permanent analyst post on successful\ncompletion.\n\nWhat you will do\n- Prepare monthly management accounts and write the variance commentary\n- Build and maintain cash-flow and cost models in Excel\n- Reconcile ledgers and investigate differences\n- Pull data for ad hoc commercial analysis and present findings to managers\n- Support the annual budget and the quarterly reforecast\n\nWhat we are looking for\n- A degree in any discipline, achieved or expected at 2:1 or above\n- Strong numeracy and confidence working with large spreadsheets\n- Clear written and spoken communication, including with non-finance colleagues\n- Accuracy under deadline pressure\n- An interest in training towards a professional accountancy qualification\n  (ACA, ACCA or CIMA), which we fund\n\nSelection\nApplications are screened on the CV, followed by a numerical test and two\ninterviews. At this stage you expect to shortlist roughly 3 in 10 applicants.\n\nBelow is one applicant's CV for this role.\n\n=== CV ===\nConnor Smith\nconnor.smith@gmail.com | 07700 900001\n\nPersonal Profile\nEconomics graduate with internship experience in the finance team of a logistics company, where the work centred on cost reporting and supplier data. Seeking a graduate analyst role that uses econometrics and spreadsheet modelling.\n\nEducation\nUniversity of Leeds, 2023–2026\nBSc (Hons) Economics, 2:1\nModules: Economic Theory and Applications, Intermediate Microeconomics, Statistics and Econometrics, Advanced Macroeconomics\n\nMark Rutherford School, Bedford, Bedfordshire, 2016–2023\nA-levels: Mathematics (A), Economics (A), History (B)\nGCSEs: 9 GCSEs at grades 9–6, including Mathematics and English\n\nAwards: Sutton Trust UK Summer School participant\n\nWork Experience\nFinance Intern, Northgate Logistics (Jun–Aug 2025)\n- Built a cost-per-route model in Excel covering 14 depots, used in the monthly management report\n- Reconciled 1,200 supplier invoices against purchase orders and flagged 38 duplicates\n- Wrote a short weekly summary of fuel spend for the finance manager\n\nResearch Assistant, School of Economics, University of Leeds (Oct 2024–Mar 2025)\n- Cleaned and coded a 40,000-row household survey dataset in Stata for a lecturer's project\n- Produced descriptive tables and charts for a working paper\n\nSkills\nExcel (pivot tables, VLOOKUP), Stata, Python (pandas), SQL, PowerPoint, report writing\n\nInterests\nFive-a-side football, guitar (self-taught), gaming\n\n\nSay whether this applicant should be shortlisted for interview (yes or no), give your\nlikelihood of shortlisting them as a whole number from 0 to 100, and give a one-sentence reason."
+   }
+  ],
+  "response_format": {
+   "type": "json_schema",
+   "json_schema": {
+    "name": "cv_screening",
+    "strict": true,
+    "schema": {
+     "type": "object",
+     "properties": {
+      "shortlist": {
+       "type": "boolean",
+       "description": "Should this applicant be shortlisted for interview?"
+      },
+      "likelihood": {
+       "type": "integer",
+       "minimum": 0,
+       "maximum": 100,
+       "description": "Likelihood of shortlisting, a whole number from 0 to 100"
+      },
+      "reason": {
+       "type": "string",
+       "description": "One-sentence reason"
+      }
+     },
+     "required": [
+      "shortlist",
+      "likelihood",
+      "reason"
+     ],
+     "additionalProperties": false
+    }
+   }
+  },
+  "provider": {
+   "require_parameters": true
+  }
+ },
+ "attempts": 1,
+ "retries": [],
+ "latency_s": 5.792,
+ "response": {
+  "id": "gen-1792006684-6QbkDXEAve0Mz7PgRfiQ",
+  "object": "chat.completion",
+  "created": 1792006684,
+  "model": "anthropic/claude-opus-5.5",
+  "provider": "Claude Platform on AWS",
+  "system_fingerprint": null,
+  "service_tier": "default",
+  "choices": [
+   {
+    "index": 0,
+    "logprobs": null,
+    "finish_reason": "stop",
+    "native_finish_reason": "end_turn",
+    "message": {
+     "role": "assistant",
+     "content": "{\"shortlist\": true, \"likelihood\": 82, \"reason\": \"He has a 2:1 in Economics and strong A-level Maths, and his finance internship maps directly onto the role (an Excel cost model used in management reporting, invoice reconciliation, written spend summaries), backed by solid data skills; his CV doesn't state an interest in ACA/ACCA/CIMA training, which is worth checking at interview.\"}",
+     "refusal": null,
+     "reasoning": "This is a strong candidate with a 2:1 in economics and a finance internship directly relevant to the role—cost modeling, reconciliation, management reporting—plus research assistant experience. No explicit mention of accountancy qualification interest, but still top 30% overall. I'd shortlist, around 80.\n\n",
+     "reasoning_details": [
+      {
+       "type": "reasoning.text",
+       "text": "This is a strong candidate with a 2:1 in economics and a finance internship directly relevant to the role—cost modeling, reconciliation, management reporting—plus research assistant experience. No explicit mention of accountancy qualification interest, but still top 30% overall. I'd shortlist, around 80.\n\n",
+       "format": "anthropic-claude-v1",
+       "index": 0,
+       "signature": "CAQSygYKEAgSGAI4AUIIdGhpbmtpbmcSDKbcphqYwXMkoo8VfxoMzEjCF6oJmN9UYlR/IjBkjoC4VEgxILielp4/gSZ974NyqnuAyJzjzsh776J0pTRYT0PLCZ+WoZ+ef6KQxhMq5wW4ZUy+295IpgByJcjbeJTaOF4NE19+btS7q7A6n/HZiw3rHB1dTIoYeLGgJwHdPdq82V6UiLX/JGwDKQuNDYc/Kqi7EduyO0GsLvVNV4hDUvP7ptkPme1R1H0JTcLtNO2pNNe9oQw+IhoVsLLiE3vR8Lrx3cIj0aZCOFEyhJ2DzjQ97nQG9IcUxJ42Gq+Sq4pvrJmyxCF9FlNKtyZnzSnvPwP/rRfTxa/MrbAt/CMKy3GN4fDxnZeUrcbre3aB2/LIYzvD3bFk9TxSNNdXec3TOEz3oEKCWXLvbjdOXxQaZuRNoDz9NArKw5ZBe5t+7b4bY3aCf8N4B8eCnD3Wss51Ps40j0xECo0dzZ7SCFk9OsIqNOfhfO/UlTtUo0dtzQ6bkiqXgox5v7S3tnS3R+/K78v3ZNNH9b0LSd0/bAMgTMWola3LMyASkQaUw0GxRtPaF6JMxV6mxQC/1dEwD3VToeyzBYvHVUivsddkRNAK6WmVvSKVINfVFo2NLUnibMHXfgUjld54IQ9PLWkDPOXE+Y1779g1Bd7klSBS3qVarBW9srhT19ckM32c6nSIsGiDe2xnFIl2Ftb6qqJpTgm5I5ORYGCGBv6UIjmVUDCOJEyo0lQYjx002tFCgTzPr2zwBXBZ/BErYfqvpcj0m4wzH18Yw+N/dS4b1KP3VXMjp4rLGkVUljQNV5VqPLfT1FWTXxHroNwqTRI4tGUzMOMEhgJWAI05vYHPBx34OkW/bqbeEY1Jz4X/+RwW/P7o0VWFmF8epNN8oH5kU26LqKHcxX9RwF7DklPNkrxZ/BSr9t/FENxCoYgMP0Qw5XrxtBBLe70pCRKK2jx69BjlJrtbI5GbctJp7R2VYO7AQmUb+ni9dsHAr10I0nsO0UYTWOz92duKCLnfHLswpvSDAXfM078fMEZP9cn6jxXB+GjX135LaZtgX18WZOhOmxQjlKEAOpdeuqqjBsX2hgVa+4V4VZeWoQsLJBgB.eyJlbmRwb2ludF9zbHVnIjoiYW50aHJvcGljL2NsYXVkZS1vcHVzLTUuNS0yMDI2MDkyMXxjbGF1ZGUtb24tYXdzIn0"
+      }
+     ]
+    }
+   }
+  ],
+  "usage": {
+   "prompt_tokens": 1451,
+   "completion_tokens": 223,
+   "total_tokens": 1674,
+   "cost": 0.010264,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 0,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.010264,
+    "upstream_inference_prompt_cost": 0.005804,
+    "upstream_inference_completions_cost": 0.00446
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 84,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   }
+  },
+  "openrouter_metadata": {
+   "requested": "anthropic/claude-opus-5.5",
+   "strategy": "direct",
+   "region": "ORD",
+   "summary": "available=4, selected=Claude Platform on AWS",
+   "attempt": 1,
+   "is_byok": false,
+   "endpoints": {
+    "total": 11,
+    "available": [
+     {
+      "provider": "Claude Platform on AWS",
+      "model": "anthropic/claude-opus-5.5-20260921",
+      "selected": true
+     },
+     {
+      "provider": "Anthropic",
+      "model": "anthropic/claude-opus-5.5-20260921",
+      "selected": false
+     },
+     {
+      "provider": "Google",
+      "model": "anthropic/claude-opus-5.5-20260921",
+      "selected": false
+     },
+     {
+      "provider": "Azure",
+      "model": "anthropic/claude-opus-5.5-20260921",
+      "selected": false
+     }
+    ]
+   },
+   "generation_time": 5252
+  }
+ },
+ "ok": true
+}

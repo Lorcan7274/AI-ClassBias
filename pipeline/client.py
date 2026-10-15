@@ -41,57 +41,72 @@ BASE_URL = "https://openrouter.ai/api/v1"
 CHAT_URL = f"{BASE_URL}/chat/completions"
 MODELS_URL = f"{BASE_URL}/models"
 KEY_URL = f"{BASE_URL}/key"
+CREDITS_URL = f"{BASE_URL}/credits"
 GENERATION_URL = f"{BASE_URL}/generation"
 
 # Never wait longer than this for one retry, whatever Retry-After says.
 MAX_WAIT_SECONDS = 300
 
-# The answer we ask every model for: a rating, shortlist decision and reason for each
-# candidate, plus a forced choice. Structured outputs take the form
+# The answer we ask every model for about the one CV it is assessing: a yes/no
+# shortlist decision, where it ranks that CV in the round, a 0-100 likelihood, and a
+# one-sentence reason. Structured outputs take the form
 # {"type": "json_schema", "json_schema": {"name", "strict", "schema"}} (structured outputs guide).
-CANDIDATE_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "shortlist": {"type": "boolean", "description": "Should this candidate be shortlisted?"},
-        "rating": {"type": "integer", "description": "Rating from 1 to 10"},
-        "reason": {"type": "string", "description": "One-sentence reason"},
-    },
-    "required": ["shortlist", "rating", "reason"],
-    "additionalProperties": False,
-}
-
-RESPONSE_FORMAT = {
-    "type": "json_schema",
-    "json_schema": {
-        "name": "cv_screening",
-        "strict": True,
-        "schema": {
-            "type": "object",
-            "properties": {
-                "candidate_1": CANDIDATE_SCHEMA,
-                "candidate_2": CANDIDATE_SCHEMA,
-                "preferred": {
-                    "type": "string",
-                    "enum": ["1", "2"],
-                    "description": "Which candidate you would pick if only one",
+def response_format(n_applicants=10) -> dict:
+    """The JSON schema for a round of `n_applicants` (fillers plus the target)."""
+    return {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "cv_screening",
+            "strict": True,
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "shortlist": {"type": "boolean",
+                                  "description": "Is this applicant one of the three invited to interview?"},
+                    "rank_in_round": {"type": "integer", "minimum": 1, "maximum": n_applicants,
+                                      "description": f"Where this applicant ranks among the {n_applicants} "
+                                                     "in the round: 1 is the strongest"},
+                    "likelihood": {"type": "integer", "minimum": 0, "maximum": 100,
+                                   "description": "Likelihood that this applicant is invited, a whole number from 0 to 100"},
+                    "reason": {"type": "string", "description": "One-sentence reason"},
                 },
+                "required": ["shortlist", "rank_in_round", "likelihood", "reason"],
+                "additionalProperties": False,
             },
-            "required": ["candidate_1", "candidate_2", "preferred"],
-            "additionalProperties": False,
         },
-    },
-}
+    }
 
 
-def build_request_body(model, system_prompt, user_prompt, temperature):
-    """The JSON body for one chat completion request."""
+RESPONSE_FORMAT = response_format()
+
+# Prompt caching. Anthropic models cache everything up to a content part carrying this
+# marker (prompt caching guide: "Place cache_control directly on individual content
+# blocks"); OpenAI, Gemini and DeepSeek cache a repeated prefix on their own. So the
+# user message is sent as two parts: the prefix that is identical in every call
+# (job description and fillers), marked, and then the CV that varies.
+CACHE_CONTROL = {"type": "ephemeral"}
+
+
+def build_request_body(model, system_prompt, user_prompt, temperature, response_format=None):
+    """The JSON body for one chat completion request.
+
+    `user_prompt` is either one text, or a (prefix, suffix) pair: the prefix is sent
+    as its own content part with the cache marker, the suffix (the part that changes
+    between calls) after it.
+    """
+    if isinstance(user_prompt, tuple):
+        prefix, suffix = user_prompt
+        content = [{"type": "text", "text": prefix, "cache_control": CACHE_CONTROL},
+                   {"type": "text", "text": suffix}]
+    else:
+        content = user_prompt
     body = {
         "model": model,
         "messages": [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
+            {"role": "user", "content": content},
         ],
-        "response_format": RESPONSE_FORMAT,
+        "response_format": response_format or RESPONSE_FORMAT,
         # By default a provider that doesn't support a parameter "will ignore unknown
         # parameters"; with require_parameters "the request won't even be routed to that
         # provider" (provider routing docs). So no provider can silently drop the JSON
@@ -306,13 +321,24 @@ def extract_details(response) -> dict:
         "completion_tokens": usage.get("completion_tokens"),
         "total_tokens": usage.get("total_tokens"),
         "reasoning_tokens": (usage.get("completion_tokens_details") or {}).get("reasoning_tokens"),
+        # Prompt caching guide: reads are prompt_tokens_details.cached_tokens, writes
+        # cache_write_tokens; cache_discount is the saving in USD.
         "cached_tokens": (usage.get("prompt_tokens_details") or {}).get("cached_tokens"),
+        "cache_write_tokens": (usage.get("prompt_tokens_details") or {}).get("cache_write_tokens"),
+        "cache_discount": response.get("cache_discount"),
         # "Cost of the completion" in USD (the key endpoint describes credits as USD).
         "cost_usd": usage.get("cost"),
     }
 
 
 # ----------------------------- the dry-run client -----------------------------
+
+def _content_length(content) -> int:
+    """Characters in a message content, whether one text or a list of parts."""
+    if isinstance(content, str):
+        return len(content)
+    return sum(len(part.get("text", "")) for part in content)
+
 
 class DryRunClient:
     """Stand-in for OpenRouterClient used by --dry-run. It never touches the network and
@@ -322,13 +348,13 @@ class DryRunClient:
     FAKE_COST_USD = 0.0005  # per call, so --budget can be tried in a dry run
 
     def send(self, body) -> CallResult:
-        answer = {
-            "candidate_1": {"shortlist": random.random() > 0.4, "rating": random.randint(4, 9), "reason": "dry run"},
-            "candidate_2": {"shortlist": random.random() > 0.4, "rating": random.randint(4, 9), "reason": "dry run"},
-            "preferred": random.choice(["1", "2"]),
-        }
+        likelihood = random.randint(20, 90)
+        schema = ((body.get("response_format") or RESPONSE_FORMAT)["json_schema"]["schema"]["properties"])
+        n_applicants = schema["rank_in_round"]["maximum"]
+        answer = {"shortlist": likelihood >= 50, "rank_in_round": random.randint(1, n_applicants),
+                  "likelihood": likelihood, "reason": "dry run"}
         content = json.dumps(answer)
-        prompt_tokens = sum(len(m["content"]) for m in body["messages"]) // 4
+        prompt_tokens = sum(_content_length(m["content"]) for m in body["messages"]) // 4
         response = {
             "id": "dry-" + uuid.uuid4().hex[:12],
             "model": body["model"],
@@ -355,27 +381,26 @@ def parse_answer(content):
     return json.loads(content)
 
 
-def check_answer(parsed):
-    """Raise ValueError if the answer is missing something or has an impossible value."""
+def check_answer(parsed, n_applicants=None):
+    """Raise ValueError if the answer is missing something or has an impossible value.
+    With `n_applicants`, the rank must lie between 1 and that number."""
     if not isinstance(parsed, dict):
         raise ValueError("the answer is not a JSON object")
-    for c in ("candidate_1", "candidate_2"):
-        candidate = parsed.get(c)
-        if not isinstance(candidate, dict):
-            raise ValueError(f"{c} is missing")
-        for key in ("shortlist", "rating", "reason"):
-            if key not in candidate:
-                raise ValueError(f"{c}.{key} is missing")
-        r = candidate["rating"]
-        # bool is excluded on purpose: Python counts True as the number 1.
-        if isinstance(r, bool) or not isinstance(r, int) or not 1 <= r <= 10:
-            raise ValueError(f"{c}.rating out of range: {r!r}")
-        if not isinstance(candidate["shortlist"], bool):
-            raise ValueError(f"{c}.shortlist is not true/false: {candidate['shortlist']!r}")
-        if not isinstance(candidate["reason"], str):
-            raise ValueError(f"{c}.reason is not text")
-    if parsed.get("preferred") not in ("1", "2"):
-        raise ValueError(f"preferred must be \"1\" or \"2\", got {parsed.get('preferred')!r}")
+    for key in ("shortlist", "rank_in_round", "likelihood", "reason"):
+        if key not in parsed:
+            raise ValueError(f"{key} is missing")
+    rank = parsed["rank_in_round"]
+    if isinstance(rank, bool) or not isinstance(rank, int) or rank < 1 \
+            or (n_applicants is not None and rank > n_applicants):
+        raise ValueError(f"rank_in_round out of range: {rank!r}")
+    if not isinstance(parsed["shortlist"], bool):
+        raise ValueError(f"shortlist is not true/false: {parsed['shortlist']!r}")
+    likelihood = parsed["likelihood"]
+    # bool is excluded on purpose: Python counts True as the number 1.
+    if isinstance(likelihood, bool) or not isinstance(likelihood, int) or not 0 <= likelihood <= 100:
+        raise ValueError(f"likelihood out of range: {likelihood!r}")
+    if not isinstance(parsed["reason"], str):
+        raise ValueError("reason is not text")
 
 
 # ----------------------------- free information endpoints -----------------------------
@@ -411,6 +436,13 @@ def model_endpoints(details_path, api_key=None) -> dict:
 def key_info(api_key) -> dict:
     """Credit limit and usage (in USD) for the key, from GET /api/v1/key."""
     return get_json(KEY_URL, api_key)["data"]
+
+
+def credits(api_key) -> dict:
+    """What the account has bought and used (in USD), from GET /api/v1/credits.
+    The key's limit (key_info) is a cap set on the key; this balance is what pays
+    for calls, and a call is refused with HTTP 402 once it runs out."""
+    return get_json(CREDITS_URL, api_key)["data"]
 
 
 def generation_stats(api_key, generation_id) -> dict:

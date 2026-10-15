@@ -70,7 +70,8 @@ def test_a_good_response_is_returned_with_its_details(fake_http):
     details = api.extract_details(result.response)
     assert details == {"generation_id": "gen-123", "served_model": "test/model-v1", "provider": "Beta",
                        "finish_reason": "stop", "prompt_tokens": 900, "completion_tokens": 60,
-                       "total_tokens": 960, "reasoning_tokens": 5, "cached_tokens": 100, "cost_usd": 0.0012}
+                       "total_tokens": 960, "reasoning_tokens": 5, "cached_tokens": 100,
+                           "cache_write_tokens": None, "cache_discount": None, "cost_usd": 0.0012}
 
 
 def test_429_is_retried_after_the_retry_after_header(fake_http):
@@ -192,41 +193,71 @@ def test_rate_limiter_spaces_out_calls(monkeypatch):
 def test_dry_run_client_looks_like_a_real_response():
     result = api.DryRunClient().send({"model": "m", "messages": [{"content": "x" * 400}]})
     answer = api.parse_answer(result.content)
-    api.check_answer(answer)
+    api.check_answer(answer, n_applicants=10)
+    # With list content and a smaller round, the fake rank fits the round and the token count sums the parts.
+    body = api.build_request_body("m", "s", ("a" * 300, "b" * 100), None, response_format=api.response_format(3))
+    small = api.DryRunClient().send(body)
+    api.check_answer(api.parse_answer(small.content), n_applicants=3)
+    assert api.extract_details(small.response)["prompt_tokens"] == (300 + 100 + 1) // 4
     details = api.extract_details(result.response)
     assert details["provider"] == "dry-run" and details["cost_usd"] == api.DryRunClient.FAKE_COST_USD
     assert details["prompt_tokens"] == 100 and details["finish_reason"] == "stop"
 
 
 @pytest.mark.parametrize("content", [
-    '{"candidate_1": {"shortlist": true, "rating": 7, "reason": "ok"}, "candidate_2": {"shortlist": false, "rating": 3, "reason": "no"}, "preferred": "2"}',
-    '```json\n{"candidate_1": {"shortlist": true, "rating": 7, "reason": "ok"}, "candidate_2": {"shortlist": false, "rating": 3, "reason": "no"}, "preferred": "2"}\n```',
+    '{"shortlist": true, "rank_in_round": 3, "likelihood": 72, "reason": "ok"}',
+    '```json\n{"shortlist": true, "rank_in_round": 3, "likelihood": 72, "reason": "ok"}\n```',
 ])
 def test_answers_are_parsed_with_or_without_a_code_fence(content):
     answer = api.parse_answer(content)
-    api.check_answer(answer)
-    assert answer["preferred"] == "2"
+    api.check_answer(answer, n_applicants=10)
+    assert answer["likelihood"] == 72 and answer["shortlist"] is True and answer["rank_in_round"] == 3
+
+
+def test_request_body_sends_a_cached_prefix_and_a_round_sized_schema():
+    body = api.build_request_body("m", "sys", ("PREFIX", "SUFFIX"), 1.0, response_format=api.response_format(10))
+    parts = body["messages"][1]["content"]
+    assert parts == [{"type": "text", "text": "PREFIX", "cache_control": {"type": "ephemeral"}},
+                     {"type": "text", "text": "SUFFIX"}]
+    assert body["messages"][0] == {"role": "system", "content": "sys"}
+    assert body["response_format"]["json_schema"]["schema"]["properties"]["rank_in_round"]["maximum"] == 10
+    assert body["temperature"] == 1.0 and body["provider"] == {"require_parameters": True}
+    # A plain string is still sent as one text, with no cache marker and no temperature when None.
+    plain = api.build_request_body("m", "sys", "one text", None)
+    assert plain["messages"][1]["content"] == "one text" and "temperature" not in plain
+    assert plain["response_format"] == api.RESPONSE_FORMAT
+
+
+def test_cache_usage_fields_are_extracted():
+    details = api.extract_details({"usage": {"prompt_tokens": 5000, "completion_tokens": 100, "total_tokens": 5100,
+                                             "prompt_tokens_details": {"cached_tokens": 4800, "cache_write_tokens": 0}},
+                                   "cache_discount": 0.0123, "choices": [{"finish_reason": "stop"}]})
+    assert (details["cached_tokens"], details["cache_write_tokens"], details["cache_discount"]) == (4800, 0, 0.0123)
 
 
 @pytest.mark.parametrize("bad, message", [
     ("not json at all", None),
-    ('{"candidate_1": {"shortlist": true, "rating": 11, "reason": "x"}, "candidate_2": {"shortlist": true, "rating": 5, "reason": "x"}, "preferred": "1"}', "rating out of range"),
-    ('{"candidate_1": {"shortlist": true, "rating": true, "reason": "x"}, "candidate_2": {"shortlist": true, "rating": 5, "reason": "x"}, "preferred": "1"}', "rating out of range"),
-    ('{"candidate_1": {"shortlist": true, "rating": 7.5, "reason": "x"}, "candidate_2": {"shortlist": true, "rating": 5, "reason": "x"}, "preferred": "1"}', "rating out of range"),
-    ('{"candidate_1": {"shortlist": "yes", "rating": 7, "reason": "x"}, "candidate_2": {"shortlist": true, "rating": 5, "reason": "x"}, "preferred": "1"}', "shortlist"),
-    ('{"candidate_1": {"shortlist": true, "rating": 7, "reason": "x"}, "preferred": "1"}', "candidate_2 is missing"),
-    ('{"candidate_1": {"shortlist": true, "rating": 7}, "candidate_2": {"shortlist": true, "rating": 5, "reason": "x"}, "preferred": "1"}', "reason is missing"),
-    ('{"candidate_1": {"shortlist": true, "rating": 7, "reason": "x"}, "candidate_2": {"shortlist": true, "rating": 5, "reason": "x"}, "preferred": "3"}', "preferred"),
-    ('{"candidate_1": {"shortlist": true, "rating": 7, "reason": "x"}, "candidate_2": {"shortlist": true, "rating": 5, "reason": "x"}, "preferred": 1}', "preferred"),
+    ('{"shortlist": true, "rank_in_round": 3, "likelihood": 101, "reason": "x"}', "likelihood out of range"),
+    ('{"shortlist": true, "rank_in_round": 3, "likelihood": -1, "reason": "x"}', "likelihood out of range"),
+    ('{"shortlist": true, "rank_in_round": 3, "likelihood": true, "reason": "x"}', "likelihood out of range"),
+    ('{"shortlist": true, "rank_in_round": 3, "likelihood": 72.5, "reason": "x"}', "likelihood out of range"),
+    ('{"shortlist": "yes", "rank_in_round": 3, "likelihood": 72, "reason": "x"}', "shortlist"),
+    ('{"rank_in_round": 3, "likelihood": 72, "reason": "x"}', "shortlist is missing"),
+    ('{"shortlist": true, "likelihood": 72, "reason": "x"}', "rank_in_round is missing"),
+    ('{"shortlist": true, "rank_in_round": 0, "likelihood": 72, "reason": "x"}', "rank_in_round out of range"),
+    ('{"shortlist": true, "rank_in_round": 11, "likelihood": 72, "reason": "x"}', "rank_in_round out of range"),
+    ('{"shortlist": true, "rank_in_round": true, "likelihood": 72, "reason": "x"}', "rank_in_round out of range"),
+    ('{"shortlist": true, "rank_in_round": 3, "likelihood": 72}', "reason is missing"),
+    ('{"shortlist": true, "rank_in_round": 3, "likelihood": 72, "reason": 5}', "reason is not text"),
     ('[1, 2, 3]', "not a JSON object"),
 ])
-def test_bad_model_output_is_rejected(bad, message):
+def test_bad_answers_are_rejected(bad, message):
     if message is None:
         with pytest.raises(ValueError):
             api.parse_answer(bad)
     else:
         with pytest.raises(ValueError, match=message):
-            api.check_answer(api.parse_answer(bad))
+            api.check_answer(api.parse_answer(bad), n_applicants=10)
 
 
 def test_info_endpoints_send_the_key_and_report_errors(monkeypatch):

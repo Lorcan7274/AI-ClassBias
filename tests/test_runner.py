@@ -4,24 +4,20 @@ import pytest
 from conftest import CALLS_PER_SESSION
 
 from pipeline.client import CallResult, DryRunClient
-from pipeline.cvs import load_pairs
+from pipeline.cvs import load_fillers, load_stimuli
 from pipeline.runner import (build_jobs, compute_prompt_hash, prompt_record, results_file,
                              run_session, shuffle_jobs)
 
 
-class PicksCandidate1:
-    """Fake client: always prefers Candidate 1, and remembers every request it was sent."""
+class SaysYes:
+    """Fake client: shortlists everyone at 80, and remembers every request it was sent."""
 
     def __init__(self):
         self.bodies = []
 
     def send(self, body):
         self.bodies.append(body)
-        answer = {
-            "candidate_1": {"shortlist": True, "rating": 8, "reason": "first"},
-            "candidate_2": {"shortlist": False, "rating": 3, "reason": "second"},
-            "preferred": "1",
-        }
+        answer = {"shortlist": True, "rank_in_round": 2, "likelihood": 80, "reason": "fine"}
         content = json.dumps(answer)
         response = {"id": "gen-fake", "model": body["model"], "usage": {"total_tokens": 10},
                     "choices": [{"finish_reason": "stop", "message": {"content": content}}]}
@@ -42,65 +38,112 @@ def read_rows(path):
 
 
 def key(row):
-    return (row["session"], row["model"], row["pair_id"], row["order"], row["rep"])
+    return (row["session"], row["model"], row["cv_id"], row["arm"], row["variant"], row["sample"])
 
 
-def test_every_pair_is_planned_in_both_orders_for_every_rep(project):
-    pairs, _ = load_pairs(project.cv_dir, project.arms)
-    jobs = build_jobs(project.models, pairs, project.reps)
-    assert len(jobs) == CALLS_PER_SESSION  # 2 models x 9 pairs x 2 orders x 2 reps
+def test_every_cv_is_planned_once_per_sample(project):
+    stimuli, _ = load_stimuli(project.cv_dir, project.arms)
+    assert len(stimuli) == 18  # 3 base CVs x 3 arms x 2 variants
+    jobs = build_jobs(project.models, stimuli, project.samples)
+    assert len(jobs) == CALLS_PER_SESSION  # 2 models x 18 CVs x 2 samples
     assert len({j.key("day1") for j in jobs}) == len(jobs)
 
 
+def test_a_lone_variant_is_not_loaded(project):
+    (project.cv_dir / "cv02_explicit_low.txt").unlink()
+    stimuli, missing = load_stimuli(project.cv_dir, project.arms)
+    assert missing == ["cv02_explicit"]
+    assert len(stimuli) == 16 and "cv02_explicit_high" not in {s.stimulus_id for s in stimuli}
+
+
 def test_call_order_is_repeatable_but_differs_between_sessions(project):
-    pairs, _ = load_pairs(project.cv_dir, project.arms)
-    jobs = build_jobs(project.models, pairs, project.reps)
+    stimuli, _ = load_stimuli(project.cv_dir, project.arms)
+    jobs = build_jobs(project.models, stimuli, project.samples)
     day1 = [j.key("") for j in shuffle_jobs(jobs, 1, "day1")]
     assert day1 == [j.key("") for j in shuffle_jobs(jobs, 1, "day1")]
     assert day1 != [j.key("") for j in shuffle_jobs(jobs, 1, "day2")]
     assert sorted(day1) == sorted(j.key("") for j in jobs)  # same calls, new order
 
 
-def test_answers_are_mapped_back_to_the_right_variant(project):
-    run_session(project, "day1", PicksCandidate1(), dry_run=True, quiet=True)
+def test_each_row_records_its_cv_and_the_answer(project):
+    run_session(project, "day1", SaysYes(), dry_run=True, quiet=True)
     rows = read_rows(results_file(project.output_dir(True)))
     assert len(rows) == CALLS_PER_SESSION and all(r["ok"] for r in rows)
     for r in rows:
-        x, y = project.arms[r["arm"]]
-        expected_order = (x, y) if r["order"] == "xy" else (y, x)
-        assert (r["pos1_variant"], r["pos2_variant"]) == expected_order
-        assert r["preferred_position"] == 1
-        assert r["preferred_variant"] == r["pos1_variant"]
-        assert (r["pos1_rating"], r["pos2_rating"]) == (8, 3)
-    # Always picking Candidate 1 means picking x exactly half the time, thanks to the order swap.
-    assert sum(r["preferred_variant"] == project.arms[r["arm"]][0] for r in rows) == CALLS_PER_SESSION / 2
+        assert r["variant"] in project.arms[r["arm"]]
+        assert r["stimulus_id"] == f"{r['cv_id']}_{r['arm']}_{r['variant']}"
+        assert (r["shortlist"], r["rank_in_round"], r["likelihood"], r["reason"]) == (True, 2, 80, "fine")
+        assert "pair_id" not in r and "order" not in r  # nothing pairwise is left in a row
+    # The prefix is byte-identical across calls: that is what the providers cache.
+    # (checked in the prompt-structure test through the content parts)
+    # Every CV was sent exactly `samples` times to each model.
+    from collections import Counter
+    counts = Counter((r["model"], r["stimulus_id"]) for r in rows)
+    assert set(counts.values()) == {project.samples}
 
 
-def test_candidate_1_in_the_prompt_is_the_variant_recorded_as_pos1(project):
-    client = PicksCandidate1()
+def test_the_prompt_is_the_fixed_fillers_then_the_one_target_cv(project):
+    client = SaysYes()
     run_session(project, "day1", client, dry_run=True, workers=1, quiet=True)
     rows = read_rows(results_file(project.output_dir(True)))
-    pairs = {p.pair_id: p for p in load_pairs(project.cv_dir, project.arms)[0]}
+    texts = {s.stimulus_id: s.text for s in load_stimuli(project.cv_dir, project.arms)[0]}
+    fillers = load_fillers(project.filler_dir)
+    assert [name for name, _ in fillers] == ["F1.txt", "F2.txt"]
     assert len(client.bodies) == len(rows)
     for body, row in zip(client.bodies, rows):
-        prompt = body["messages"][1]["content"]
-        pair = pairs[row["pair_id"]]
-        text = {pair.x_variant: pair.x_text, pair.y_variant: pair.y_text}
-        assert prompt.index(text[row["pos1_variant"]]) < prompt.index(text[row["pos2_variant"]])
-        assert ".txt" not in prompt  # no file names reach the model
+        parts = body["messages"][1]["content"]
+        # Two content parts: the prefix that never changes, marked for caching, then the CV.
+        assert [p["type"] for p in parts] == ["text", "text"]
+        assert parts[0]["cache_control"] == {"type": "ephemeral"} and "cache_control" not in parts[1]
+        prefix, suffix = parts[0]["text"], parts[1]["text"]
+        prompt = prefix + suffix
+        target = texts[row["stimulus_id"]].rstrip()
+        # The same fillers in the same order in the prefix, then the target as the last applicant in the suffix.
+        positions = [prefix.index(text.rstrip()) for _, text in fillers]
+        assert positions == sorted(positions) and target not in prefix
+        assert suffix.startswith("=== APPLICANT 3 ===") and target in suffix
+        assert prompt.count("=== APPLICANT") == 3 and "Assess Applicant 3 only." in suffix
+        assert (row["n_fillers"], row["target_position"]) == (2, 3)
+        assert 1 <= row["rank_in_round"] <= 3 if "rank_in_round" in row else True
+        # The schema sent limits the rank to the round.
+        assert body["response_format"]["json_schema"]["schema"]["properties"]["rank_in_round"]["maximum"] == 3
+        others = [t for sid, t in texts.items() if sid != row["stimulus_id"] and t not in texts[row["stimulus_id"]]]
+        assert not any(t in prompt for t in others)  # never a second stimulus CV, never the twin
+        assert ".txt" not in prompt  # no file name reaches the model
+
+
+def test_temperature_is_sent_only_to_models_that_take_it(make_config):
+    from pipeline.config import load_config
+    from pipeline.cvs import make_dummy_cvs
+    cfg = load_config(make_config({"temperature: null": "temperature: 1.0",
+                                   "type: frontier": "type: frontier\n    send_temperature: false"}))
+    make_dummy_cvs(cfg.cv_dir, cfg.arms, n_cvs=1)
+    client = SaysYes()
+    run_session(cfg, "day1", client, dry_run=True, workers=1, quiet=True)
+    rows = read_rows(results_file(cfg.output_dir(True)))
+    by_model = {}
+    for body, row in zip(client.bodies, rows):
+        by_model.setdefault(row["model"], set()).add((body.get("temperature"), row["temperature"]))
+    assert by_model["test/frontier-model"] == {(None, None)}
+    assert by_model["test/open-model"] == {(1.0, 1.0)}
 
 
 def test_every_row_carries_the_prompt_hash_and_the_prompt_is_saved(project):
     run_session(project, "day1", DryRunClient(), dry_run=True, limit=3)
-    expected = compute_prompt_hash(prompt_record(project))
+    fillers = load_fillers(project.filler_dir)
+    expected = compute_prompt_hash(prompt_record(project, fillers))
     rows = read_rows(results_file(project.output_dir(True)))
     assert [r["prompt_hash"] for r in rows] == [expected] * 3
     saved = project.output_dir(True) / "prompts" / f"{expected}.json"
-    assert json.loads(saved.read_text(encoding="utf-8")) == prompt_record(project)
+    assert json.loads(saved.read_text(encoding="utf-8")) == prompt_record(project, fillers)
+    assert [f["name"] for f in prompt_record(project, fillers)["fillers"]] == ["F1.txt", "F2.txt"]
+    # The schema in the record is the one for this round size.
+    assert prompt_record(project, fillers)["response_format"]["json_schema"]["schema"]["properties"]["rank_in_round"]["maximum"] == 3
 
 
 def test_prompt_hash_changes_when_any_part_of_the_prompt_changes(project):
-    record = prompt_record(project)
+    fillers = load_fillers(project.filler_dir)
+    record = prompt_record(project, fillers)
     original = compute_prompt_hash(record)
     assert compute_prompt_hash(dict(record)) == original
     for part in ("system_prompt", "user_prompt_template", "job_description"):
@@ -108,10 +151,23 @@ def test_prompt_hash_changes_when_any_part_of_the_prompt_changes(project):
     schema = json.loads(json.dumps(record["response_format"]))
     schema["json_schema"]["name"] = "renamed"
     assert compute_prompt_hash(dict(record, response_format=schema)) != original
+    # A changed filler is a changed prompt: it is in every call.
+    changed = [(fillers[0][0], fillers[0][1] + " "), *fillers[1:]]
+    assert compute_prompt_hash(prompt_record(project, changed)) != original
+    # So is the same text under a different file name, or a different order.
+    assert compute_prompt_hash(prompt_record(project, list(reversed(fillers)))) != original
+
+
+def test_a_run_refuses_to_start_without_fillers(project):
+    for path in project.filler_dir.glob("*.txt"):
+        path.unlink()
+    with pytest.raises(RuntimeError, match="No filler CVs found"):
+        run_session(project, "day1", DryRunClient(), dry_run=True, quiet=True)
 
 
 def test_moving_text_between_prompt_parts_changes_the_hash(project):
-    record = prompt_record(project)
+    fillers = load_fillers(project.filler_dir)
+    record = prompt_record(project, fillers)
     a = dict(record, system_prompt="AB", job_description="C")
     b = dict(record, system_prompt="A", job_description="BC")
     assert compute_prompt_hash(a) != compute_prompt_hash(b)
@@ -151,12 +207,12 @@ def test_a_dry_run_does_not_make_the_real_run_skip_calls(project):
     """A finished dry run with the same session label must not count as done for the real run."""
     run_session(project, "day1", DryRunClient(), dry_run=True, quiet=True)
     # A fake client stands in for OpenRouter, so this "real" run costs nothing.
-    assert run_session(project, "day1", PicksCandidate1(), dry_run=False, limit=3, quiet=True).attempted == 3
+    assert run_session(project, "day1", SaysYes(), dry_run=False, limit=3, quiet=True).attempted == 3
     rows = read_rows(results_file(project.output_dir(False)))
     assert len(rows) == 3 and not any(r["dry_run"] for r in rows)
 
 
-# ----------------------------- Phase 3: workers, raw files, budget, retries -----------------------------
+# ----------------------------- workers, raw files, budget, retries -----------------------------
 
 from pipeline import client as api  # noqa: E402
 from pipeline.runner import ResultsWriter, raw_dir, read_results  # noqa: E402
@@ -192,8 +248,10 @@ def test_workers_write_every_row_and_raw_file_intact(project):
     raw = json.loads((raw_dir(project.output_dir(True)) / raw_files[0]).read_text(encoding="utf-8"))
     assert raw["request"]["response_format"]["type"] == "json_schema"
     assert raw["response"]["choices"][0]["message"]["content"]
+    assert raw["stimulus_id"] and raw["sample"] >= 1
     assert set(rows[0]) >= {"call_id", "generation_id", "served_model", "provider", "prompt_tokens",
-                            "completion_tokens", "total_tokens", "cost_usd", "attempts", "latency_s"}
+                            "completion_tokens", "total_tokens", "cost_usd", "attempts", "latency_s",
+                            "shortlist", "likelihood", "reason"}
     assert abs(stats.cost_usd - CALLS_PER_SESSION * DryRunClient.FAKE_COST_USD) < 1e-9
 
 
@@ -252,7 +310,7 @@ def test_a_half_written_last_line_is_skipped_and_repaired(project, capsys):
     path = results_file(project.output_dir(True))
     run_session(project, "day1", DryRunClient(), dry_run=True, limit=3, quiet=True)
     with open(path, "a", encoding="utf-8") as f:
-        f.write('{"session": "day1", "model": "test/open-model", "pair_id": "cv0')  # crash mid-write
+        f.write('{"session": "day1", "model": "test/open-model", "stimulus_id": "cv0')  # crash mid-write
     stats = run_session(project, "day1", DryRunClient(), dry_run=True, limit=2, quiet=True)
     assert stats.planned == 2
     assert "1 unreadable line(s)" in capsys.readouterr().out

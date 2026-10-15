@@ -1,0 +1,23 @@
+[
+ {
+  "name": "F06.txt",
+  "sample": 1,
+  "shortlist": true,
+  "likelihood": 85,
+  "reason": "A 2:1 Economics graduate with strong A-level maths, a relevant finance internship covering reconciliations, cost reporting and a cash-flow model now in use, and CIMA papers already passed, this candidate matches the role's core requirements closely."
+ },
+ {
+  "name": "F06.txt",
+  "sample": 2,
+  "shortlist": true,
+  "likelihood": 85,
+  "reason": "She has a 2:1 Economics degree, strong A-level Maths, and a relevant finance internship covering reconciliations, cost reporting and an Excel cash-flow model now in live use, and she has already started CIMA, so she clearly meets the role's requirements and sits in the top 30%."
+ },
+ {
+  "name": "F06.txt",
+  "sample": 3,
+  "shortlist": true,
+  "likelihood": 85,
+  "reason": "A 2:1 Economics graduate with strong A-level maths, a directly relevant finance internship (cost tracking, invoice reconciliation, a cash-flow forecast now in use) and CIMA papers already passed fits the role's requirements closely and stands out among the top 3 in 10."
+ }
+]
