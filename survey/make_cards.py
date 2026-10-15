@@ -27,13 +27,20 @@ ARM = "implicit"
 SEED = 20261020
 INK, SOFT, RULE = "#111111", "#555555", "#999999"
 
-NAME = ParagraphStyle("name", fontName="Helvetica-Bold", fontSize=17, leading=21, textColor=INK, spaceAfter=1)
-CONTACT = ParagraphStyle("contact", fontName="Helvetica", fontSize=10, leading=13, textColor=SOFT, spaceAfter=6)
-HEADING = ParagraphStyle("heading", fontName="Helvetica-Bold", fontSize=11.5, leading=14, textColor=INK,
-                         spaceBefore=8, spaceAfter=2)
-ENTRY = ParagraphStyle("entry", fontName="Helvetica-Bold", fontSize=11, leading=14.5, textColor=INK, spaceBefore=3)
-BODY = ParagraphStyle("body", fontName="Helvetica", fontSize=11, leading=14.5, textColor=INK, alignment=TA_LEFT)
-BULLET = ParagraphStyle("bullet", parent=BODY, leftIndent=10, bulletIndent=0)
+# Type sizes: as large as the longest CV allows on one A4 page (the build fails if
+# any card spills on to a second page, so a longer CV means a smaller SCALE).
+SCALE = 1.3
+NAME = ParagraphStyle("name", fontName="Helvetica-Bold", fontSize=17 * SCALE, leading=21 * SCALE, textColor=INK,
+                      spaceAfter=1)
+CONTACT = ParagraphStyle("contact", fontName="Helvetica", fontSize=10 * SCALE, leading=13 * SCALE, textColor=SOFT,
+                         spaceAfter=6 * SCALE)
+HEADING = ParagraphStyle("heading", fontName="Helvetica-Bold", fontSize=11.5 * SCALE, leading=14 * SCALE,
+                         textColor=INK, spaceBefore=8 * SCALE, spaceAfter=2 * SCALE)
+ENTRY = ParagraphStyle("entry", fontName="Helvetica-Bold", fontSize=11 * SCALE, leading=14.5 * SCALE, textColor=INK,
+                       spaceBefore=3 * SCALE)
+BODY = ParagraphStyle("body", fontName="Helvetica", fontSize=11 * SCALE, leading=14.5 * SCALE, textColor=INK,
+                      alignment=TA_LEFT)
+BULLET = ParagraphStyle("bullet", parent=BODY, leftIndent=12 * SCALE, bulletIndent=0)
 
 
 def esc(s: str) -> str:
@@ -107,8 +114,8 @@ def main():
     cards = [(n + 1, cvs[i]) for n, i in enumerate(order)]
 
     pdf_path = OUT / "cards.pdf"
-    doc = SimpleDocTemplate(str(pdf_path), pagesize=A4, leftMargin=20 * mm, rightMargin=20 * mm,
-                            topMargin=18 * mm, bottomMargin=18 * mm, title="CV cards", author="")
+    doc = SimpleDocTemplate(str(pdf_path), pagesize=A4, leftMargin=18 * mm, rightMargin=18 * mm,
+                            topMargin=16 * mm, bottomMargin=14 * mm, title="CV cards", author="")
     story = []
     labels = {}
 
@@ -117,7 +124,7 @@ def main():
         canvas.saveState()
         canvas.setFont("Helvetica", 9)
         canvas.setFillColor(RULE)
-        canvas.drawRightString(A4[0] - 20 * mm, A4[1] - 12 * mm, f"Card {n:02d}")
+        canvas.drawRightString(A4[0] - 18 * mm, A4[1] - 10 * mm, f"Card {n:02d}")
         canvas.restoreState()
 
     from reportlab.platypus import PageBreak
@@ -127,6 +134,8 @@ def main():
         if page < len(cards):
             story.append(PageBreak())
     doc.build(story, onFirstPage=corner, onLaterPages=corner)
+    if doc.page != len(cards):
+        sys.exit(f"{doc.page} pages for {len(cards)} cards: a CV spilled on to a second page; lower SCALE")
 
     with open(OUT / "card_key.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
