@@ -18,10 +18,11 @@
 var IMAGE_BASE = 'https://raw.githubusercontent.com/Lorcan7274/AI-ClassBias/stimulus-set/survey/cards/web/';
 var CARD_COUNT = 30;
 
-var ROLE = 'Graduate Analyst, London: a one-year programme building reports in Excel, cleaning '
-  + 'company data, and explaining the numbers to managers. They want a 2:1 in any subject, Excel '
-  + 'plus SQL, Python or R, some experience with real data, and clear communication; three in ten '
-  + 'applicants get an interview.';
+var ROLE = 'Job description: An entry-level analyst job in London for a recent graduate. The work '
+  + 'is building reports in Excel, cleaning up company data, and explaining what the numbers mean '
+  + 'to managers. They want someone with a good college degree in any subject, skills in Excel and '
+  + 'a coding language like SQL or Python, some experience working with real data, and clear '
+  + 'communication. Only 3 in 10 applicants get an interview.';
 
 function pad(n) { return (n < 10 ? '0' : '') + n; }
 
@@ -86,4 +87,22 @@ function buildForm() {
   Logger.log('Responses sheet:  ' + sheet.getUrl());
   Logger.log('If friends use personal Google accounts and yours is a university one, untick '
            + '"Restrict to users in your organisation" under the form\'s Settings > Responses.');
+}
+
+// Change the job text on an existing form without rebuilding it: put the form's
+// ID (the long string in its edit link) in FORM_ID, edit ROLE above, run this.
+var FORM_ID = '';
+
+function updateRole() {
+  if (!FORM_ID) throw new Error('Put the form ID in FORM_ID first.');
+  var form = FormApp.openById(FORM_ID);
+  var items = form.getItems(FormApp.ItemType.SECTION_HEADER);
+  var n = 0;
+  for (var i = 0; i < items.length; i++) {
+    if (items[i].getTitle() === 'The job') {
+      items[i].asSectionHeaderItem().setHelpText(ROLE);
+      n++;
+    }
+  }
+  Logger.log('Updated the job text in ' + n + ' sections.');
 }
