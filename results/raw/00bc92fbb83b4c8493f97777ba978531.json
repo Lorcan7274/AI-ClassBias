@@ -74,7 +74,7 @@
  },
  "ok": false,
  "error_type": "payment",
- "error": "HTTP 402: This request requires more credits, or fewer max_tokens. You requested up to 65536 tokens, but can only afford 62045. To increase, visit https://openrouter.ai/workspaces/default/keys/b74dd7da89fc9f5c5d4a4826892c6a66c13e106fe39ae09fbbd4000431f70e76 and adjust the key's total limit",
+ "error": "HTTP 402: This request requires more credits, or fewer max_tokens. You requested up to 65536 tokens, but can only afford 62045. To increase, visit [key url redacted] and adjust the key's total limit",
  "http_status": 402,
  "attempts": 3,
  "retries": [
@@ -83,7 +83,7 @@
  ],
  "response": {
   "error": {
-   "message": "This request requires more credits, or fewer max_tokens. You requested up to 65536 tokens, but can only afford 62045. To increase, visit https://openrouter.ai/workspaces/default/keys/b74dd7da89fc9f5c5d4a4826892c6a66c13e106fe39ae09fbbd4000431f70e76 and adjust the key's total limit",
+   "message": "This request requires more credits, or fewer max_tokens. You requested up to 65536 tokens, but can only afford 62045. To increase, visit [key url redacted] and adjust the key's total limit",
    "code": 402,
    "metadata": {
     "limit_source": "openrouter_credits",
@@ -92,15 +92,15 @@
     "previous_errors": [
      {
       "code": 402,
-      "message": "This request requires more credits, or fewer max_tokens. You requested up to 65536 tokens, but can only afford 62045. To increase, visit https://openrouter.ai/workspaces/default/keys/b74dd7da89fc9f5c5d4a4826892c6a66c13e106fe39ae09fbbd4000431f70e76 and adjust the key's total limit"
+      "message": "This request requires more credits, or fewer max_tokens. You requested up to 65536 tokens, but can only afford 62045. To increase, visit [key url redacted] and adjust the key's total limit"
      },
      {
       "code": 402,
-      "message": "This request requires more credits, or fewer max_tokens. You requested up to 65536 tokens, but can only afford 62045. To increase, visit https://openrouter.ai/workspaces/default/keys/b74dd7da89fc9f5c5d4a4826892c6a66c13e106fe39ae09fbbd4000431f70e76 and adjust the key's total limit"
+      "message": "This request requires more credits, or fewer max_tokens. You requested up to 65536 tokens, but can only afford 62045. To increase, visit [key url redacted] and adjust the key's total limit"
      },
      {
       "code": 402,
-      "message": "This request requires more credits, or fewer max_tokens. You requested up to 65536 tokens, but can only afford 62045. To increase, visit https://openrouter.ai/workspaces/default/keys/b74dd7da89fc9f5c5d4a4826892c6a66c13e106fe39ae09fbbd4000431f70e76 and adjust the key's total limit"
+      "message": "This request requires more credits, or fewer max_tokens. You requested up to 65536 tokens, but can only afford 62045. To increase, visit [key url redacted] and adjust the key's total limit"
      }
     ]
    }

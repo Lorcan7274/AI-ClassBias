@@ -1,6 +1,6 @@
 # CV class-bias study: results
 
-Generated 2026-10-14 23:06 UTC from `/home/user/AI-ClassBias/results/results.jsonl`.
+Generated 2026-10-20 21:23 UTC from `/home/user/AI-ClassBias/results/results.jsonl`.
 
 ## Data
 
