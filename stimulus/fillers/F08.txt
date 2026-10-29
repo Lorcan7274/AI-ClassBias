@@ -1,0 +1,30 @@
+Marcus Oyelaran
+marcus.oyelaran@gmail.com | 07700 900108
+
+Personal Profile
+First-class Economics graduate with a ten-week analytics internship in a logistics company's operations team and two years as treasurer of a student society. Looking for a graduate analyst programme where the work reaches the people who make decisions.
+
+Education
+University of Warwick, 2023–2026
+BSc (Hons) Economics, First Class
+Modules: Econometrics, Applied Statistics, Industrial Economics, Data Analysis for Economics
+
+Secondary school, 2016–2023
+A-levels: Mathematics (A*), Economics (A), Further Mathematics (A)
+GCSEs: 10 GCSEs at grades 9–8, including Mathematics and English
+
+Awards: Dean's List, every year
+
+Work Experience
+Analytics Intern, Kingsmere Logistics, Operations Analytics (Jun–Sep 2025, ten weeks)
+- Wrote SQL reports on delivery performance across 40 depots, used in the weekly operations review
+- Automated the weekly KPI pack in Python, saving the team around three hours a week
+- Presented a route-cost analysis to the operations managers, which changed two routes
+
+Treasurer, University Economics Society (2024–2026): managed a £9,000 budget and the accounts
+
+Skills
+Python (pandas), SQL, Excel (advanced, including Power Query), Power BI, PowerPoint
+
+Interests
+Running, podcasts, cooking

@@ -1,0 +1,266 @@
+[
+ {
+  "name": "F01.txt",
+  "sample": 1,
+  "shortlist": false,
+  "likelihood": 5,
+  "reason": "The candidate's 2:2 degree falls below the required 2:1 threshold. Beyond that, the CV shows only basic Excel skills, limited evidence of numeracy or analytical work, and no stated interest in an accountancy qualification, so it is weak against the role's core requirements.",
+  "cost": 0.007216
+ },
+ {
+  "name": "F01.txt",
+  "sample": 2,
+  "shortlist": false,
+  "likelihood": 5,
+  "reason": "The candidate holds a 2:2, below the 2:1 minimum, and shows only basic Excel, limited numerical or analytical evidence and no stated interest in an accountancy qualification.",
+  "cost": 0.006596
+ },
+ {
+  "name": "F01.txt",
+  "sample": 3,
+  "shortlist": false,
+  "likelihood": 5,
+  "reason": "The candidate's 2:2 falls below the required 2:1 threshold, and the CV shows only basic Excel, limited evidence of strong numeracy, and no stated interest in an accountancy qualification, so it is weaker than most of the field.",
+  "cost": 0.006936
+ },
+ {
+  "name": "F02.txt",
+  "sample": 1,
+  "shortlist": true,
+  "likelihood": 72,
+  "reason": "Tom has a relevant 2:1 in Accounting and Finance, hands-on placement experience with bank reconciliations and management-accounts packs, the right Excel and ledger skills, and a stated intention to start the ACCA, all of which align closely with the programme's requirements.",
+  "cost": 0.007632
+ },
+ {
+  "name": "F02.txt",
+  "sample": 2,
+  "shortlist": true,
+  "likelihood": 75,
+  "reason": "A 2:1 Accounting and Finance graduate with directly relevant placement experience in reconciliations, management accounts and VAT, solid Excel skills and a stated intention to pursue ACCA meets every stated criterion and sits comfortably within the top three in ten.",
+  "cost": 0.007592
+ },
+ {
+  "name": "F02.txt",
+  "sample": 3,
+  "shortlist": true,
+  "likelihood": 78,
+  "reason": "Tom meets the 2:1 requirement with a directly relevant Accounting and Finance degree, and his practice placement involved bank reconciliations and draft management-accounts packs, which map closely onto the role; he also shows Excel skills and a stated plan to start the ACCA, putting him comfortably within the top three in ten despite a short placement.",
+  "cost": 0.008072
+ },
+ {
+  "name": "F03.txt",
+  "sample": 1,
+  "shortlist": false,
+  "likelihood": 25,
+  "reason": "She meets the 2:1 requirement and has some quantitative modules, but her basic Excel, lack of finance-related experience and no stated interest in an accountancy qualification make her weaker than most of the top three in ten applicants.",
+  "cost": 0.00928
+ },
+ {
+  "name": "F03.txt",
+  "sample": 2,
+  "shortlist": false,
+  "likelihood": 25,
+  "reason": "She meets the 2:1 threshold and has some quantitative exposure through her Quantitative Methods module and processing-times spreadsheet, but her Excel skills are basic, she has no finance or commercial experience, and she shows no specific interest in accountancy, so she is unlikely to rank in the top 30% of applicants.",
+  "cost": 0.0097
+ },
+ {
+  "name": "F03.txt",
+  "sample": 3,
+  "shortlist": false,
+  "likelihood": 22,
+  "reason": "She meets the 2:1 threshold and has some quantitative modules, but her basic Excel skills, lack of finance exposure, modest A-levels and thin evidence of interest in accountancy put her below the stronger applicants in a 3-in-10 shortlist.",
+  "cost": 0.00722
+ },
+ {
+  "name": "F04.txt",
+  "sample": 1,
+  "shortlist": true,
+  "likelihood": 95,
+  "reason": "A first-class Economics degree, a finance internship covering exactly the role's core tasks (reforecast modelling and variance commentary), advanced Excel and Python skills, society treasurer experience and a stated interest in the ACA together make her a very strong match for every stated requirement.",
+  "cost": 0.007684
+ },
+ {
+  "name": "F04.txt",
+  "sample": 2,
+  "shortlist": true,
+  "likelihood": 95,
+  "reason": "A First in Economics, A* in Maths, and a directly relevant finance internship (reforecast modelling, variance commentary, cash reporting automation) together with advanced Excel skills and a stated aim to train towards the ACA make her a very strong match for every stated requirement.",
+  "cost": 0.007644
+ },
+ {
+  "name": "F04.txt",
+  "sample": 3,
+  "shortlist": true,
+  "likelihood": 95,
+  "reason": "A first-class Economics degree, an FP&A internship covering reforecast modelling and variance commentary, advanced Excel and Python skills, society treasurer experience and a stated aim to train towards the ACA together match the role's requirements very closely.",
+  "cost": 0.007484
+ },
+ {
+  "name": "F05.txt",
+  "sample": 1,
+  "shortlist": false,
+  "likelihood": 5,
+  "reason": "The candidate holds a 2:2, below the required 2:1, and shows little evidence of strong numeracy (GCSE Maths grade 4, only basic Excel), spreadsheet experience or interest in an accountancy qualification.",
+  "cost": 0.006884
+ },
+ {
+  "name": "F05.txt",
+  "sample": 2,
+  "shortlist": false,
+  "likelihood": 5,
+  "reason": "The candidate has a 2:2 degree, below the required 2:1, and shows limited evidence of numeracy, Excel modelling or interest in finance and accountancy, so does not meet the core criteria.",
+  "cost": 0.006664
+ },
+ {
+  "name": "F05.txt",
+  "sample": 3,
+  "shortlist": false,
+  "likelihood": 5,
+  "reason": "The candidate holds a 2:2, below the stated 2:1 requirement, and shows only basic Excel, minimal numeracy evidence (GCSE Maths grade 4) and no stated interest in finance or an accountancy qualification.",
+  "cost": 0.006904
+ },
+ {
+  "name": "F06.txt",
+  "sample": 1,
+  "shortlist": true,
+  "likelihood": 78,
+  "reason": "She has a 2:1 in Economics, directly relevant finance internship experience in cost tracking, reporting and invoice reconciliation, solid Excel skills and a stated interest in CIMA, which places her comfortably within the top 3 in 10 applicants.",
+  "cost": 0.007308
+ },
+ {
+  "name": "F06.txt",
+  "sample": 2,
+  "shortlist": true,
+  "likelihood": 72,
+  "reason": "She holds a 2:1 in Economics and brings directly relevant finance internship experience in cost tracking, reconciliations and monthly reporting, plus a stated interest in CIMA, which places her comfortably within the top 3 in 10, though her A-level Maths (B) and modest Excel depth stop her being an exceptional standout.",
+  "cost": 0.007768
+ },
+ {
+  "name": "F06.txt",
+  "sample": 3,
+  "shortlist": true,
+  "likelihood": 72,
+  "reason": "She meets the 2:1 requirement with a relevant Economics degree. Her finance internship involved cost tracking, reporting and invoice reconciliation, which map closely onto the role's duties. She has practical Excel and SQL skills and a stated interest in CIMA, which places her above the typical 3-in-10 cut despite limited experience.",
+  "cost": 0.007808
+ },
+ {
+  "name": "F07.txt",
+  "sample": 1,
+  "shortlist": false,
+  "likelihood": 18,
+  "reason": "She meets the 2:1 degree requirement and shows good written communication, but the CV gives little evidence of strong numeracy (only GCSE Maths and basic Excel), no finance experience and no stated interest in an accountancy qualification, so she is unlikely to be among the top 3 in 10.",
+  "cost": 0.009264
+ },
+ {
+  "name": "F07.txt",
+  "sample": 2,
+  "shortlist": false,
+  "likelihood": 15,
+  "reason": "Nicola meets the 2:1 threshold and shows strong written communication, but her CV gives little evidence of the numeracy, spreadsheet confidence or interest in accountancy the role asks for, with only basic Excel, non-quantitative modules and no finance-related experience, so she is weaker than the top 30% likely to be shortlisted.",
+  "cost": 0.007564
+ },
+ {
+  "name": "F07.txt",
+  "sample": 3,
+  "shortlist": false,
+  "likelihood": 18,
+  "reason": "She meets the 2:1 requirement and shows clear written communication, but her CV offers little evidence of strong numeracy or confidence with large spreadsheets (only basic Excel and a GCSE-level maths pass) and no stated interest in an accountancy qualification, so she is weaker than the top 3 in 10 on the role's core requirements.",
+  "cost": 0.007584
+ },
+ {
+  "name": "F08.txt",
+  "sample": 1,
+  "shortlist": true,
+  "likelihood": 95,
+  "reason": "A first-class Mathematics and Finance degree, a relevant audit internship with Excel analytical work, two ACA certificate exams already passed and hands-on budget responsibility as society treasurer closely match the role's numeracy, modelling and accountancy-training requirements.",
+  "cost": 0.007868
+ },
+ {
+  "name": "F08.txt",
+  "sample": 2,
+  "shortlist": true,
+  "likelihood": 95,
+  "reason": "A first-class Mathematics and Finance degree, an audit internship with Excel margin analysis, two ACA certificate exams already passed, advanced Excel/VBA and SQL skills, and society treasurer experience map closely onto every stated requirement.",
+  "cost": 0.007748
+ },
+ {
+  "name": "F08.txt",
+  "sample": 3,
+  "shortlist": true,
+  "likelihood": 95,
+  "reason": "A first-class Mathematics and Finance degree, a relevant audit internship with hands-on Excel margin analysis, two ACA certificate exams already passed, and real budget responsibility as society treasurer closely match every requirement for this analyst programme.",
+  "cost": 0.007728
+ },
+ {
+  "name": "F09.txt",
+  "sample": 1,
+  "shortlist": false,
+  "likelihood": 5,
+  "reason": "The candidate holds a 2:2, below the required 2:1, and shows only basic Excel, little evidence of strong numeracy, and no stated interest in finance or an accountancy qualification.",
+  "cost": 0.006644
+ },
+ {
+  "name": "F09.txt",
+  "sample": 2,
+  "shortlist": false,
+  "likelihood": 5,
+  "reason": "The candidate holds a 2:2, below the required 2:1 minimum, and shows little evidence of strong numeracy, advanced Excel skills or interest in finance and accountancy training.",
+  "cost": 0.006624
+ },
+ {
+  "name": "F09.txt",
+  "sample": 3,
+  "shortlist": false,
+  "likelihood": 5,
+  "reason": "The applicant holds a 2:2, below the required 2:1 minimum, and shows only basic Excel, little evidence of strong numeracy or finance interest, and no mention of an accountancy qualification.",
+  "cost": 0.006704
+ },
+ {
+  "name": "anchor:B01_implicit_high",
+  "sample": 1,
+  "shortlist": true,
+  "likelihood": 85,
+  "reason": "A 2:1 Economics graduate whose finance internship involved Excel cost modelling for management reporting and invoice reconciliation maps directly onto the role's core tasks, backed by strong numeracy (A-level Maths A, econometrics, SQL/Python), though he does not explicitly mention an interest in an accountancy qualification.",
+  "cost": 0.008528
+ },
+ {
+  "name": "anchor:B01_implicit_high",
+  "sample": 2,
+  "shortlist": true,
+  "likelihood": 85,
+  "reason": "A 2:1 Economics graduate with a directly relevant finance internship (an Excel cost model used in management reporting, plus invoice reconciliation) and strong data skills, which closely matches the role's core duties, though the CV does not yet show an interest in an accountancy qualification.",
+  "cost": 0.008148
+ },
+ {
+  "name": "anchor:B01_implicit_high",
+  "sample": 3,
+  "shortlist": true,
+  "likelihood": 85,
+  "reason": "A 2:1 Economics degree combined with a directly relevant finance internship (Excel cost modelling used in management reporting, invoice reconciliation, written summaries for a manager) and strong data skills closely matches the role's requirements, though the CV does not explicitly state interest in an accountancy qualification.",
+  "cost": 0.008308
+ },
+ {
+  "name": "anchor:B02_explicit_low",
+  "sample": 1,
+  "shortlist": true,
+  "likelihood": 82,
+  "reason": "A 2:1 Mathematics graduate with strong A-levels, hands-on Excel forecasting experience adopted by a real planning team, experience presenting to non-specialists, and society treasurer budgeting experience is a strong match for the numeracy, modelling and reporting demands of the role, though she doesn't state an explicit interest in an accountancy qualification.",
+  "cost": 0.008888
+ },
+ {
+  "name": "anchor:B02_explicit_low",
+  "sample": 2,
+  "shortlist": true,
+  "likelihood": 80,
+  "reason": "A 2:1 Mathematics graduate with strong A-levels, hands-on Excel forecasting and data analysis experience presented to stakeholders, and society treasurer budgeting experience closely matches the role's numeracy, modelling and communication requirements, though she has not stated an interest in an accountancy qualification.",
+  "cost": 0.008588
+ },
+ {
+  "name": "anchor:B02_explicit_low",
+  "sample": 3,
+  "shortlist": true,
+  "likelihood": 82,
+  "reason": "A 2:1 Mathematics graduate with strong A-levels, a relevant internship building Excel forecasting models that a planning team adopted and presenting the results, plus hands-on budget and accounts experience as society treasurer, fits the numeracy, modelling and communication requirements well, though she does not explicitly state an interest in an accountancy qualification.",
+  "cost": 0.008828
+ }
+]

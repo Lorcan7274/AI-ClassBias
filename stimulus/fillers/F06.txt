@@ -1,0 +1,26 @@
+Heather Dunmore
+heather.dunmore@gmail.com | 07700 900106
+
+Personal Profile
+Psychology graduate with an eight-week customer-insight internship, where I pulled and analysed survey and account data and presented the results. Looking for a graduate analyst role working with data and the people who use it.
+
+Education
+University of Reading, 2023–2026
+BSc (Hons) Psychology, 2:1
+Modules: Research Methods and Statistics, Cognitive Psychology, Consumer Psychology, Social Psychology
+
+Secondary school, 2016–2023
+A-levels: Psychology (A), Mathematics (A), Biology (B)
+GCSEs: 9 GCSEs at grades 8–6, including Mathematics and English
+
+Work Experience
+Customer Insight Intern, Oakridge Building Society, Reading (Jun–Aug 2025, eight weeks)
+- Pulled survey responses and account records from the insight database with SQL queries
+- Analysed 1,800 survey responses in Excel and R and grouped respondents into segments
+- Presented a summary of the findings to the marketing team, and wrote the R script that now produces the monthly segment summary
+
+Skills
+Excel (pivot tables, charts), R (tidyverse), SQL, SPSS, PowerPoint
+
+Interests
+Tennis, reading, cooking

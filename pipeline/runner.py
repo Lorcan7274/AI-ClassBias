@@ -1,12 +1,21 @@
 """Running one session: build the list of calls, skip the ones already done, make the
-rest with several workers at once, and append one row per call to the results file."""
+rest with several workers at once, and append one row per call to the results file.
+
+One call assesses one CV. It is shown last, after a fixed set of filler CVs that is
+identical in every call, and the model is asked about it alone: the fillers give the
+shortlist budget a reference class without ever putting the two versions of a CV in
+one prompt (a model shown both recognises them as the same CV, anchors one answer to
+the other, and prefers whichever is listed first: stimulus/REVIEW.md, the first
+pilot). Each CV is sent `samples` times per session, so the share of "yes" answers
+across its samples estimates the model's probability of shortlisting it, and the
+mean of its 0-100 likelihoods is the finer measure.
+"""
 
 from __future__ import annotations
 
 import hashlib
 import json
 import threading
-import time
 import uuid
 import random
 from collections import Counter
@@ -19,12 +28,7 @@ from tqdm import tqdm
 
 from pipeline import client as api
 from pipeline.config import ModelSpec
-from pipeline.cvs import Pair, load_pairs
-
-# "xy" shows the x variant as Candidate 1, "yx" shows the y variant first.
-# Every pair is sent in both orders so a preference for one position is balanced
-# across the two variants.
-ORDERS = ("xy", "yx")
+from pipeline.cvs import Stimulus, load_fillers, load_stimuli
 
 # After one of these, every further call would fail the same way, so the run stops.
 FATAL_ERROR_TYPES = {"auth", "payment"}
@@ -32,15 +36,15 @@ FATAL_ERROR_TYPES = {"auth", "payment"}
 
 @dataclass
 class Job:
-    """One planned call: a model, a pair, an order and a repetition number."""
+    """One planned call: a model, a CV and a sample number."""
     model: ModelSpec
-    pair: Pair
-    order: str  # "xy" or "yx"
-    rep: int    # 1 .. reps
+    stimulus: Stimulus
+    sample: int  # 1 .. samples
 
     def key(self, session):
         """Identifies the call within the results file. Used to skip calls that already succeeded."""
-        return (session, self.model.id, self.pair.pair_id, self.order, self.rep)
+        s = self.stimulus
+        return (session, self.model.id, s.cv_id, s.arm, s.variant, self.sample)
 
 
 @dataclass
@@ -74,13 +78,15 @@ def raw_dir(output_dir) -> Path:
 
 # ----------------------------- the prompt hash -----------------------------
 
-def prompt_record(cfg) -> dict:
-    """Everything sent with each call apart from the two CVs."""
+def prompt_record(cfg, fillers) -> dict:
+    """Everything sent with each call apart from the CV being assessed. The fillers are
+    in it because they are in every prompt: changing one changes the hash."""
     return {
         "system_prompt": cfg.system_prompt,
         "user_prompt_template": cfg.user_prompt_template,
         "job_description": cfg.job_description,
-        "response_format": api.RESPONSE_FORMAT,
+        "fillers": [{"name": name, "text": text} for name, text in fillers],
+        "response_format": api.response_format(len(fillers) + 1),
     }
 
 
@@ -108,25 +114,25 @@ def save_prompt_record(output_dir, record, prompt_hash) -> Path:
 
 def read_results(path):
     """All rows in a results file. Returns (rows, number of unreadable lines).
-
-    A crash in the middle of a write can leave a half-written last line; such lines
-    are skipped rather than stopping the whole run.
-    """
+    A line that isn't valid JSON (a call interrupted mid-write) is counted and skipped."""
+    path = Path(path)
+    if not path.exists():
+        return [], 0
     rows, bad = [], 0
-    if Path(path).exists():
-        with open(path, encoding="utf-8") as f:
-            for line in f:
-                if not line.strip():
-                    continue
-                try:
-                    rows.append(json.loads(line))
-                except json.JSONDecodeError:
-                    bad += 1
+    with path.open(encoding="utf-8") as f:
+        for line in f:
+            if not line.strip():
+                continue
+            try:
+                rows.append(json.loads(line))
+            except json.JSONDecodeError:
+                bad += 1
     return rows, bad
 
 
 def row_key(row):
-    return (row["session"], row["model"], row["pair_id"], row["order"], row["rep"])
+    return (row.get("session"), row.get("model"), row.get("cv_id"), row.get("arm"),
+            row.get("variant"), row.get("sample"))
 
 
 def completed_and_failed_keys(rows):
@@ -153,10 +159,9 @@ def check_session(rows, session, prompt_hash):
 
 # ----------------------------- planning the calls -----------------------------
 
-def build_jobs(models, pairs, reps) -> list[Job]:
-    """Every call for one session: each model x pair x order x rep."""
-    return [Job(m, p, order, rep)
-            for m in models for p in pairs for order in ORDERS for rep in range(1, reps + 1)]
+def build_jobs(models, stimuli, samples) -> list[Job]:
+    """Every call for one session: each model x CV x sample."""
+    return [Job(m, s, k) for m in models for s in stimuli for k in range(1, samples + 1)]
 
 
 def shuffle_jobs(jobs, seed, session) -> list[Job]:
@@ -174,10 +179,37 @@ def shuffle_jobs(jobs, seed, session) -> list[Job]:
 
 # ----------------------------- making the calls -----------------------------
 
-def fill_prompt(cfg, first_text, second_text) -> str:
-    """The user prompt for one call. The model only ever sees "Candidate 1" and
-    "Candidate 2": no file names or variant labels."""
-    return cfg.user_prompt_template.format(job=cfg.job_description, cv1=first_text, cv2=second_text)
+def target_label(fillers) -> str:
+    """How the prompt refers to the CV being assessed: the last applicant listed."""
+    return f"Applicant {len(fillers) + 1}"
+
+
+def fillers_block(fillers) -> str:
+    """The fillers, numbered in their fixed order."""
+    return "\n\n".join(f"=== APPLICANT {i} ===\n{text.rstrip()}" for i, (_, text) in enumerate(fillers, 1))
+
+
+def target_block(fillers, cv_text) -> str:
+    """The CV being assessed, as the last applicant in the round."""
+    return f"=== APPLICANT {len(fillers) + 1} ===\n{cv_text.rstrip()}"
+
+
+def split_prompt(cfg, cv_text, fillers) -> tuple[str, str]:
+    """The user prompt for one call as (prefix, suffix), split where {target_block}
+    sits in the template. The prefix (job description, fillers) is identical in every
+    call and is what the providers cache; the suffix holds the CV that changes. The
+    model sees numbered applicants only: no file names, arm or variant labels."""
+    template = cfg.user_prompt_template
+    cut = template.index("{target_block}")
+    fields = {"job": cfg.job_description, "fillers": fillers_block(fillers),
+              "target_block": target_block(fillers, cv_text), "target": target_label(fillers)}
+    return template[:cut].format(**fields), template[cut:].format(**fields)
+
+
+def fill_prompt(cfg, cv_text, fillers) -> str:
+    """The whole user prompt for one call, prefix and suffix together."""
+    prefix, suffix = split_prompt(cfg, cv_text, fillers)
+    return prefix + suffix
 
 
 class ResultsWriter:
@@ -207,15 +239,12 @@ class ResultsWriter:
         self.file.close()
 
 
-def run_one(cfg, session, job, client, prompt_hash, dry_run, out_dir) -> dict:
+def run_one(cfg, session, job, client, prompt_hash, dry_run, out_dir, fillers) -> dict:
     """Make one call, save the full response under results/raw/, and return the row.
     A failed call gives ok=False plus error_type and error."""
-    if job.order == "xy":
-        first_variant, first_text = job.pair.x_variant, job.pair.x_text
-        second_variant, second_text = job.pair.y_variant, job.pair.y_text
-    else:
-        first_variant, first_text = job.pair.y_variant, job.pair.y_text
-        second_variant, second_text = job.pair.x_variant, job.pair.x_text
+    s = job.stimulus
+    # A model that rejects the parameter is sent none; the row records what was sent.
+    temperature = cfg.temperature if job.model.send_temperature else None
 
     call_id = uuid.uuid4().hex
     row = {
@@ -224,21 +253,21 @@ def run_one(cfg, session, job, client, prompt_hash, dry_run, out_dir) -> dict:
         "session": session,
         "model": job.model.id,
         "model_type": job.model.type,
-        "pair_id": job.pair.pair_id,
-        "cv_id": job.pair.cv_id,
-        "arm": job.pair.arm,
-        "order": job.order,
-        "rep": job.rep,
-        "pos1_variant": first_variant,
-        "pos2_variant": second_variant,
-        "temperature": cfg.temperature,
+        "stimulus_id": s.stimulus_id,
+        "cv_id": s.cv_id,
+        "arm": s.arm,
+        "variant": s.variant,
+        "sample": job.sample,
+        "n_fillers": len(fillers),
+        "target_position": len(fillers) + 1,
+        "temperature": temperature,
         "prompt_hash": prompt_hash,
         "dry_run": dry_run,
     }
-    body = api.build_request_body(job.model.id, cfg.system_prompt,
-                                  fill_prompt(cfg, first_text, second_text), cfg.temperature)
-    raw = {"call_id": call_id, "session": session, "pair_id": job.pair.pair_id, "order": job.order,
-           "rep": job.rep, "prompt_hash": prompt_hash, "dry_run": dry_run, "request": body}
+    body = api.build_request_body(job.model.id, cfg.system_prompt, split_prompt(cfg, s.text, fillers), temperature,
+                                  response_format=api.response_format(len(fillers) + 1))
+    raw = {"call_id": call_id, "session": session, "stimulus_id": s.stimulus_id, "sample": job.sample,
+           "prompt_hash": prompt_hash, "dry_run": dry_run, "request": body}
     try:
         result = client.send(body)
     except api.CallError as e:
@@ -255,7 +284,7 @@ def run_one(cfg, session, job, client, prompt_hash, dry_run, out_dir) -> dict:
                 "response": result.response})
     try:
         answer = api.parse_answer(result.content)
-        api.check_answer(answer)
+        api.check_answer(answer, n_applicants=len(fillers) + 1)
     except (ValueError, TypeError) as e:  # json.JSONDecodeError is a ValueError
         error_type = "bad_json" if isinstance(e, json.JSONDecodeError) else "bad_answer"
         row.update({"ok": False, "error_type": error_type, "error": f"{type(e).__name__}: {e}"[:300]})
@@ -265,15 +294,10 @@ def run_one(cfg, session, job, client, prompt_hash, dry_run, out_dir) -> dict:
 
     row.update({
         "ok": True,
-        "preferred_position": int(answer["preferred"]),
-        # Map "Candidate 1/2" back to the variant that was shown in that position.
-        "preferred_variant": first_variant if answer["preferred"] == "1" else second_variant,
-        "pos1_shortlist": answer["candidate_1"]["shortlist"],
-        "pos1_rating": answer["candidate_1"]["rating"],
-        "pos1_reason": answer["candidate_1"]["reason"],
-        "pos2_shortlist": answer["candidate_2"]["shortlist"],
-        "pos2_rating": answer["candidate_2"]["rating"],
-        "pos2_reason": answer["candidate_2"]["reason"],
+        "shortlist": answer["shortlist"],
+        "rank_in_round": answer["rank_in_round"],
+        "likelihood": answer["likelihood"],
+        "reason": answer["reason"],
     })
     raw["ok"] = True
     save_raw(out_dir, call_id, raw)
@@ -298,15 +322,19 @@ def run_session(cfg, session, client, dry_run=False, limit=None, workers=None, b
     fatal error (bad key, no credits), or on Ctrl-C; in-flight calls still finish
     and their rows are saved.
     """
-    pairs, missing = load_pairs(cfg.cv_dir, cfg.arms)
+    stimuli, missing = load_stimuli(cfg.cv_dir, cfg.arms)
     if missing:
         print(f"WARNING: incomplete pairs skipped: {missing}")
-    if not pairs:
+    if not stimuli:
         raise RuntimeError(f"No complete CV pairs found in {cfg.cv_dir}")
+    fillers = load_fillers(cfg.filler_dir)
+    if not fillers:
+        raise RuntimeError(f"No filler CVs found in {cfg.filler_dir} (paths.filler_dir): every call shows "
+                           "the same fillers before the CV it assesses, so there must be at least one")
 
     out_dir = cfg.output_dir(dry_run)
     out_file = results_file(out_dir)
-    record = prompt_record(cfg)
+    record = prompt_record(cfg, fillers)
     prompt_hash = compute_prompt_hash(record)
 
     rows, bad_lines = read_results(out_file)
@@ -316,7 +344,7 @@ def run_session(cfg, session, client, dry_run=False, limit=None, workers=None, b
     check_session(rows, session, prompt_hash)
     done, failed = completed_and_failed_keys(rows)
 
-    jobs = shuffle_jobs(build_jobs(cfg.models, pairs, cfg.reps), cfg.shuffle_seed, session)
+    jobs = shuffle_jobs(build_jobs(cfg.models, stimuli, cfg.samples), cfg.shuffle_seed, session)
     if retry_failed:
         todo = [j for j in jobs if j.key(session) in failed]
         note = f"{len(todo)} failed calls to retry"
@@ -327,7 +355,7 @@ def run_session(cfg, session, client, dry_run=False, limit=None, workers=None, b
         todo = todo[:limit]
         note += f", limited to {len(todo)}"
     workers = workers or cfg.workers
-    print(f"{len(pairs)} pairs, {len(jobs)} calls in session '{session}': {note}.")
+    print(f"{len(stimuli)} CVs, {len(fillers)} fillers, {len(jobs)} calls in session '{session}': {note}.")
     print(f"Writing to {out_file} (prompt_hash {prompt_hash[:12]}..., {workers} worker(s)"
           f"{'' if budget is None else f', budget ${budget:g}'})")
 
@@ -337,7 +365,7 @@ def run_session(cfg, session, client, dry_run=False, limit=None, workers=None, b
     writer = ResultsWriter(out_file)
 
     def work(job):
-        row = run_one(cfg, session, job, client, prompt_hash, dry_run, out_dir)
+        row = run_one(cfg, session, job, client, prompt_hash, dry_run, out_dir, fillers)
         writer.write(row)  # written by the worker, so an interrupted run keeps finished calls
         return row
 
@@ -365,7 +393,7 @@ def run_session(cfg, session, client, dry_run=False, limit=None, workers=None, b
                 bar.set_postfix_str(f"ok {stats.ok}, failed {sum(stats.failures.values())}, "
                                     f"${stats.cost_usd:.4f}")
                 if not row["ok"]:
-                    tqdm.write(f"  FAILED {row['model']} {row['pair_id']} {row['order']} r{row['rep']}: "
+                    tqdm.write(f"  FAILED {row['model']} {row['stimulus_id']} s{row['sample']}: "
                                f"{row['error_type']}: {row['error'][:120]}")
                     if row["error_type"] in FATAL_ERROR_TYPES and stats.stopped is None:
                         stats.stopped = f"stopped: {row['error_type']} error, every further call would fail too"

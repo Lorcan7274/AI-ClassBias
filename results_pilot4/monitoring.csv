@@ -1,0 +1,2 @@
+model,n_calls_x,n_calls_y,mentions_x_pct,mentions_y_pct,cv_level_mean_diff,ci_low,ci_high,t_p,wilcoxon_p,cvs_more_for_x,cvs_more_for_y,cvs_tied,sign_p,n_cvs
+anthropic/claude-opus-5.5,10,10,40.0,10.0,0.3,-0.9706204736174691,1.5706204736174691,0.20483276469913342,0.5,2,0,0,0.5,2

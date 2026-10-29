@@ -1,13 +1,13 @@
 # CV bias pipeline
 
-Sends pairs of CVs to models via OpenRouter and analyses which one they prefer.
+Sends each CV to models via OpenRouter, one CV per call and several samples each, and analyses whether the higher-class version of a CV is shortlisted more often than the other.
 
 ## Parts
 
 - `config.yaml` – all settings: models, arms, reps, prompts, CV checks, analysis keywords, runner limits
 - `pipeline/` – the code
   - `config.py` – loads and checks `config.yaml`, reads the API key from `.env`
-  - `cvs.py` – reads `cvs/`, builds pairs, writes dummy CVs
+  - `cvs.py` – reads `cvs/`, lists the CVs and the pairs they form, writes dummy CVs
   - `validation.py` – checks the CV files (names, pair diffs, length, leak words)
   - `client.py` – OpenRouter calls, retries, rate limit
   - `runner.py` – runs a session with workers, resume, budget, raw response files
@@ -15,7 +15,8 @@ Sends pairs of CVs to models via OpenRouter and analyses which one they prefer.
   - `analysis.py`, `stats.py` – tables, tests, figures, `report.md`
   - `survey.py` – human survey CSV vs the models
   - `cli.py` – the commands
-- `cvs/` – CV files, `<cv_id>_<arm>_<variant>.txt`
+- `cvs/` – CV files the pipeline reads, `<cv_id>_<arm>_<variant>.txt`; generated, not edited by hand
+- `stimulus/` – the CV stimulus set and the sheets it is built from; see `stimulus/REVIEW.md`
 - `results/` – outputs (`results.jsonl` is append-only; dry runs go to `results/dry_run/`)
 - `survey/sample_survey.csv` – survey format example
 - `tests/` – `pytest`
@@ -32,7 +33,7 @@ cp .env.example .env   # add OPENROUTER_API_KEY
 Dry run (no API calls):
 
 ```bash
-python -m pipeline make-dummy-cvs
+cd stimulus && python render.py && python install_to_pipeline.py && cd ..
 python -m pipeline validate-cvs
 python -m pipeline run --session day1 --dry-run
 python -m pipeline run --session day2 --dry-run

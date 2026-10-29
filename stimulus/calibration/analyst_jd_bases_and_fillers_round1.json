@@ -1,0 +1,140 @@
+{
+ "label": "newjd_round1",
+ "bases": {
+  "B01": {
+   "likelihood": 82,
+   "reason": "A 2:1 Economics graduate with Excel, SQL and Python skills plus directly relevant real-data experience, including a cost model used in management reporting, invoice reconciliation, and cleaning a 40,000-row survey dataset, matches nearly every requirement of the role."
+  },
+  "B02": {
+   "likelihood": 85,
+   "reason": "Emma meets every stated requirement: a 2:1 Mathematics degree, Excel plus Python, R and SQL, a relevant internship analysing 25,000 households' meter data that produced a spreadsheet the business adopted, and experience presenting to a mixed team, so she is very likely to be in the top three of ten."
+  },
+  "B03": {
+   "likelihood": 85,
+   "reason": "A 2:1 Maths and Statistics graduate with Excel, R, SQL and Python, plus hands-on work with real datasets from a pricing internship and a university data role, including a reconciliation spreadsheet that measurably cut checking time, matches the requirements closely; the CV gives less direct evidence of presenting to non-specialists."
+  },
+  "B04": {
+   "likelihood": 68,
+   "reason": "Hannah meets the core criteria: a 2:1, Excel dashboards and pivot tables, SQL and Power BI, and real data work cleaning and reporting 900 repairs records, plus clear communication and a dissertation prize, though her quantitative depth is moderate rather than exceptional."
+  },
+  "B05": {
+   "likelihood": 68,
+   "reason": "Christopher meets every core requirement: a 2:1 degree, Excel plus R, hands-on cleaning and analysis of real datasets in a council internship and a research assistant post, and written reports for a non-specialist planning committee, though his commercial exposure is limited."
+  },
+  "B06": {
+   "likelihood": 78,
+   "reason": "A Bristol Economics and Finance 2:1 with Further Maths, Excel variance reporting and invoice-checking experience from an NHS finance internship, plus Python and Stata, matches most requirements, though her work is more finance-focused than broad business analysis."
+  },
+  "B07": {
+   "likelihood": 78,
+   "reason": "Ben meets every core requirement: a 2:1 degree, Excel plus R and Python, hands-on work with real datasets from an internship analysing 2,400 survey responses and from cleaning research data, and experience presenting findings to non-specialists, all strengthened by a best-dissertation award."
+  },
+  "B08": {
+   "likelihood": 85,
+   "reason": "Rebecca meets every stated requirement: a 2:1 in Data Science, Excel, SQL, Python and R, and directly relevant experience cleaning large real datasets and producing reports and documentation for non-specialist managers, which makes her a strong fit for the analyst programme."
+  },
+  "B09": {
+   "likelihood": 72,
+   "reason": "He meets every listed requirement: a 2:1 from Bath, an A in A-level Maths, a subject prize, a hands-on finance internship building an Excel cost model and month-end reports, and SQL and Power BI skills, though SQL is only listed rather than shown in use."
+  },
+  "B10": {
+   "likelihood": 68,
+   "reason": "She meets every core requirement: a 2:1 degree, Excel plus R, data cleaning, a real-data internship analysing records for 1,900 families, and experience reporting results to non-specialist trustees, though her stated interest in policy roles and the lack of SQL or commercial data experience keep her short of a top-tier candidate."
+  },
+  "B11": {
+   "likelihood": 78,
+   "reason": "Richard meets every core requirement: a 2:1 degree, Excel plus SQL and Power BI, and directly relevant internship experience analysing real delivery and stock data with a quantified 7% mileage saving and a report used weekly by managers, which puts him among the stronger applicants despite a profile pitched at operations roles."
+  },
+  "B12": {
+   "likelihood": 78,
+   "reason": "Claire meets every core requirement: a 2:1 from Loughborough with strong A-level maths, Excel plus Python and SQL, and real-dataset experience from a manufacturing internship where she automated reporting and identified the most costly scrap lines, though her evidence of presenting to non-specialists is somewhat thin."
+  },
+  "B13": {
+   "likelihood": 82,
+   "reason": "A 2:1 Computer Science graduate who built SQL, Power BI and Python reporting during a relevant data analyst internship, matching the role's core requirements closely, though there is less direct evidence of presenting to non-specialists."
+  },
+  "B14": {
+   "likelihood": 80,
+   "reason": "Jessica meets every core requirement: a 2:1 in Business Economics, Excel with SQL and Python, a relevant commercial analyst internship working on real sales and margin data with a concrete result, and experience reporting to non-specialists."
+  },
+  "B15": {
+   "likelihood": 85,
+   "reason": "She meets every requirement: a 2:1 in Mathematics with Statistics, strong A-levels, Excel plus R, Python and SQL, and a relevant analytics internship working with a real 9,000-record dataset, where she also built an Excel tool and presented to non-specialist managers."
+  }
+ },
+ "fillers": {
+  "F01.txt": {
+   "likelihoods": [
+    3,
+    4,
+    4
+   ],
+   "reason": "The candidate falls short of several core requirements: a 2:2 against the 2:1 minimum, only basic Excel, no SQL, Python or R, and no experience working with real datasets."
+  },
+  "F02.txt": {
+   "likelihoods": [
+    55,
+    45,
+    55
+   ],
+   "reason": "He meets every stated requirement: a 2:1, Excel with pivot tables and lookups, basic SQL, and a council internship where he cleaned real data and reported findings to non-specialists, though his basic SQL, B-grade A-levels and short six-week placement keep him near the shortlist cut-off rather than clearly above it."
+  },
+  "F03.txt": {
+   "likelihoods": [
+    4,
+    4,
+    5
+   ],
+   "reason": "The candidate falls short of several stated requirements: her 2:2 is below the 2:1 threshold, she lists only basic Excel with no SQL, Python or R, and she has no experience with real datasets, although her care work does show reliability and communication skills."
+  },
+  "F04.txt": {
+   "likelihoods": [
+    95,
+    95,
+    95
+   ],
+   "reason": "A first-class Mathematics degree, a ten-week data internship with Python, SQL and Tableau work that went into ongoing use, and experience presenting to a commercial director match every requirement closely."
+  },
+  "F05.txt": {
+   "likelihoods": [
+    5,
+    5,
+    5
+   ],
+   "reason": "The candidate holds a 2:2, below the required 2:1, and offers only basic Excel, no SQL, Python or R, and no experience with real datasets beyond warehouse work, so he falls short of several core requirements."
+  },
+  "F06.txt": {
+   "likelihoods": [
+    62,
+    62,
+    62
+   ],
+   "reason": "Heather meets the core requirements: a 2:1 degree, a relevant internship analysing 1,800 real survey responses in Excel and SPSS, experience presenting to non-specialists, and basic R as a coding language. However, her technical depth is modest, with no SQL and only basic R, which leaves her close to the cut-off for the top three."
+  },
+  "F07.txt": {
+   "likelihoods": [
+    4,
+    4,
+    4
+   ],
+   "reason": "The candidate holds a 2:2, below the required 2:1, and has only basic Excel, no SQL, Python or R, and no experience with real datasets, so she misses several essential criteria despite an economics background and some cashing-up and stock experience."
+  },
+  "F08.txt": {
+   "likelihoods": [
+    92,
+    93,
+    94
+   ],
+   "reason": "A first-class Warwick Economics degree, a relevant analytics internship where he built SQL reports, automated KPI packs in Python and presented to operations managers with real impact, and advanced Excel and Power BI skills match nearly every requirement of the role."
+  },
+  "F09.txt": {
+   "likelihoods": [
+    5,
+    8,
+    8
+   ],
+   "reason": "The candidate meets the 2:1 degree threshold and shows supervisory and people skills, but has only basic Excel, no query or coding language, and no experience with real datasets, so he misses several core requirements of the analyst role."
+  }
+ },
+ "cost": 0.352164
+}

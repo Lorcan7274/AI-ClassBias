@@ -125,3 +125,42 @@ def wilson(k, n) -> tuple:
 
 def binomial_p(k, n) -> float:
     return float(stats.binomtest(int(k), int(n), 0.5).pvalue) if n else math.nan
+
+
+def clustered_difference(y, x, groups) -> dict:
+    """Linear regression y ~ 1 + x with standard errors clustered by `groups`. The
+    slope is the mean difference in y between x = 1 and x = 0, with a 95% CI and a
+    p-value against 0. Used for the 0-100 likelihoods, where an odds ratio makes no sense."""
+    y = np.asarray(y, dtype=float)
+    x = np.asarray(x, dtype=float)
+    out = {"n": len(y), "diff": math.nan, "low": math.nan, "high": math.nan, "p": math.nan, "note": ""}
+    if len(y) < 4 or len(set(x)) < 2:
+        out["note"] = "not enough variation to estimate the effect"
+        return out
+    if np.allclose(y, y[0]):
+        out["note"] = "no variation"
+        return out
+    try:
+        X = np.column_stack([np.ones(len(y)), x])
+        res = sm.OLS(y, X).fit(cov_type="cluster", cov_kwds={"groups": _codes(groups)})
+        low, high = res.conf_int()[1]
+        out.update({"diff": float(res.params[1]), "low": float(low), "high": float(high),
+                    "p": float(res.pvalues[1])})
+    except Exception as e:
+        out["note"] = f"model did not fit ({type(e).__name__})"
+    return out
+
+
+def sign_test(differences) -> dict:
+    """The exact sign test on one difference per base CV: how many favour the
+    higher-class CV, how many the other, how many tie, and a two-sided binomial
+    p-value on the non-ties. For a model whose shortlist decision never varies across
+    samples, each base CV's difference is -1, 0 or 1 and this is the test of record,
+    as in a callback audit: one decision per CV, counted across the 15. (With paired
+    binary outcomes it is McNemar's exact test.)"""
+    d = np.asarray(differences, dtype=float)
+    d = d[~np.isnan(d)]
+    pos, neg = int((d > 0).sum()), int((d < 0).sum())
+    ties = int(len(d) - pos - neg)
+    p = float(stats.binomtest(pos, pos + neg, 0.5).pvalue) if pos + neg > 0 else math.nan
+    return {"n": int(len(d)), "pos": pos, "neg": neg, "ties": ties, "p": p}

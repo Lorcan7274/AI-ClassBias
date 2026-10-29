@@ -124,19 +124,25 @@ def manipulation_check(df, arms) -> pd.DataFrame:
 
 
 def compare_with_models(df, model_df) -> pd.DataFrame:
-    """Per pair: the human pick-high rate next to each model's pick rate on the same pair."""
+    """Per pair: the human pick-high rate next to each model's class effect on the same
+    base CV. The models never see a pair, so their column is the shortlist rate of the
+    higher-class CV minus that of the other (all samples and sessions): 0 means no
+    effect, 1 means it always shortlisted one and never the other."""
     by_pair = df.groupby("pair_id").agg(n_humans=("picked_high", "size"),
                                         human_pick_high_rate=("picked_high", "mean")).reset_index()
     if model_df is not None and not model_df.empty:
-        model_rates = (model_df[model_df["pair_id"].isin(by_pair["pair_id"])]
-                       .groupby(["pair_id", "model"])["picked_x"].mean().unstack("model"))
-        model_rates.columns = [f"model_{short_model(m)}" for m in model_rates.columns]
-        by_pair = by_pair.merge(model_rates, left_on="pair_id", right_index=True, how="left")
+        sub = model_df[model_df["pair_id"].isin(by_pair["pair_id"])]
+        rates = sub.groupby(["pair_id", "model", "is_x"])["shortlist"].mean().unstack("is_x")
+        if 1 in rates and 0 in rates:
+            effect = (rates[1] - rates[0]).unstack("model")
+            effect.columns = [f"model_{short_model(m)}" for m in effect.columns]
+            by_pair = by_pair.merge(effect, left_on="pair_id", right_index=True, how="left")
     return by_pair
 
 
 def correlations(by_pair) -> pd.DataFrame:
-    """Spearman correlation across pairs between the human rate and each model's rate."""
+    """Spearman correlation across pairs between the human pick-high rate and each
+    model's shortlist-rate effect on the same base CV."""
     out = []
     for column in [c for c in by_pair.columns if c.startswith("model_")]:
         both = by_pair[["human_pick_high_rate", column]].dropna()
@@ -145,10 +151,10 @@ def correlations(by_pair) -> pd.DataFrame:
             r = spearmanr(both["human_pick_high_rate"], both[column])
             out.append({"model": column[len("model_"):], "n_pairs": len(both),
                         "spearman_r": float(r.statistic), "p": float(r.pvalue),
-                        "model_mean_pick_high_rate": both[column].mean()})
+                        "model_mean_effect": both[column].mean()})
         else:
             out.append({"model": column[len("model_"):], "n_pairs": len(both), "spearman_r": np.nan, "p": np.nan,
-                        "model_mean_pick_high_rate": both[column].mean() if len(both) else np.nan})
+                        "model_mean_effect": both[column].mean() if len(both) else np.nan})
     return pd.DataFrame(out)
 
 
@@ -234,9 +240,10 @@ def analyze_survey(cfg, csv_path, dry_run=False):
     if model_df is None or model_df.empty:
         lines += ["No model results were found to compare with.", ""]
     else:
-        lines += ["Share picking the higher-class CV per pair. Model columns use all the models' calls on that "
-                  "pair (both orders, all sessions).", "", md_table(by_pair, 2), "",
-                  "Spearman rank correlation across pairs between the human rate and each model's rate:", "",
+        lines += ["Humans: share picking the higher-class CV of the pair. Models never see a pair, so each "
+                  "model column is its shortlist rate for the higher-class CV minus that for the other, over "
+                  "all samples and sessions (0 = no effect).", "", md_table(by_pair, 2), "",
+                  "Spearman rank correlation across pairs between the human rate and each model's effect:", "",
                   md_table(corr, 3), "", "![humans vs models](figures/survey_vs_models.png)", ""]
     lines += ["## Caveats", "",
               "- Participants were told the study is about gender, so their guesses about class are not "

@@ -200,3 +200,55 @@ def make_dummy_cvs(cv_dir, arms, n_cvs=15, overwrite=False) -> list[Path]:
                 path.write_text(dummy_cv_text(i, arm, index), encoding="utf-8")
                 written.append(path)
     return written
+
+
+# ----------------------------- one CV per call -----------------------------
+
+@dataclass
+class Stimulus:
+    """One CV file, as sent to the models on its own."""
+    stimulus_id: str  # the file stem, e.g. "cv01_implicit_high"
+    cv_id: str
+    arm: str
+    variant: str
+    text: str
+
+
+def load_stimuli(cv_dir, arms):
+    """Every CV file named after a known arm and variant, one Stimulus each.
+
+    A base CV's two variants of an arm are only loaded together: the analysis
+    compares them, so a lone variant would be a call with nothing to compare it to.
+    Returns (stimuli, missing): `missing` lists the <cv_id>_<arm> with a file absent.
+    """
+    stimuli, missing = [], []
+    for cv_id in find_cv_ids(cv_dir, arms):
+        for arm, variants in arms.items():
+            paths = [(variant, cv_path(cv_dir, cv_id, arm, variant)) for variant in variants]
+            if not all(path.exists() for _, path in paths):
+                missing.append(f"{cv_id}_{arm}")
+                continue
+            for variant, path in paths:
+                stimuli.append(Stimulus(f"{cv_id}_{arm}_{variant}", cv_id, arm, variant, read_cv(path)))
+    return stimuli, missing
+
+
+def placeholder_stimuli(stimuli) -> list[str]:
+    """Stimulus ids whose text still contains the word PLACEHOLDER (i.e. dummy CVs)."""
+    return [s.stimulus_id for s in stimuli if "PLACEHOLDER" in s.text]
+
+
+# ----------------------------- the fixed comparison set -----------------------------
+
+def load_fillers(filler_dir) -> list[tuple[str, str]]:
+    """The filler CVs shown before every target, as (file name, text), in file-name order.
+
+    Every call shows the same fillers in the same order, so they are constants: the
+    3-in-10 shortlist budget has a reference class, position is the same for every
+    target and so cancels, and the two versions of a CV are never in one prompt.
+    Returns an empty list if the folder holds no .txt files.
+    """
+    folder = Path(filler_dir)
+    if not folder.is_dir():
+        return []
+    return [(path.name, read_cv(path)) for path in sorted(folder.glob("*.txt"))]
