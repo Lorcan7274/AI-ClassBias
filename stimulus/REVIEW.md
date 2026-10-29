@@ -827,6 +827,35 @@ tables for this session; the preregistration says session 1 is looked at, not ac
 on, until session 2 (no earlier than 22 October 2026) is pooled with it. Nothing in
 the design changes between the sessions.
 
+## Session 2 of the confirmatory run, 29 October 2026
+
+Started fifteen days after session 1, on a replacement key (the first had expired),
+with the same configuration and prompt hash. 18:52 to 21:11 UTC: the main run was cut
+at two hours by the background limit with two calls in flight, resumed in the same
+order, and finished with every one of the 1,800 calls present. Eleven Llama calls
+returned a JSON object with no shortlist field followed by blank lines and failed
+validation; the resume re-made them, two failed the same way again, and the
+preregistered `--retry-failed` pass made those two, so two calls took three attempts.
+$13.87; both sessions $29.50.
+
+| model | ok | cached calls | hosts | shortlist rate s1 → s2 |
+|---|---|---|---|---|
+| anthropic/claude-opus-5.5 | 450 | 445 | Claude Platform on AWS | 0.45 → 0.44 |
+| openai/gpt-6.1-sol-pro | 450 | 450 | OpenAI (396), Azure (54) | 0.41 → 0.41 |
+| google/gemini-4-argon | 450 | 96 | Google (311), Google AI Studio (139) | 0.33 → 0.34 |
+| meta-llama/llama-4-maverick | 450 | 417 | DigitalOcean (347), Parasail (101) | 0.83 → 1.00 |
+
+**The frontier models are stable; Llama is not.** Claude, GPT and Gemini reproduced
+their session-1 shortlist rates, ranks and likelihoods to within 1.5 points, and
+every graded effect in their class arms kept its sign. Llama, served by different
+hosts from session 1's Novita, shortlisted 99.6% of targets and put the target first
+of ten in 83 calls; the preregistered disagreement rule flags all three of its arms
+(session × version interaction p < 10⁻⁶) and Claude's demographic arm (a sign flip
+of ±2 points around zero). Those cells are reported per session as well as pooled.
+
+The pooled analysis of record is `results/analysis.md`; `results/analysis_session1.md`
+stays as the single-session analysis that preceded it.
+
 ## Change outside this folder
 
 `config.yaml` → `cv_checks.allowed_sections.implicit` gained `header`.
