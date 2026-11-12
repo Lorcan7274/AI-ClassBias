@@ -24,6 +24,9 @@ markers work, and for a rough human interview rate per version. It is not enough
 to see effects of a few points, so the write-up should call it a check on the
 stimuli and a human baseline, not a parallel test.
 
+The form closed at fifteen responses on ten of the thirty cards; see section 8 of
+`results/analysis.md`.
+
 ## Afterwards
 
 In the responses sheet, File > Download > CSV, then

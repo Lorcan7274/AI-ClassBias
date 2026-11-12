@@ -193,13 +193,14 @@ and on likelihood for Claude and GPT in the implicit arm, an advantage of any si
 
 ## 8. The human survey, and people against the models
 
-Descriptive, not preregistered. Fifteen responses in the final export (fourteen on
-15 October, one on 18 October) cover ten of the thirty implicit-arm CVs: ten people
-saw a higher-class version, five a lower-class one, and three bases were seen in
-both versions. One or two people saw each CV, against the hundred responses the
+Descriptive, not preregistered. The form closed at fifteen responses (fourteen on 15
+October, one on 18 October), which cover ten of the thirty implicit-arm CVs: ten
+people saw a higher-class version, five a lower-class one, and three bases were seen
+in both versions. One or two people saw each CV, against the hundred responses the
 survey aimed for, so this is a check on the stimuli and a rough human baseline, not
-a parallel test. Full tables in `results/human_vs_models.md`, per CV in
-`results/human_vs_models.csv`, from `survey/human_vs_models.py`.
+a parallel test, and no more data will come. Full tables in
+`results/human_vs_models.md`, per CV in `results/human_vs_models.csv`, from
+`survey/human_vs_models.py`.
 
 **People say yes far more often.** Thirteen of fifteen (87%) would interview, mean
 likelihood 6.9 of 10, although the form says only 3 in 10 get an interview. On the
@@ -213,7 +214,8 @@ interviewed the higher-class version less often on one (B15) and equally on two
 (sign p = 1.0); likelihood −16.7 points on average. The frontier models, on the same
 three bases, move between −3 and +3 shortlist points. The B15 difference rests on
 two identical answers to the higher-class card ("no", 4 of 10, state school,
-"Finance") submitted 83 seconds apart, probably one person twice; both are kept. The
+"Finance") submitted 83 seconds apart, probably one person twice; both are kept, and dropping the second changes none of
+the readings below (private-school guesses become 5 of 6 against 1 of 4, p = 0.19). The
 raw split by version (80% interview for higher-class against 100% for lower-class)
 is not a class effect either: the higher-class CVs people happened to see are
 weaker bases, and the models show the same split on them (Claude 50% against 84%).
@@ -222,7 +224,7 @@ weaker bases, and the models show the same split on them (Claude 50% against 84%
 the models agree with one another (median Spearman ρ 0.60 to 0.78); people's mean
 likelihood correlates with none of them (ρ −0.22 to −0.55, none significant). With
 one or two answers per CV the human means are mostly noise, so this shows the human
-data cannot yet rank CVs, not that people disagree with the models.
+data cannot rank CVs, not that people disagree with the models.
 
 **The school marker reads in the intended direction.** Of those who guessed a
 school, 5 of 7 shown a higher-class version said private, against 1 of 4 shown a
@@ -256,9 +258,9 @@ Only one of the fifteen names a lower-income family, on a lower-class version.
    preregistered rule its pooled rows are flagged. Its positive implicit-arm rank
    and likelihood effects are reported with that flag and should not be weighed
    against the frontier models' null.
-8. **The human check is too small to compare effects.** Fifteen responses show the
+8. **The human check is too small to compare effects, and is closed.** Fifteen responses show the
    school marker read in the intended direction (5 of 7 against 1 of 4, n.s.) and
    people far more willing to interview than the models (87% against 59–61% on the
-   same CVs), and nothing yet about a human class effect.
+   same CVs), and nothing about a human class effect.
 
 Cost of the two sessions: $29.50.
