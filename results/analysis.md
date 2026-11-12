@@ -214,11 +214,12 @@ interviewed the higher-class version less often on one (B15) and equally on two
 (sign p = 1.0); likelihood −16.7 points on average. The frontier models, on the same
 three bases, move between −3 and +3 shortlist points. The B15 difference rests on
 two identical answers to the higher-class card ("no", 4 of 10, state school,
-"Finance") submitted 83 seconds apart, probably one person twice; both are kept, and dropping the second changes none of
-the readings below (private-school guesses become 5 of 6 against 1 of 4, p = 0.19). The
-raw split by version (80% interview for higher-class against 100% for lower-class)
-is not a class effect either: the higher-class CVs people happened to see are
-weaker bases, and the models show the same split on them (Claude 50% against 84%).
+"Finance") submitted 83 seconds apart, probably one person twice; both are kept, and
+dropping the second changes none of the readings below (private-school guesses
+become 5 of 6 against 1 of 4, p = 0.19). The raw split by version (80% interview for
+higher-class against 100% for lower-class) is not a class effect either: the
+higher-class CVs people happened to see are weaker bases, and the models show the
+same split on them (Claude 50% against 84%).
 
 **People and models do not rank the CVs alike, at this size.** Across the ten CVs
 the models agree with one another (median Spearman ρ 0.60 to 0.78); people's mean
