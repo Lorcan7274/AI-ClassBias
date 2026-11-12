@@ -1,0 +1,11 @@
+stimulus_id,cv_id,variant,n_people,people_interview,people_likelihood,Claude_shortlist,Claude_likelihood,GPT_shortlist,GPT_likelihood,Gemini_shortlist,Gemini_likelihood,Llama_shortlist,Llama_likelihood
+B02_implicit_high,B02,high,2,1,75,0.9,53.9,0.9,73.1,1,81.8,1,98
+B03_implicit_low,B03,low,1,1,80,1,55.8,1,86.7,1,79.3,1,97
+B07_implicit_high,B07,high,2,1,65,0.1,36,0,17,0,16,1,88
+B07_implicit_low,B07,low,1,1,90,0.2,40.8,0,18.5,0,15,0.7,74.5
+B11_implicit_high,B11,high,1,1,80,0,37,0,27.5,0,18,1,82.3
+B13_implicit_high,B13,high,1,1,70,1,56.7,1,87.6,1,72.3,1,97
+B13_implicit_low,B13,low,2,1,65,1,55.6,1,85,0.9,70.6,1,95
+B14_implicit_high,B14,high,2,1,80,0,30.5,0,18,0,15.5,1,91
+B15_implicit_high,B15,high,2,0,40,1,63,1,77,1,80.5,1,99
+B15_implicit_low,B15,low,1,1,70,1,62.7,1,79.5,1,83.5,1,98

@@ -54,4 +54,11 @@ python -m pipeline analyze
 python -m pipeline analyze-survey --csv <export.csv>
 ```
 
+Online form (`survey/SURVEY.md`):
+
+```bash
+python survey/form_responses.py <form export.csv>
+python survey/human_vs_models.py
+```
+
 Other flags: `run --workers N`, `run --retry-failed`. `python -m pipeline --help` lists everything.

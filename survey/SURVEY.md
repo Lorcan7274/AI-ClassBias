@@ -35,7 +35,15 @@ python survey/form_responses.py <the export>.csv
 writes `survey/form_responses.csv` (one row per response, joined to the CV
 through `survey/cards/card_key.csv`) and prints the interview rate, mean
 likelihood and private-school guesses for each version, the manipulation check,
-and a sign test across bases.
+and a sign test across bases. Then
+
+```
+python survey/human_vs_models.py
+```
+
+sets those responses beside the models' answers on the same CVs and writes
+`results/human_vs_models.md` and `results/human_vs_models.csv`.
+`survey/form_responses.csv` holds one row per person, so it stays out of git.
 
 ## The cards
 

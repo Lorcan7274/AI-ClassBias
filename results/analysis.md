@@ -191,14 +191,46 @@ A higher-class advantage of more than about two shortlist points pooled, or one 
 two points in any frontier model, is incompatible with the data; in the explicit arm,
 and on likelihood for Claude and GPT in the implicit arm, an advantage of any size is.
 
-## 8. The human survey
+## 8. The human survey, and people against the models
 
-Twelve responses had been received when the form was last exported (15 October):
-ten would interview, two would not; mean likelihood 7.0 of 10; school guesses 6
-private, 3 state, 3 "no idea"; nine respondents saw a higher-class version and
-three a lower-class one. The manipulation check (private-school guesses, 5 of 7
-against 1 of 2, Fisher p = 1.0) cannot be read at this size. The form remains open;
-its export is analysed with `survey/form_responses.py`.
+Descriptive, not preregistered. Fifteen responses in the final export (fourteen on
+15 October, one on 18 October) cover ten of the thirty implicit-arm CVs: ten people
+saw a higher-class version, five a lower-class one, and three bases were seen in
+both versions. One or two people saw each CV, against the hundred responses the
+survey aimed for, so this is a check on the stimuli and a rough human baseline, not
+a parallel test. Full tables in `results/human_vs_models.md`, per CV in
+`results/human_vs_models.csv`, from `survey/human_vs_models.py`.
+
+**People say yes far more often.** Thirteen of fifteen (87%) would interview, mean
+likelihood 6.9 of 10, although the form says only 3 in 10 get an interview. On the
+same CVs, weighted the same way, the frontier models shortlist 59–61% with a
+likelihood of 49–56 out of 100; Llama 98% and 93. People saw the CV alone and the
+models saw it after nine fillers, so the levels are not like for like. The gap is
+what a lone CV judged with nothing to compare it against would produce.
+
+**No human class effect can be seen.** On the three bases seen both ways, people
+interviewed the higher-class version less often on one (B15) and equally on two
+(sign p = 1.0); likelihood −16.7 points on average. The frontier models, on the same
+three bases, move between −3 and +3 shortlist points. The B15 difference rests on
+two identical answers to the higher-class card ("no", 4 of 10, state school,
+"Finance") submitted 83 seconds apart, probably one person twice; both are kept. The
+raw split by version (80% interview for higher-class against 100% for lower-class)
+is not a class effect either: the higher-class CVs people happened to see are
+weaker bases, and the models show the same split on them (Claude 50% against 84%).
+
+**People and models do not rank the CVs alike, at this size.** Across the ten CVs
+the models agree with one another (median Spearman ρ 0.60 to 0.78); people's mean
+likelihood correlates with none of them (ρ −0.22 to −0.55, none significant). With
+one or two answers per CV the human means are mostly noise, so this shows the human
+data cannot yet rank CVs, not that people disagree with the models.
+
+**The school marker reads in the intended direction.** Of those who guessed a
+school, 5 of 7 shown a higher-class version said private, against 1 of 4 shown a
+lower-class version (Fisher p = 0.24). The parents' jobs guessed for higher-class
+versions were professors, programmers, food distributors, consulting, doctors and
+finance (twice), with three non-answers; for lower-class versions, data analysis,
+insurance, "a job that requires a degree" and "lower income", with one non-answer.
+Only one of the fifteen names a lower-income family, on a lower-class version.
 
 ## 9. Conclusions
 
@@ -224,5 +256,9 @@ its export is analysed with `survey/form_responses.py`.
    preregistered rule its pooled rows are flagged. Its positive implicit-arm rank
    and likelihood effects are reported with that flag and should not be weighed
    against the frontier models' null.
+8. **The human check is too small to compare effects.** Fifteen responses show the
+   school marker read in the intended direction (5 of 7 against 1 of 4, n.s.) and
+   people far more willing to interview than the models (87% against 59–61% on the
+   same CVs), and nothing yet about a human class effect.
 
 Cost of the two sessions: $29.50.
