@@ -30,10 +30,6 @@ plt.rcParams.update({"font.family": "Inter", "font.size": 15, "text.color": INK,
                      "figure.facecolor": SURFACE, "axes.facecolor": SURFACE})
 
 
-def header(fig, title):
-    fig.text(0.045, 0.915, title, fontsize=34, fontweight="bold", family="Inter Display", va="baseline")
-
-
 def legend_row(fig, y, items, ncol=None):
     handles = [Line2D([], [], marker="o", ls="", ms=12, mfc=c, mec=SURFACE, mew=2, label=t) for c, t in items]
     fig.legend(handles=handles, loc="upper left", bbox_to_anchor=(0.038, y), ncol=ncol or len(items), frameon=False,
@@ -43,11 +39,10 @@ def legend_row(fig, y, items, ncol=None):
 def main_findings():
     data = pd.read_csv(ROOT / "results" / "h1_class_effect.csv").set_index(["model", "arm"])
     fig = plt.figure(figsize=(16, 9), dpi=200)
-    header(fig, "No AI model favoured the higher-class CV")
-    legend_row(fig, 0.875, [(BLUE, "Class hinted"), (ORANGE, "Class stated")])
+    legend_row(fig, 0.96, [(BLUE, "Class hinted"), (ORANGE, "Class stated")])
     panels = [("shortlist", 100, "Shortlisted (percentage points)", 17, [-15, -10, -5, 0, 5, 10, 15]),
               ("likelihood", 1, "Likelihood score (0–100)", 7, [-6, -4, -2, 0, 2, 4, 6])]
-    axes = fig.subplots(1, 2, gridspec_kw={"left": 0.16, "right": 0.97, "top": 0.71, "bottom": 0.09, "wspace": 0.12})
+    axes = fig.subplots(1, 2, gridspec_kw={"left": 0.16, "right": 0.97, "top": 0.80, "bottom": 0.07, "wspace": 0.12})
     rows = {name: i for i, (_, name) in enumerate(MODELS)}
     for ax, (measure, scale, title, lim, ticks) in zip(axes, panels):
         ax.set_title(title, loc="left", fontsize=18, fontweight="semibold", color=INK, pad=42)
@@ -99,9 +94,8 @@ def rounded_bar(ax, x, w, h, color, radius_px=7):
 def claude_monitoring():
     data = pd.read_csv(ROOT / "results" / "monitoring.csv").set_index("model")
     fig = plt.figure(figsize=(16, 9), dpi=200)
-    header(fig, "Claude says it ignored class mostly for the privileged candidate")
-    legend_row(fig, 0.875, [(VIOLET, "Higher-class"), (AQUA, "Lower-class")])
-    ax = fig.add_axes([0.07, 0.1, 0.9, 0.66])
+    legend_row(fig, 0.96, [(VIOLET, "Higher-class"), (AQUA, "Lower-class")])
+    ax = fig.add_axes([0.07, 0.08, 0.9, 0.79])
     names = MODELS[:4]
     ax.set_xlim(-0.6, len(names) - 0.4)
     ax.set_ylim(0, 60)
